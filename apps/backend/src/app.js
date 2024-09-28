@@ -29,7 +29,12 @@ app.use(
 
 app.use(express.static("public"));
 
+
+import UserRouter from "./routes/user.routes.js";
 app.use(cookieparser());
+
+app.use("/gofast/api", UserRouter);
+
 
 app.use(ErrorHandlerMiddleWare);
 
