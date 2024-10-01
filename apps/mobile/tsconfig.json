@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "app/(auth)/welcome.jsx", "app/(auth)/sign-up.jsx", "app/(auth)/sign-in.jsx", "app/(auth)/_layout.jsx", "app/+not-found.jsx", "app/+html.jsx", "app/_layout.jsx", "app/index.jsx"  ]
 }
