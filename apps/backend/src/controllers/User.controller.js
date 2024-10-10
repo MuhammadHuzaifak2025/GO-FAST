@@ -453,4 +453,5 @@ export {
   forgetpassword,
   isuseradmin,
   ChangePasword,
+  verifyuser
 };
