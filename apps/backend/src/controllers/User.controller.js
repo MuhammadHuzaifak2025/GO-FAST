@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import keygen from "keygen";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import otpGenerator from 'otp-generator'
 
 const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 
@@ -15,7 +16,7 @@ const Signup = asynchandler(async (req, res, next) => {
   try {
     const { username, email, password, phone, address, license } = req.body;
 
-    if (!username || !password || !email || !phone || !address || !license) {
+    if (!username || !password || !email || !phone || !address) {
       return next(new ApiError(400, "please fill all the fields: username, email, password, phone, address, license"));
     }
     const userexsist = await user.findOne({ where: { username, email } });
@@ -29,7 +30,7 @@ const Signup = asynchandler(async (req, res, next) => {
       password: password,
       phone: phone,
       address: address,
-      license: license,
+      license: license || null,
     });
 
     if (newuser) {
@@ -57,12 +58,76 @@ const Signup = asynchandler(async (req, res, next) => {
         maxAge: 3600 * 1000,
       });
 
-      res.status(201).json(new ApiResponse(200, newuser, "User Created"));
+      const plainKey = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        auth: {
+          user: process.env.GMAIL_USERNAME,
+          pass: process.env.GMAIL_PASSWORD,
+        },
+      });
+
+      const info = transporter.sendMail({
+        from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
+        to: email,
+        subject: "Verify User",
+        text: `Your New Otp key is ${plainKey}. Enter your key to reset your password.`,
+      });
+
+      if (!info) {
+        return next(new ApiError(500, "Email not sent"));
+      }
+      const updateduser = await user.update(
+        {
+          otp: await bcrypt.hash(plainKey, saltRounds),
+          isverified: false
+        },
+        { where: { email: email } }
+      );
+
+
+      res.status(201).json(new ApiResponse(200, newuser, "User Created, Verify Your Email"));
     }
   } catch (error) {
     next(new ApiError(500, error));
   }
 });
+
+const verifyuser = asynchandler(async (req, res, next) => {
+  try {
+    const { email, key } = req.body;
+    if (!email || !key) {
+      return next(new ApiError(400, "Please fill all the fields"));
+    }
+
+    const userexsist = await user.findOne({ where: { email } });
+    if (!userexsist) {
+      return next(new ApiError(400, "User does not exist"));
+    }
+
+    if (bcrypt.compare(key, userexsist.otp)) {
+      return next(new ApiError(401, "Incorrect Key"));
+    }
+
+    const updateduser = await user.update(
+      {
+        isverified: true,
+        otp: null,
+      },
+      { where: { email: email } }
+    );
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, "User Verified"));
+  } catch (error) {
+    return next(new ApiError(500, error.message));
+  }
+});
+
 
 const getalluser = asynchandler(async (req, res, next) => {
   try {
@@ -169,6 +234,9 @@ const signin = asynchandler(async (req, res, next) => {
     });
     userexsist.refresh_token = undefined;
 
+    if (userexsist.isverified === false) {
+      return next(new ApiError(400, "User is not verified"));
+    }
 
     res.status(200).json(new ApiResponse(200, userexsist, "User Logged In"));
   } catch (error) {
@@ -254,8 +322,9 @@ const forgetpassword = asynchandler(async (req, res, next) => {
     if (!userexsist) {
       return next(new ApiError(400, "User does not exist"));
     }
+    
 
-    const plainKey = keygen.url(keygen.medium);
+    const plainKey = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false });
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -268,19 +337,22 @@ const forgetpassword = asynchandler(async (req, res, next) => {
     });
 
     const info = transporter.sendMail({
-      from: { address: process.env.GMAIL_USERNAME, username: "Codexter Labs Hrms" },
+      from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
       to: email,
       subject: "Forget Password",
-      text: `Your New Password key is ${plainKey}. Enter your key to reset your password.`,
+      text: `Your New OTP key is ${plainKey}. Enter your key to reset your password.`,
     });
 
     if (!info) {
       return next(new ApiError(500, "Email not sent"));
     }
+    
     const updateduser = await user.update(
       {
+        otp: await bcrypt.hash(plainKey, saltRounds),
         forgetpassword: true,
-        password: await bcrypt.hash(plainKey, saltRounds),
+        isverified: userexsist.isverified? false : true 
+        // password: await bcrypt.hash(plainKey, saltRounds),
       },
       { where: { email: email } }
     );
