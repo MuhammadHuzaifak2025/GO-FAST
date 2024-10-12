@@ -1,12 +1,12 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 
-import React, {useState} from 'react'
+import React, {useState} from 'react';
 
-import FormField from '../../components/FormField'
-import CustomButton from '../../components/CustomButton'
-import { Link } from 'expo-router'
+import FormField from '../../components/FormField';
+import CustomButton from '../../components/CustomButton';
+import { Link } from 'expo-router';
 
 const SignUp = () => {
 
@@ -59,7 +59,7 @@ const SignUp = () => {
           />
 
           <CustomButton
-            textContent= "Sign In"
+            textContent= "Sign Up"
             handlePress= {submit}
             containerStyles={{marginTop: 7}}
             isLoading={isSubmitting}/>
