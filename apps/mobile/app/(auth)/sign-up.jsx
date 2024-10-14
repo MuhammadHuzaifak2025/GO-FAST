@@ -13,7 +13,9 @@ const SignUp = () => {
   const [form, setForm] = useState({
     username: '',
     email: '',
-    password: ''
+    password: '',
+    address: '',
+    phone: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -45,6 +47,22 @@ const SignUp = () => {
             value={form.email}
             handleChangeText = {(e) => setForm({...form, email: e})}
             keyboardType="email-address"
+            secureTextEntry={false}
+            otherStyles={{marginBottom: 20}}
+          />
+          <FormField
+            title="Phone Number"
+            placeholder="Enter your phone number"
+            value={form.phone}
+            handleChangeText = {(e) => setForm({...form, phone: e})}
+            secureTextEntry={false}
+            otherStyles={{marginBottom: 20}}
+          />
+          <FormField
+            title="Address"
+            placeholder="Enter your Address"
+            value={form.address}
+            handleChangeText = {(e) => setForm({...form, address: e})}
             secureTextEntry={false}
             otherStyles={{marginBottom: 20}}
           />
