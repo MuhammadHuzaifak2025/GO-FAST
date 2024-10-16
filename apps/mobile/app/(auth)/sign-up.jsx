@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
-
+import axios from 'axios'
 import React, {useState} from 'react';
 
 import FormField from '../../components/FormField';
@@ -20,8 +20,23 @@ const SignUp = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const submit = () => {
+  const submit = async () => {
+    setIsSubmitting(false)
+    
+    try{
 
+          const reponse = await axios.post('http://localhost:5000/gofast/api/user', form, {withCredentials: true,headers: {
+            "Content-Type": "application/json",
+},} );
+          console.log(response.data);
+          
+        } catch (error){
+          
+          console.log(error);
+
+    }
+
+    setIsSubmitting(false)
   }
 
   return (

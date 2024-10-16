@@ -17,7 +17,7 @@ const Signup = asynchandler(async (req, res, next) => {
     const { username, email, password, phone, address, license } = req.body;
 
     if (!username || !password || !email || !phone || !address) {
-      return next(new ApiError(400, "please fill all the fields: username, email, password, phone, address, license"));
+      return next(new ApiError(400, "please fill all the fields: username, email, password, phone, address"));
     }
     const userexsist = await user.findOne({ where: { username, email } });
     if (userexsist) {

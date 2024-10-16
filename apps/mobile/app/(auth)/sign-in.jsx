@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
-
+import {axios} from 'axios'
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link } from 'expo-router';
@@ -17,7 +17,20 @@ const SignIn = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const submit = () => {
+  const submit = async () => {
+
+    setIsSubmitting(false)
+    
+    try{
+
+          const reponse = await axios.post('http://localhost:5000/gofast/api/user/login', form, {withCredentials: true});
+          console.log(response.data);
+
+    } catch (error){
+      console.log(error);
+    }
+
+    setIsSubmitting(false)
 
   }
 
