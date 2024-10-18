@@ -80,6 +80,7 @@ const Signup = asynchandler(async (req, res, next) => {
       if (!info) {
         return next(new ApiError(500, "Email not sent"));
       }
+      console.log(plainKey);
       const updateduser = await user.update(
         {
           otp: await bcrypt.hash(plainKey, saltRounds),
@@ -87,7 +88,9 @@ const Signup = asynchandler(async (req, res, next) => {
         },
         { where: { email: email } }
       );
-
+      if(!updateduser){
+        return next(new ApiError(500, "User not updated"));
+      }
 
       res.status(201).json(new ApiResponse(200, newuser, "User Created, Verify Your Email"));
     }
@@ -108,9 +111,11 @@ const verifyuser = asynchandler(async (req, res, next) => {
       return next(new ApiError(400, "User does not exist"));
     }
 
-    if (bcrypt.compare(key, userexsist.otp)) {
+    const result1 = await bcrypt.compare(key, userexsist.otp);
+
+    if (!result1)
       return next(new ApiError(401, "Incorrect Key"));
-    }
+    
 
     const updateduser = await user.update(
       {

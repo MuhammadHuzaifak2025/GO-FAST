@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, ToastAndroid } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 import axios from 'axios'
 import React, {useState} from 'react';
+import { useToast } from "react-native-toast-notifications";
 
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
@@ -18,24 +19,45 @@ const SignUp = () => {
     phone: '',
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const toast = useToast();
 
   const submit = async () => {
+    return router.replace('/verify-email'); 
+
     setIsSubmitting(true)
     
     try{
 
-          const response = await axios.post('http://192.168.100.2:5000/gofast/api/user', form, {withCredentials: true} );
+          const response = await axios.post(`${process.env.ip}/gofast/api/user`, form, {withCredentials: true} );
           console.log(response.data);
-          
+
+          if(response.status === 201){
+
+        toast.show("Successfully created account, please verify email", {
+            type: "success",
+            duration: 4000,
+            offset: 30,
+            animationType: "slide-in",
+          });
+
+        
+
+        }
         } catch (error){
-          
-          console.log(error);
+
+          toast.show(error.response.data.message, {
+            type: "danger",
+            duration: 4000,
+            offset: 30,
+            animationType: "slide-in",
+          });
+
+          console.log(error.response.data.message);
+          setIsSubmitting(false);
           return;
     }
     
-    router.push('/verify-email');c 
-    setIsSubmitting(false)
   }
 
   return (

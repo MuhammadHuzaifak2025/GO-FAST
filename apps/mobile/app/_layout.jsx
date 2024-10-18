@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import {useEffect} from 'react'
 import {Slot, Stack, SplashScreen} from 'expo-router'
 import { useFonts } from 'expo-font';
+import { ToastProvider } from 'react-native-toast-notifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,27 +46,20 @@ const RootLayout = () => {
   }
 
   return (
-    // <View  style={styles.container}>
-    //   <Text>Header</Text>
-    //   <Slot />
-    //   <Text>Footer</Text>
-    // </View>
-    <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false}} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false}} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
-    </Stack>
+    <>
+      <ToastProvider
+        placement="bottom"
+        offset={30} // offset for both top and bottom toasts
+        swipeEnabled={true}
+        dangerColor= '#EC5F5F'>
+        <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false}} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false}} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
+        </Stack>
+      </ToastProvider>
+    </>
   )
 }
 
-export default RootLayout
-
-const styles = StyleSheet.create({
-    container: {
-        display: 'flex',
-        flex: 1,
-        backgroundColor: '#FFF',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-})
+export default RootLayout;
