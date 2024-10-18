@@ -6,7 +6,7 @@ import React, {useState} from 'react';
 
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 
 const SignUp = () => {
 
@@ -21,21 +21,20 @@ const SignUp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const submit = async () => {
-    setIsSubmitting(false)
+    setIsSubmitting(true)
     
     try{
 
-          const reponse = await axios.post('http://localhost:5000/gofast/api/user', form, {withCredentials: true,headers: {
-            "Content-Type": "application/json",
-},} );
+          const response = await axios.post('http://192.168.100.2:5000/gofast/api/user', form, {withCredentials: true} );
           console.log(response.data);
           
         } catch (error){
           
           console.log(error);
-
+          return;
     }
-
+    
+    router.push('/verify-email');c 
     setIsSubmitting(false)
   }
 

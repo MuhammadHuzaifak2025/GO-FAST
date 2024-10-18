@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
-import {axios} from 'axios'
+import axios from 'axios'
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link } from 'expo-router';
@@ -23,7 +23,7 @@ const SignIn = () => {
     
     try{
 
-          const reponse = await axios.post('http://localhost:5000/gofast/api/user/login', form, {withCredentials: true});
+          const response = await axios.post('http://192.168.100.2:5000/gofast/api/user/login', form, {withCredentials: true});
           console.log(response.data);
 
     } catch (error){
