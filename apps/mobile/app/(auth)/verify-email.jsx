@@ -4,20 +4,57 @@ import OTPTextInput from 'react-native-otp-textinput';
 import { StyleSheet } from 'react-native';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import axios from 'axios';
+import { useToast } from "react-native-toast-notifications";
+import { link, router } from 'expo-router';
+
+import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
 
 const VerifyEmail = () => {
-    
+
+    const toast = useToast();
+
+    const {user} = useGlobalContext();
     const otpInput = useRef(null)
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const submit = () => {
-        setIsSubmitting(false);
+    const submit = async () => {
+        setIsSubmitting(true);
 
-        let verification = '';
-        verification = otpInput.current.state.otpText.join('');
+        try{
+          console.log(user.email);
+          let verification = '';
+          verification = otpInput.current.state.otpText.join('');
+          
+          const resp = await axios.put(`${process.env.ip}/gofast/api/user/verifyuser`, {email : user.email, key : verification}, {withCredentials: true});
+          
+          if(resp.status === 200){
+            toast.show("Successfully Verified account, Please Login", {
+                type: "success",
+                duration: 4000,
+                offset: 30,
+                animationType: "slide-in",
+              });
+            
+            router.replace('/sign-in');
+          }
+        }
+        catch (error){
 
-        
+          otpInput.current.clear();
+          
+          toast.show(error.response.data.message, {
+            type: "danger",
+            duration: 4000,
+            offset: 30,
+            animationType: "slide-in",
+          });
+
+        }
+
+
+
         setIsSubmitting(false);
     }
 

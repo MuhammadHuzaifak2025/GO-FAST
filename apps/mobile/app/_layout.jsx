@@ -3,6 +3,7 @@ import {useEffect} from 'react'
 import {Slot, Stack, SplashScreen} from 'expo-router'
 import { useFonts } from 'expo-font';
 import { ToastProvider } from 'react-native-toast-notifications';
+import GlobalProvider from '../context/GlobalProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -47,17 +48,23 @@ const RootLayout = () => {
 
   return (
     <>
-      <ToastProvider
-        placement="bottom"
-        offset={30} // offset for both top and bottom toasts
-        swipeEnabled={true}
-        dangerColor= '#EC5F5F'>
-        <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false}} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false}} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
-        </Stack>
-      </ToastProvider>
+      <GlobalProvider>
+
+        <ToastProvider
+          placement="bottom"
+          offset={30} // offset for both top and bottom toasts
+          swipeEnabled={true}
+          dangerColor= '#EC5F5F'>
+
+          <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false}} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false}} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
+          </Stack>
+
+        </ToastProvider>
+
+      </GlobalProvider>
     </>
   )
 }
