@@ -6,12 +6,18 @@ import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 import axios from 'axios'
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
-import { Link } from 'expo-router';
+import { Link, Redirect, router } from 'expo-router';
+import { useToast } from "react-native-toast-notifications";
+
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 const SignIn = () => {
 
+  const {user, setUser, isAuthenticated, setIsAuthenticated} = useGlobalContext();
+  const toast = useToast();
+
   const [form, setForm] = useState({
-    email: '',
+    username: user ? user.username : '',  
     password: ''
   });
 
@@ -23,11 +29,37 @@ const SignIn = () => {
     
     try{
 
-          const response = await axios.post('http://192.168.100.2:5000/gofast/api/user/login', form, {withCredentials: true});
-          console.log(response.data);
+          const response = await axios.post(`${process.env.ip}/gofast/api/user/login`, form, {withCredentials: true});
+
+          if(response.status === 200){
+
+            setUser(response.data.data);
+            setIsAuthenticated(true);
+
+            toast.show("Successfully Logged In", {
+              type: "success",
+              duration: 4000,
+              offset: 30,
+              animationType: "slide-in",
+            });
+            
+            // const response1 = await axios.get(`${process.env.ip}/gofast/api/user`, {withCredentials: true} );
+            // console.log(response1.data);
+            router.replace('/find-ride');
+          }
+          else {
+            throw new Error(response);
+          }
 
     } catch (error){
-      console.log(error);
+
+      toast.show(error.response.data.message, {
+        type: "danger",
+        duration: 4000,
+        offset: 30,
+        animationType: "slide-in",
+      });
+      console.log(error.response.data.message);
     }
 
     setIsSubmitting(false)
@@ -43,10 +75,10 @@ const SignIn = () => {
           <Text style={styles.textM}>Your email and password</Text>
 
           <FormField
-            title="Email"
-            placeholder="Enter your email"
-            value={form.email}
-            handleChangeText = {(e) => setForm({...form, email: e})}
+            title="Email/Username"
+            placeholder="Enter your email/username"
+            value={form.username}
+            handleChangeText = {(e) => setForm({...form, username: e})}
             keyboardType="email-address"
             secureTextEntry={false}
             otherStyles={{marginBottom: 20}}

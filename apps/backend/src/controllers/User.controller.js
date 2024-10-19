@@ -59,7 +59,7 @@ const Signup = asynchandler(async (req, res, next) => {
         maxAge: 3600 * 1000,
       });
 
-      const plainKey = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+      const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
 
       const transporter = nodemailer.createTransport({
         service: "gmail",

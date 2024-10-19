@@ -5,10 +5,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../components/CustomButton';
 import { ToastProvider } from 'react-native-toast-notifications'
 
+import { useGlobalContext } from '../context/GlobalProvider';
 import {icons} from '../constants';
 
 export default function App() {
 
+  const {isLoading, isAuthenticated} = useGlobalContext();
+
+  if(!isLoading && isAuthenticated){
+    return <Redirect href="/find-ride" />
+  }
   return (
     
       <SafeAreaView style={{flex:1}}>

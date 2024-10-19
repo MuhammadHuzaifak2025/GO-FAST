@@ -8,8 +8,11 @@ import { useToast } from "react-native-toast-notifications";
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 const SignUp = () => {
+
+  const {isLoading, user, setUser} = useGlobalContext();
 
   const [form, setForm] = useState({
     username: '',
@@ -23,7 +26,6 @@ const SignUp = () => {
   const toast = useToast();
 
   const submit = async () => {
-    return router.replace('/verify-email'); 
 
     setIsSubmitting(true)
     
@@ -34,16 +36,19 @@ const SignUp = () => {
 
           if(response.status === 201){
 
-        toast.show("Successfully created account, please verify email", {
-            type: "success",
-            duration: 4000,
-            offset: 30,
-            animationType: "slide-in",
-          });
-
-        
-
-        }
+            toast.show("Successfully created account, please verify email", {
+              type: "success",
+              duration: 4000,
+              offset: 30,
+              animationType: "slide-in",
+            });
+            
+            setUser(response.data.data);
+            router.push('/verify-email');
+          }
+          else {
+            throw new Error(response);
+          }
         } catch (error){
 
           toast.show(error.response.data.message, {
@@ -54,10 +59,11 @@ const SignUp = () => {
           });
 
           console.log(error.response.data.message);
+        } finally {
+          
           setIsSubmitting(false);
-          return;
-    }
-    
+        }
+        
   }
 
   return (
