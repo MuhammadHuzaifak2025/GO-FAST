@@ -19,8 +19,9 @@ const Signup = asynchandler(async (req, res, next) => {
     if (!username || !password || !email || !phone || !address) {
       return next(new ApiError(400, "please fill all the fields: username, email, password, phone, address"));
     }
-    const userexsist = await user.findOne({ where: { username, email } });
-    if (userexsist) {
+    const userexsist = await user.findOne({ where: { username } });
+    const userexsistemail = await user.findOne({ where: { email } });
+    if (userexsist || userexsistemail) {
       return next(new ApiError(400, "User already exists with same email or username"));
     }
 
@@ -88,7 +89,7 @@ const Signup = asynchandler(async (req, res, next) => {
         },
         { where: { email: email } }
       );
-      if(!updateduser){
+      if (!updateduser) {
         return next(new ApiError(500, "User not updated"));
       }
 
@@ -115,7 +116,7 @@ const verifyuser = asynchandler(async (req, res, next) => {
 
     if (!result1)
       return next(new ApiError(401, "Incorrect Key"));
-    
+
 
     const updateduser = await user.update(
       {
@@ -327,7 +328,7 @@ const forgetpassword = asynchandler(async (req, res, next) => {
     if (!userexsist) {
       return next(new ApiError(400, "User does not exist"));
     }
-    
+
 
     const plainKey = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false });
 
@@ -351,12 +352,12 @@ const forgetpassword = asynchandler(async (req, res, next) => {
     if (!info) {
       return next(new ApiError(500, "Email not sent"));
     }
-    
+
     const updateduser = await user.update(
       {
         otp: await bcrypt.hash(plainKey, saltRounds),
         forgetpassword: true,
-        isverified: userexsist.isverified? false : true 
+        isverified: userexsist.isverified ? false : true
         // password: await bcrypt.hash(plainKey, saltRounds),
       },
       { where: { email: email } }
