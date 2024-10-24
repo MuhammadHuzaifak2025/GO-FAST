@@ -23,17 +23,17 @@ const SignUp = () => {
   const toast = useToast();
 
   const submit = async () => {
-    return router.replace('/verify-email'); 
+    // return router.replace('/verify-email'); 
 
     setIsSubmitting(true)
     
     try{
-
-          const response = await axios.post(`${process.env.ip}/gofast/api/user`, form, {withCredentials: true} );
-          console.log(response.data);
+      console.log(process.env.ip);
+          const response = await axios.post(`${process.env.ip}gofast/api/user`, form, {withCredentials: true} );
+          // console.log(response.data);
 
           if(response.status === 201){
-
+            console.log(response);
         toast.show("Successfully created account, please verify email", {
             type: "success",
             duration: 4000,
@@ -45,7 +45,7 @@ const SignUp = () => {
 
         }
         } catch (error){
-
+          console.log(error);
           toast.show(error.response.data.message, {
             type: "danger",
             duration: 4000,
@@ -53,7 +53,7 @@ const SignUp = () => {
             animationType: "slide-in",
           });
 
-          console.log(error.response.data.message);
+          console.log(error);
           setIsSubmitting(false);
           return;
     }
@@ -89,6 +89,7 @@ const SignUp = () => {
           <FormField
             title="Phone Number"
             placeholder="Enter your phone number"
+            keyboardType="numeric"
             value={form.phone}
             handleChangeText = {(e) => setForm({...form, phone: e})}
             secureTextEntry={false}

@@ -23,7 +23,7 @@ const SignIn = () => {
     
     try{
 
-          const response = await axios.post('http://192.168.100.2:5000/gofast/api/user/login', form, {withCredentials: true});
+          const response = await axios.post((`${process.env.ip}/gofast/api/user/login`), form, {withCredentials: true});
           console.log(response.data);
 
     } catch (error){

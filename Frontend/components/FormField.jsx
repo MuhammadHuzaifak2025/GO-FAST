@@ -16,6 +16,7 @@ const FormField = ({title, value, placeholder, handleChangeText, otherStyles, se
         <TextInput
           style={styles.inputS}
           value={value}
+          keyboardType={props.keyboardType}
           placeholder={placeholder}
           placeholderTextColor="#FFCCCB"
           onChangeText={handleChangeText}
