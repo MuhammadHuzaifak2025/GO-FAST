@@ -23,7 +23,7 @@ const SignIn = () => {
     
     try{
 
-          const response = await axios.post((`${process.env.ip}/gofast/api/user/login`), form, {withCredentials: true});
+          const response = await axios.post((`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`), form, {withCredentials: true});
           console.log(response.data);
 
     } catch (error){

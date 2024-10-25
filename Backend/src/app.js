@@ -7,10 +7,17 @@ import {
 } from "./middlewares/globalerror.js";
 
 const app = express();
+const allowedOrigins = ['http://192.168.10.3:8081', 'http://localhost:8081', 'exp://192.168.10.3:8081'];
 
 app.use(
   cors({
-    origin: '*',
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );

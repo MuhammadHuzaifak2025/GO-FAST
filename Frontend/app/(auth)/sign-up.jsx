@@ -28,9 +28,9 @@ const SignUp = () => {
     setIsSubmitting(true)
     
     try{
-      console.log(process.env.ip);
-          const response = await axios.post(`${process.env.ip}gofast/api/user`, form, {withCredentials: true} );
-          // console.log(response.data);
+      console.log(process.env.EXPO_PUBLIC_BACKEND_URL);
+          const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}gofast/api/user`, form, {withCredentials: true} );
+          console.log(response.data);
 
           if(response.status === 201){
             console.log(response);
@@ -45,7 +45,7 @@ const SignUp = () => {
 
         }
         } catch (error){
-          console.log(error);
+          alert(error);
           toast.show(error.response.data.message, {
             type: "danger",
             duration: 4000,
