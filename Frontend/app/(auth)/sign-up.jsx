@@ -45,9 +45,9 @@ const SignUp = () => {
             
             if(response.status === 201){
               
-              toast.show("Successfully created account, please verify email", {
+              toast.show("Successfully created account, please enter OTP sent to your email address", {
               type: "success",
-              duration: 4000,
+              duration: 8000,
               offset: 30,
               animationType: "slide-in",
             });

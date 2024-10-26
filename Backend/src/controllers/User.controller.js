@@ -331,11 +331,13 @@ const forgetpassword = asynchandler(async (req, res, next) => {
 
     const userexsist = await user.findOne({ where: { email } });
     if (!userexsist) {
-      return next(new ApiError(400, "User does not exist"));
+      return next(new ApiError(400, "User does not exist at this Email"));
     }
 
 
-    const plainKey = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+    const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+
+    console.log(plainKey);
 
     const transporter = nodemailer.createTransport({
       service: "gmail",

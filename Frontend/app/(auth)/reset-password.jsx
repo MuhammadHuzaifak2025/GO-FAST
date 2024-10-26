@@ -2,7 +2,6 @@ import { View, Text } from 'react-native';
 import React, {useRef, useState} from 'react';
 import OTPTextInput from 'react-native-otp-textinput';
 import { StyleSheet } from 'react-native';
-import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { useToast } from "react-native-toast-notifications";
@@ -10,38 +9,43 @@ import { link, router } from 'expo-router';
 
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
+import FormField from '../../components/FormField';
 
 const VerifyEmail = () => {
 
     const toast = useToast();
+    const otpInput = useRef(null)
 
     const {user} = useGlobalContext();
-    const otpInput = useRef(null)
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const submit = async () => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [form, setForm] = useState({password: ''});  
+
+    const handleResetPass = async () => {
         setIsSubmitting(true);
 
         try{
-          console.log(user.email);
           let verification = '';
           verification = otpInput.current.state.otpText.join('');
           
-          const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/verifyuser`, {email : user.email, key : verification}, {withCredentials: true});
-          
+          const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resetpassword`, {email : user.email, key : verification, password : form.password}, {withCredentials: true});
+
           if(resp.status === 200){
-            toast.show("Successfully Verified account, Please Login", {
+            toast.show("Successfully Changed Password, Please Login", {
                 type: "success",
-                duration: 4000,
+                duration: 6000,
                 offset: 30,
                 animationType: "slide-in",
               });
             
             router.replace('/sign-in');
           }
+          else{
+            throw new Error(resp);
+          }
         }
         catch (error){
-
+          console.log(error);
           otpInput.current.clear();
           
           toast.show(error.response.data.message, {
@@ -64,18 +68,27 @@ const VerifyEmail = () => {
         <Text style={styles.title}>Verify Your Email</Text>
 
         <OTPTextInput
-        ref= {otpInput}
-        inputCount={6}
-        containerStyle={styles.otpContainer}
-        textInputStyle={styles.otpInput}
+          ref= {otpInput}
+          inputCount={6}
+          containerStyle={styles.otpContainer}
+          textInputStyle={styles.otpInput}
         />
 
+        <FormField
+          title="New Password"
+          placeholder="Enter your new password"
+          value={form.password}
+          handleChangeText={(e) => setForm({ ...form, password: e })}
+          secureTextEntry={true}
+          otherStyles={{ marginBottom: 20 }}
+        />
 
         <CustomButton
-            textContent= "Submit"
-            handlePress= {submit}
-            containerStyles={{marginTop: 7}}
-            isLoading={isSubmitting}/>
+          textContent= "Submit"
+          handlePress= {handleResetPass}
+          containerStyles={{marginTop: 7}}
+          isLoading={isSubmitting}
+        />
     
     </SafeAreaView>
   );

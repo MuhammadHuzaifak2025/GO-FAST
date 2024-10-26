@@ -24,24 +24,21 @@ const SignIn = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const CheckAuth = async () => {
-    try {
-      await setAuthHeaders(axios)
-      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`);
-      console.log(response);
-      if (response.status === 200) {
-        router.replace('/find-ride');
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   const submit = async () => {
 
     setIsSubmitting(false)
 
     try {
+
+      if(!form.username || !form.password){
+        toast.show('Please fill all fields', {
+          type: "danger",
+          duration: 4000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+        return;
+      }
 
       const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, form, { withCredentials: true });
 
@@ -58,6 +55,8 @@ const SignIn = () => {
         });
 
         await saveTokensFromCookies(response);
+        router.dismissAll();
+        router.replace('/find-ride');
       }
       else {
         throw new Error(response);
@@ -112,11 +111,6 @@ const SignIn = () => {
           <CustomButton
             textContent="Sign In"
             handlePress={submit}
-            containerStyles={{ marginTop: 7 }}
-            isLoading={isSubmitting} />
-          <CustomButton
-            textContent="check auth"
-            handlePress={CheckAuth}
             containerStyles={{ marginTop: 7 }}
             isLoading={isSubmitting} />
 

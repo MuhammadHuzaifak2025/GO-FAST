@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
+import { navigator } from "expo";
 import { setAuthHeaders } from "../utils/expo-store";
 const GlobalContext = createContext();
 
@@ -22,6 +23,7 @@ const GlobalProvider = ({ children }) => {
         if(response.status === 200){
           setUser(response.data);
           setIsAuthenticated(true);
+          router.replace('/find-ride');
         }
         else {
           throw new Error(response);
@@ -30,13 +32,14 @@ const GlobalProvider = ({ children }) => {
       catch (error){
         console.log(error);
         setIsAuthenticated(false);
+        router.replace('/');
       }
       setIsLoading(false);
     }
 
     checkUser();
 
-    }, []);
+    }, [router]);
 
   return (
     <GlobalContext.Provider value={{ user, setUser, isAuthenticated,setIsAuthenticated,isLoading }}>

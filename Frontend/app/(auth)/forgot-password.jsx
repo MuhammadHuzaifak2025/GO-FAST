@@ -14,28 +14,14 @@ import { saveTokensFromCookies, setAuthHeaders } from '../../utils/expo-store';
 
 const ForgotPassword = () => {
 
-  const { user, setUser, isAuthenticated, setIsAuthenticated } = useGlobalContext();
+  const { user, setUser } = useGlobalContext();
   const toast = useToast();
 
   const [form, setForm] = useState({
-    username: user ? user.username : '',
-    password: ''
+    email: user ? user.email : '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const CheckAuth = async () => {
-    try {
-      await setAuthHeaders(axios)
-      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`);
-      console.log(response);
-      if (response.status === 200) {
-        router.replace('/find-ride');
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   const submit = async () => {
 
@@ -43,23 +29,22 @@ const ForgotPassword = () => {
 
     try {
 
-      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, form, { withCredentials: true });
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/forgetpassword`, form, { withCredentials: true });
 
       if (response.status === 200) {
 
-        setUser(response.data.data);
-        setIsAuthenticated(true);
+        setUser({email: form.email});
 
-        toast.show("Successfully Logged In", {
+        toast.show("Password reset OTP sent to your email", {
           type: "success",
-          duration: 4000,
+          duration: 6000,
           offset: 30,
           animationType: "slide-in",
         });
 
-        await saveTokensFromCookies(response);
+        router.replace('/reset-password');
       }
-      else {
+      else{
         throw new Error(response);
       }
 
@@ -80,56 +65,30 @@ const ForgotPassword = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, height: '100%' }}>
-      <ScrollView>
 
         <View style={styles.container}>
+          
 
-          <Text style={styles.textM}>Your email and password</Text>
+          <Text style={styles.textM}>Enter Registered Email</Text>
 
           <FormField
-            title="Email/Username"
-            placeholder="Enter your email/username"
-            value={form.username}
-            handleChangeText={(e) => setForm({ ...form, username: e })}
+            title=""
+            placeholder="Enter your email"
+            value={form.email}
+            handleChangeText={(e) => setForm({ ...form, email: e })}
             keyboardType="email-address"
             secureTextEntry={false}
-            otherStyles={{ marginBottom: 20 }}
-          />
-
-          <FormField
-            title="Password"
-            placeholder="Enter your password"
-            value={form.password}
-            handleChangeText={(e) => setForm({ ...form, password: e })}
-            secureTextEntry={true}
-            otherStyles={{ marginBottom: 20 }}
-          />
-
-          <Link href="./forgot-password"
-                style={{fontFamily: 'Poppins-Regular',fontSize: 14, color: 'red', textAlign: 'center'}}
-                >Forgotten password?</Link>
+            otherStyles={{ marginTop: 0 }}
+            />
 
           <CustomButton
-            textContent="Sign In"
+            textContent="Reset Password"
             handlePress={submit}
-            containerStyles={{ marginTop: 7 }}
-            isLoading={isSubmitting} />
-          <CustomButton
-            textContent="check auth"
-            handlePress={CheckAuth}
-            containerStyles={{ marginTop: 7 }}
+            containerStyles={{ marginTop: 15,marginBottom: 7 }}
             isLoading={isSubmitting} />
 
-          <View style={styles.forgot}>
-            <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: 'grey' }}>Don't have an account?</Text>
-            <Link href="./sign-up"
-              style={{ fontFamily: 'Poppins-SemiBold', color: 'red', fontSize: 16 }}>
-              Sign Up
-            </Link>
-          </View>
         </View>
 
-      </ScrollView>
     </SafeAreaView>
   )
 }
@@ -137,17 +96,15 @@ const ForgotPassword = () => {
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
-    minHeight: vh(88),
+    minHeight: vh(100),
     width: '100vw',
     padding: 15,
     margin: 6,
   },
   textM: {
     fontFamily: 'Poppins-SemiBold',
-    fontSize: 22,
-    fontWeight: '500',
-    marginBottom: 10,
-    marginTop: 10,
+    fontSize: 20,
+    marginBottom: 5,
   },
   forgot: {
     // alignItems: 'center',
