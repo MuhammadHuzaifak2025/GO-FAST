@@ -9,6 +9,8 @@ import keygen from "keygen";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from 'otp-generator'
+// var MailChecker = require('mailchecker');
+import MailChecker from 'mailchecker';
 
 const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 
@@ -25,6 +27,33 @@ const Signup = asynchandler(async (req, res, next) => {
       return next(new ApiError(400, "User already exists with same email or username"));
     }
 
+    const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+
+    if (!MailChecker.isValid(email)) {
+      return next(new ApiError(400, "Invalid Email Address"));
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      auth: {
+        user: process.env.GMAIL_USERNAME,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
+
+    const info = transporter.sendMail({
+      from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
+      to: email,
+      subject: "Verify User",
+      text: `Your New Otp key is ${plainKey}. Enter your key to reset your password.`,
+    });
+
+    if (!info) {
+      return next(new ApiError(500, "Email not sent"));
+    }
+    console.log(plainKey);
     const newuser = await user.create({
       username: username,
       email: email,
@@ -58,30 +87,6 @@ const Signup = asynchandler(async (req, res, next) => {
         secure: true,
         maxAge: 3600 * 1000,
       });
-
-      const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
-
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        host: "smtp.gmail.com",
-        port: 587,
-        auth: {
-          user: process.env.GMAIL_USERNAME,
-          pass: process.env.GMAIL_PASSWORD,
-        },
-      });
-
-      const info = transporter.sendMail({
-        from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
-        to: email,
-        subject: "Verify User",
-        text: `Your New Otp key is ${plainKey}. Enter your key to reset your password.`,
-      });
-
-      if (!info) {
-        return next(new ApiError(500, "Email not sent"));
-      }
-      console.log(plainKey);
       const updateduser = await user.update(
         {
           otp: await bcrypt.hash(plainKey, saltRounds),

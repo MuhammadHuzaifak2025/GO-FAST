@@ -8,8 +8,11 @@ import { useToast } from "react-native-toast-notifications";
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
 const SignUp = () => {
+
+  const {isLoading, user, setUser} = useGlobalContext();
 
   const [form, setForm] = useState({
     username: '',
@@ -23,7 +26,6 @@ const SignUp = () => {
   const toast = useToast();
 
   const submit = async () => {
-    // return router.replace('/verify-email'); 
 
     setIsSubmitting(true)
     
@@ -33,19 +35,22 @@ const SignUp = () => {
           console.log(response.data);
 
           if(response.status === 201){
-            console.log(response);
-        toast.show("Successfully created account, please verify email", {
-            type: "success",
-            duration: 4000,
-            offset: 30,
-            animationType: "slide-in",
-          });
 
-        
-
-        }
+            toast.show("Successfully created account, please verify email", {
+              type: "success",
+              duration: 4000,
+              offset: 30,
+              animationType: "slide-in",
+            });
+            
+            setUser(response.data.data);
+            router.push('/verify-email');
+          }
+          else {
+            throw new Error(response);
+          }
         } catch (error){
-          alert(error);
+
           toast.show(error.response.data.message, {
             type: "danger",
             duration: 4000,
@@ -53,11 +58,12 @@ const SignUp = () => {
             animationType: "slide-in",
           });
 
-          console.log(error);
+          console.log(error.response.data.message);
+        } finally {
+          
           setIsSubmitting(false);
-          return;
-    }
-    
+        }
+        
   }
 
   return (
@@ -89,7 +95,6 @@ const SignUp = () => {
           <FormField
             title="Phone Number"
             placeholder="Enter your phone number"
-            keyboardType="numeric"
             value={form.phone}
             handleChangeText = {(e) => setForm({...form, phone: e})}
             secureTextEntry={false}
