@@ -12,7 +12,7 @@ import { useToast } from "react-native-toast-notifications";
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { saveTokensFromCookies, setAuthHeaders } from '../../utils/expo-store';
 
-const SignIn = () => {
+const ForgotPassword = () => {
 
   const { user, setUser, isAuthenticated, setIsAuthenticated } = useGlobalContext();
   const toast = useToast();
@@ -158,4 +158,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default SignIn
+export default ForgotPassword
