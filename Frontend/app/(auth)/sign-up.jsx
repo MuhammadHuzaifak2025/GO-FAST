@@ -31,12 +31,21 @@ const SignUp = () => {
     
     try{
       console.log(process.env.EXPO_PUBLIC_BACKEND_URL);
-          const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}gofast/api/user`, form, {withCredentials: true} );
-          console.log(response.data);
-
-          if(response.status === 201){
-
-            toast.show("Successfully created account, please verify email", {
+          if(!form.username || !form.email || !form.password || !form.address || !form.phone){
+            toast.show('Please fill all fields', {
+              type: "danger",
+              duration: 4000,
+              offset: 30,
+              animationType: "slide-in",
+            });
+            return;
+          }
+            const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`, form, {withCredentials: true} );
+            console.log(response.data);
+            
+            if(response.status === 201){
+              
+              toast.show("Successfully created account, please verify email", {
               type: "success",
               duration: 4000,
               offset: 30,
@@ -96,6 +105,7 @@ const SignUp = () => {
             title="Phone Number"
             placeholder="Enter your phone number"
             value={form.phone}
+            keyboardType="phone-pad"
             handleChangeText = {(e) => setForm({...form, phone: e})}
             secureTextEntry={false}
             otherStyles={{marginBottom: 20}}
@@ -112,6 +122,7 @@ const SignUp = () => {
           <FormField
             title="Password"
             placeholder="Enter your password"
+            keyboardType="password"
             value={form.password}
             handleChangeText = {(e) => setForm({...form, password: e})}
             secureTextEntry={true}

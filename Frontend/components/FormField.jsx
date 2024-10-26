@@ -13,7 +13,7 @@ const FormField = ({title, value, placeholder, handleChangeText, otherStyles, se
       <Text style={styles.text}>{title}</Text>
 
       <View style={[styles.cont1, , {borderColor: isFocused ? 'red' : 'tomato'}]}>
-        <TextInput
+        <TextInput       
           style={styles.inputS}
           value={value}
           keyboardType={props.keyboardType}

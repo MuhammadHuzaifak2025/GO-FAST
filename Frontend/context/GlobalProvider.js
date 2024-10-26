@@ -15,7 +15,7 @@ const GlobalProvider = ({ children }) => {
     const checkUser = async () => {
       setIsLoading(true);
       try{
-        const response = await axios.get(`${process.env.ip}/gofast/api/user`, {withCredentials: true} );
+        const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`, {withCredentials: true} );
 
         if(response.status === 200){
           setUser(response.data);

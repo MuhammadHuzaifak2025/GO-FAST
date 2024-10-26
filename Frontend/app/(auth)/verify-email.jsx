@@ -27,7 +27,7 @@ const VerifyEmail = () => {
           let verification = '';
           verification = otpInput.current.state.otpText.join('');
           
-          const resp = await axios.put(`${process.env.ip}/gofast/api/user/verifyuser`, {email : user.email, key : verification}, {withCredentials: true});
+          const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/verifyuser`, {email : user.email, key : verification}, {withCredentials: true});
           
           if(resp.status === 200){
             toast.show("Successfully Verified account, Please Login", {

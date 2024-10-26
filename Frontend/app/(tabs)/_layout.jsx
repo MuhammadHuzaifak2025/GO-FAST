@@ -62,13 +62,13 @@ const TabsLayout = () => {
         <Tabs.Screen
           name="find-ride"
           options={{
-            title: 'Search',
+            title: 'Find Ride',
             headerShown: false,
             tabBarIcon: ({color, focused}) => (
               <TabIcon
                 icon={icons.search}
                 color={color}
-                name="Search"
+                name="Find Ride"
                 focused={focused}/>
             )
           }}/>
