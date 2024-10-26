@@ -6,8 +6,17 @@ import ApiError from "../utils/ErrorHandling.js";
 
 const AuthenticateToken = async (req, res, next) => {
   try {
-    const token = req.cookies["access-token"];
-    const refresh_token = req.cookies["refresh-token"];
+    let token = req.cookies["access-token"];
+    let refresh_token = req.cookies["refresh-token"];
+
+    if (!token) {
+      token = req.headers["authorization"]?.split(' ')[1];
+      console.log(token);
+    }
+    if (!refresh_token) {
+      refresh_token = req.headers["x-refresh-token"];
+      console.log(refresh_token);
+    }
 
     if (!token) {
       if (!refresh_token) {
@@ -55,7 +64,7 @@ const AuthenticateToken = async (req, res, next) => {
       next();
     }
   } catch (error) {
-    return res.status(500).json(new ApiError(500, {},error.message));
+    return res.status(500).json(new ApiError(500, {}, error.message));
     // return res.status(500).json({ message: error.message });
   }
 };

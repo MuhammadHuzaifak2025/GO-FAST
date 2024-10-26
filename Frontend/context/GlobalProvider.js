@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { Redirect } from "expo-router";
+import { setAuthHeaders } from "../utils/expo-store";
 const GlobalContext = createContext();
 
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -15,6 +16,7 @@ const GlobalProvider = ({ children }) => {
     const checkUser = async () => {
       setIsLoading(true);
       try{
+        await setAuthHeaders(axios)
         const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`, {withCredentials: true} );
 
         if(response.status === 200){
