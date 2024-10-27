@@ -30,7 +30,7 @@ const SignIn = () => {
 
     try {
 
-      if(!form.username || !form.password){
+      if (!form.username || !form.password) {
         toast.show('Please fill all fields', {
           type: "danger",
           duration: 4000,
@@ -40,7 +40,7 @@ const SignIn = () => {
         return;
       }
 
-      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, form, { withCredentials: true });
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, { username: form.username, password: form.password }, { withCredentials: true });
 
       if (response.status === 200) {
 
@@ -105,8 +105,8 @@ const SignIn = () => {
           />
 
           <Link href="./forgot-password"
-                style={{fontFamily: 'Poppins-Regular',fontSize: 14, color: 'red', textAlign: 'center'}}
-                >Forgotten password?</Link>
+            style={{ fontFamily: 'Poppins-Regular', fontSize: 14, color: 'red', textAlign: 'center' }}
+          >Forgotten password?</Link>
 
           <CustomButton
             textContent="Sign In"

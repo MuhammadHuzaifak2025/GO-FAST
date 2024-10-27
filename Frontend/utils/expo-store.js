@@ -22,7 +22,19 @@ const saveTokensFromCookies = async (response) => {
     if (accessToken) {
         await saveToken('accessToken', accessToken.split(';')[0].split('=')[1]);
     }
-    console.log(refreshToken, accessToken);
+    // console.log(refreshToken, accessToken);
+};
+
+const resetSecureStore = async (axios) => {
+    try {
+        delete axios.defaults.headers.common['Authorization'];
+        delete axios.defaults.headers.common['x-refresh-token'];
+        await SecureStore.deleteItemAsync('accessToken');
+        await SecureStore.deleteItemAsync('refreshToken');
+        // console.log("Secure store reset successfully.");
+    } catch (error) {
+        // console.error("Failed to reset secure store:", error);
+    }
 };
 const setAuthHeaders = async (axios) => {
     const accessToken = await getToken('accessToken');
@@ -30,6 +42,6 @@ const setAuthHeaders = async (axios) => {
 
     axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     axios.defaults.headers.common['x-refresh-token'] = refreshToken;
-    console.log(axios.defaults.headers.common);
+    // console.log(axios.defaults.headers.common);
 };
-export { saveToken, getToken, saveTokensFromCookies, setAuthHeaders };
+export { saveToken, getToken, saveTokensFromCookies, setAuthHeaders, resetSecureStore };

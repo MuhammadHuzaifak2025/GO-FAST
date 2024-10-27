@@ -4,7 +4,7 @@ import sequelize from "../database/index.js";
 
 const syncModels = async () => {
   try {
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ force: false });
     console.log("Models synchronized successfully.");
   } catch (error) {
     console.error("Error synchronizing models:", error);

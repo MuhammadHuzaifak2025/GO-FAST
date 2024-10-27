@@ -29,11 +29,11 @@ const ForgotPassword = () => {
 
     try {
 
-      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/forgetpassword`, form, { withCredentials: true });
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/forgetpassword`, { email: form.email }, { withCredentials: true });
 
       if (response.status === 200) {
 
-        setUser({email: form.email});
+        setUser({ email: form.email });
 
         toast.show("Password reset OTP sent to your email", {
           type: "success",
@@ -44,7 +44,7 @@ const ForgotPassword = () => {
 
         router.replace('/reset-password');
       }
-      else{
+      else {
         throw new Error(response);
       }
 
@@ -66,28 +66,28 @@ const ForgotPassword = () => {
   return (
     <SafeAreaView style={{ flex: 1, height: '100%' }}>
 
-        <View style={styles.container}>
-          
+      <View style={styles.container}>
 
-          <Text style={styles.textM}>Enter Registered Email</Text>
 
-          <FormField
-            title=""
-            placeholder="Enter your email"
-            value={form.email}
-            handleChangeText={(e) => setForm({ ...form, email: e })}
-            keyboardType="email-address"
-            secureTextEntry={false}
-            otherStyles={{ marginTop: 0 }}
-            />
+        <Text style={styles.textM}>Enter Registered Email</Text>
 
-          <CustomButton
-            textContent="Reset Password"
-            handlePress={submit}
-            containerStyles={{ marginTop: 15,marginBottom: 7 }}
-            isLoading={isSubmitting} />
+        <FormField
+          title=""
+          placeholder="Enter your email"
+          value={form.email}
+          handleChangeText={(e) => setForm({ ...form, email: e })}
+          keyboardType="email-address"
+          secureTextEntry={false}
+          otherStyles={{ marginTop: 0 }}
+        />
 
-        </View>
+        <CustomButton
+          textContent="Reset Password"
+          handlePress={submit}
+          containerStyles={{ marginTop: 15, marginBottom: 7 }}
+          isLoading={isSubmitting} />
+
+      </View>
 
     </SafeAreaView>
   )

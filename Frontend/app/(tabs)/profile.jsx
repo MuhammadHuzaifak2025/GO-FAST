@@ -10,7 +10,7 @@ import { Link, Redirect, router } from 'expo-router';
 import { useToast } from "react-native-toast-notifications";
 
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { saveTokensFromCookies, setAuthHeaders } from '../../utils/expo-store';
+import { resetSecureStore, saveTokensFromCookies, setAuthHeaders } from '../../utils/expo-store';
 
 const Profile = () => {
 
@@ -30,9 +30,8 @@ const Profile = () => {
     setIsLogOut(false)
 
     try {
-
-      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/logout`,{}, { withCredentials: true });
-
+      await setAuthHeaders(axios);
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/logout`, {}, { withCredentials: true });
       if (response.status === 200) {
 
         setUser(null);
@@ -45,7 +44,8 @@ const Profile = () => {
           animationType: "slide-in",
         });
 
-        await saveTokensFromCookies(response);
+        // await saveTokensFromCookies(response);
+        await resetSecureStore(axios);
         // router.dismissAll();
         router.replace('/');
       }
@@ -54,14 +54,14 @@ const Profile = () => {
       }
 
     } catch (error) {
+      console.log(error);
 
-      toast.show(error.response.data.message, {
+      toast.show(error?.response?.data?.message, {
         type: "danger",
         duration: 4000,
         offset: 30,
         animationType: "slide-in",
       });
-      console.log(error.response.data.message);
     }
 
     setIsLogOut(false)
@@ -69,7 +69,7 @@ const Profile = () => {
   }
 
   return (
-    <SafeAreaView style={{justifyContent: 'center', alignItems: 'center', height: '100%'}}>
+    <SafeAreaView style={{ justifyContent: 'center', alignItems: 'center', height: '100%' }}>
       <CustomButton
         textContent="Sign Out"
         handlePress={handleLogOut}

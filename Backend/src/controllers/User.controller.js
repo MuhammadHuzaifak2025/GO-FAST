@@ -208,7 +208,9 @@ const signin = asynchandler(async (req, res, next) => {
         "Please fill all the fields required feilds are email and password"
       ));
     }
-    const userexsist = await user.findOne({ where: { username } });
+    let userexsist = await user.findOne({ where: { username } });
+    if (!userexsist) userexsist = await user.findOne({ where: { username } });
+    console.log(username);
     if (!userexsist) {
       return next(new ApiError(400, "User does not exists"));
 
@@ -379,23 +381,25 @@ const forgetpassword = asynchandler(async (req, res, next) => {
 });
 
 const resetpassword = asynchandler(async (req, res, next) => {
-  const { email, key, password } = req.body;
 
-  if (!email || !key || !password) {
-    return next(
-      new ApiError(400, "Please fill all the fields: email, key, password")
-    );
-  }
+
 
   try {
+    const { email, key, password } = req.body;
+
+    if (!email || !key || !password) {
+      return next(
+        new ApiError(400, "Please fill all the fields: email, key, password")
+      );
+    }
     const userexsist = await user.findOne({ where: { email } });
     if (!userexsist) {
       return next(new ApiError(400, "User does not exist"));
     }
-
-    const isKeyCorrect = await bcrypt.compare(key, userexsist.password);
+    console.log(userexsist);
+    const isKeyCorrect = await bcrypt.compare(key, userexsist.otp);
     if (!isKeyCorrect) {
-      return next(new ApiError(401, "Incorrect Key"));
+      return next(new ApiError(403, "Incorrect Key"));
     }
 
     const password_updated = await user.update(

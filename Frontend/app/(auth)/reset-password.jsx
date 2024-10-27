@@ -28,7 +28,7 @@ const VerifyEmail = () => {
           let verification = '';
           verification = otpInput.current.state.otpText.join('');
           
-          const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resetpassword`, {email : user.email, key : verification, password : form.password}, {withCredentials: true});
+          const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resetpassword`, {email : user.email, key : verification, password : form.password}, {withCredentials: true});
 
           if(resp.status === 200){
             toast.show("Successfully Changed Password, Please Login", {
