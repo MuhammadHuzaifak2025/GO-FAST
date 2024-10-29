@@ -18,6 +18,7 @@ const rides = [
   { id: '2', from: 'Station', to: 'City Center', time: '09:00 AM', username: 'Maria' },
   { id: '3', from: 'Airport', to: 'Hotel', time: '07:15 PM', username: 'John' },
   { id: '4', from: 'Library', to: 'Park', time: '06:00 PM', username: 'Sara' },
+  { id: '5', from: 'Library', to: 'Park', time: '06:00 PM', username: 'Sara' },
 ];
 
 const RideItem = ({ from, to, time, username }) => (

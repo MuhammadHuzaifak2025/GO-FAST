@@ -169,45 +169,45 @@ const getuser = asynchandler(async (req, res, next) => {
 const signin = asynchandler(async (req, res, next) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) {
-      const token = req.cookies["access-token"];
-      const refresh_token = req.cookies["refresh-token"];
+    // if (!username || !password) {
+    //   const token = req.cookies["access-token"];
+    //   const refresh_token = req.cookies["refresh-token"];
 
-      if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await user.findOne({ where: { user_id: decoded.user_id } });
-        if (req)
-          res
-            .status(200)
-            .json(new ApiResponse(200, req.user, "User Logged In"));
-      }
-      if (refresh_token) {
-        console.log("refresh token");
-        const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
-        const userexist = await user.findOne({ where: { user_id: decoded.user_id } });
-        if (!userexist || userexist.refreshtoken !== refresh_token) {
-          res.clearCookie["refresh-token"];
-          return next(new ApiError(401, "Unauthorized- User Does Not Exsist"));
-        }
-        const [newAccessToken] = GenerateToken(userexist);
-        if (!newAccessToken) {
-          return next(new ApiError(500, "Token Generation Failed"));
-        }
-        res.cookie("access-token", newAccessToken, {
-          httpOnly: true,
-          secure: true,
-          maxAge: 3600 * 1000,
-        });
-        req.user = userexist;
-        res
-          .status(200)
-          .json(new ApiResponse(200, req.user, "User Logged In with refresh"));
-      }
-      return next(new ApiError(
-        400,
-        "Please fill all the fields required feilds are email and password"
-      ));
-    }
+    //   if (token) {
+    //     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    //     req.user = await user.findOne({ where: { user_id: decoded.user_id } });
+    //     if (req)
+    //       res
+    //         .status(200)
+    //         .json(new ApiResponse(200, req.user, "User Logged In"));
+    //   }
+    //   if (refresh_token) {
+    //     console.log("refresh token");
+    //     const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
+    //     const userexist = await user.findOne({ where: { user_id: decoded.user_id } });
+    //     if (!userexist || userexist.refreshtoken !== refresh_token) {
+    //       res.clearCookie["refresh-token"];
+    //       return next(new ApiError(401, "Unauthorized- User Does Not Exsist"));
+    //     }
+    //     const [newAccessToken] = GenerateToken(userexist);
+    //     if (!newAccessToken) {
+    //       return next(new ApiError(500, "Token Generation Failed"));
+    //     }
+    //     res.cookie("access-token", newAccessToken, {
+    //       httpOnly: true,
+    //       secure: true,
+    //       maxAge: 3600 * 1000,
+    //     });
+    //     req.user = userexist;
+    //     res
+    //       .status(200)
+    //       .json(new ApiResponse(200, req.user, "User Logged In with refresh"));
+    //   }
+    //   return next(new ApiError(
+    //     400,
+    //     "Please fill all the fields required feilds are email and password"
+    //   ));
+    // }
     let userexsist = await user.findOne({ where: { username } });
     if (!userexsist) userexsist = await user.findOne({ where: { email: username } });
     console.log(username);

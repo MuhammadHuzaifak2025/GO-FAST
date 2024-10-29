@@ -11,9 +11,11 @@ import { useToast } from "react-native-toast-notifications";
 
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { saveTokensFromCookies, setAuthHeaders } from '../../utils/expo-store';
+import AnimatedSpinner from '../../components/loader/AnimatedSpinner';
 
 const SignIn = () => {
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [spinnerState, setSpinnerState] = useState();
   const { user, setUser, isAuthenticated, setIsAuthenticated } = useGlobalContext();
   const toast = useToast();
 
@@ -23,10 +25,11 @@ const SignIn = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  
   const submit = async () => {
+    setSpinnerState('spinning');
 
-    setIsSubmitting(false)
+    setIsSubmitting(true)
 
     try {
 
@@ -43,7 +46,7 @@ const SignIn = () => {
       const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, { username: form.username, password: form.password }, { withCredentials: true });
 
       if (response.status === 200) {
-
+        setSpinnerState('success');
         setUser(response.data.data);
         setIsAuthenticated(true);
 
@@ -63,7 +66,7 @@ const SignIn = () => {
       }
 
     } catch (error) {
-
+      setSpinnerState('failure')
       toast.show(error.response.data.message, {
         type: "danger",
         duration: 4000,
@@ -82,6 +85,14 @@ const SignIn = () => {
       <ScrollView>
 
         <View style={styles.container}>
+          <AnimatedSpinner
+            size={100}
+            strokeWidth={6}
+            spinnerColor="#3498db"
+            successColor="#2ecc71"
+            failureColor="#e74c3c"
+            state={spinnerState}
+          />
 
           <Text style={styles.textM}>Your email and password</Text>
 
