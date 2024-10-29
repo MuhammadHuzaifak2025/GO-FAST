@@ -4,11 +4,18 @@ import cors from "cors";
 import {
   ErrorHandlerMiddleWare,
   ServerErrorMiddleWare,
-} from "./middlewares/globalerror.js";
+} from "./middlewares/GlobalError.js";
 
 const app = express();
-const allowedOrigins = ['http://192.168.10.3:8081', 'http://localhost:8081', 'exp://192.168.10.3:8081'];
-
+const allowedOrigins = [
+  // https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev/
+  'https://dkfmdoe-anonymous-8081.exp.direct',
+  'https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev',
+  'https://disreputable-cauldron-p4xrx6j446gh94r7-5432.app.github.dev',
+  'https://disreputable-cauldron-p4xrx6j446gh94r7-5005.app.github.dev',
+  'https://disreputable-cauldron-p4xrx6j446gh94r7-4040.app.github.dev',
+  'https://disreputable-cauldron-p4xrx6j446gh94r7-5000.app.github.dev', // Add this line
+];
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -21,6 +28,8 @@ app.use(
     credentials: true,
   })
 );
+// app.use(cors());
+app.options('*', cors());
 
 app.use(
   express.json({
