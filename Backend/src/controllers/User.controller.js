@@ -209,7 +209,7 @@ const signin = asynchandler(async (req, res, next) => {
       ));
     }
     let userexsist = await user.findOne({ where: { username } });
-    if (!userexsist) userexsist = await user.findOne({ where: { username } });
+    if (!userexsist) userexsist = await user.findOne({ where: { email: username } });
     console.log(username);
     if (!userexsist) {
       return next(new ApiError(400, "User does not exists"));
