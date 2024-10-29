@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
-import { Redirect, router } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { setAuthHeaders, resetSecureStore } from "../utils/expo-store";
 
 const GlobalContext = createContext();
@@ -11,22 +11,33 @@ const GlobalProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false); // New state to track initial auth check
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  const router = useRouter(); // Use router from `useRouter` hook
 
   useEffect(() => {
-    // Set up an interceptor to handle token expiration
     const interceptor = axios.interceptors.response.use(
       response => response,
       async (error) => {
-        if ((error.response && error.response.status === 401) || error.response.status === 500) {
+        if (error.response && (error.response.status === 401 || error.response.status === 500)) {
           await resetSecureStore(axios);
           setIsAuthenticated(false);
-          if (router.currentPath !== '/')
-            router.replace('/'); // Redirects to login on unauthorized access
+          if (router.pathname !== '/') {
+            router.replace('/'); // Redirect to login on unauthorized access
+          }
         }
         return Promise.reject(error);
       }
+
     );
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+
+  }, [axios])
+
+  useEffect(() => {
+    // Set up an interceptor to handle token expiration
+
 
     const checkUser = async () => {
       setIsLoading(true);
@@ -37,7 +48,7 @@ const GlobalProvider = ({ children }) => {
         if (response.status === 200) {
           setUser(response.data);
           setIsAuthenticated(true);
-          if (router.currentPath !== '/find-ride') { // Only redirect if not already on `/find-ride`
+          if (router.pathname !== '/find-ride') { // Only redirect if not already on `/find-ride`
             router.replace('/find-ride');
           }
         } else {
@@ -46,7 +57,7 @@ const GlobalProvider = ({ children }) => {
       } catch (error) {
         console.log(error);
         setIsAuthenticated(false);
-        if (router.currentPath !== '/') { // Only redirect if not already on `/`
+        if (router.pathname !== '/') { // Only redirect if not already on `/`
           router.replace('/');
         }
       } finally {
@@ -55,15 +66,12 @@ const GlobalProvider = ({ children }) => {
       }
     };
 
-    if (!hasCheckedAuth) { // Check user only once during initial load
+    if (!hasCheckedAuth) {
       checkUser();
     }
 
     // Cleanup the interceptor on component unmount
-    return () => {
-      axios.interceptors.response.eject(interceptor);
-    };
-  }, [hasCheckedAuth]);
+  }, [hasCheckedAuth, router]);
 
   return (
     <GlobalContext.Provider value={{ user, setUser, isAuthenticated, setIsAuthenticated, isLoading }}>

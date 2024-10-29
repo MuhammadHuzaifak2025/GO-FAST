@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
-import axios from 'axios'
+import { vw, vh } from 'react-native-expo-viewport-units';
+import axios from 'axios';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
-import { Link, Redirect, router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useToast } from "react-native-toast-notifications";
-
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { saveTokensFromCookies, setAuthHeaders } from '../../utils/expo-store';
+import { saveTokensFromCookies } from '../../utils/expo-store';
 import AnimatedSpinner from '../../components/loader/AnimatedSpinner';
 
 const SignIn = () => {
@@ -24,15 +22,14 @@ const SignIn = () => {
     password: ''
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  const submit = async () => {
-    setSpinnerState('spinning');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    setIsSubmitting(true)
+  const submit = async () => {
+    setModalVisible(true);  // Show modal with spinner
+    setSpinnerState('spinning');
+    setIsSubmitting(true);
 
     try {
-
       if (!form.username || !form.password) {
         toast.show('Please fill all fields', {
           type: "danger",
@@ -40,11 +37,11 @@ const SignIn = () => {
           offset: 30,
           animationType: "slide-in",
         });
+        setModalVisible(false);
         return;
       }
 
       const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, { username: form.username, password: form.password }, { withCredentials: true });
-
       if (response.status === 200) {
         setSpinnerState('success');
         setUser(response.data.data);
@@ -60,13 +57,11 @@ const SignIn = () => {
         await saveTokensFromCookies(response);
         router.dismissAll();
         router.replace('/find-ride');
-      }
-      else {
+      } else {
         throw new Error(response);
       }
-
     } catch (error) {
-      setSpinnerState('failure')
+      setSpinnerState('failure');
       toast.show(error.response.data.message, {
         type: "danger",
         duration: 4000,
@@ -74,25 +69,29 @@ const SignIn = () => {
         animationType: "slide-in",
       });
       console.log(error.response.data.message);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setModalVisible(false), 1000);  // Hide modal after animation
     }
-
-    setIsSubmitting(false)
-
-  }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, height: '100%' }}>
       <ScrollView>
-
         <View style={styles.container}>
-          <AnimatedSpinner
-            size={100}
-            strokeWidth={6}
-            spinnerColor="#3498db"
-            successColor="#2ecc71"
-            failureColor="#e74c3c"
-            state={spinnerState}
-          />
+          {/* Modal for Animated Spinner */}
+          <Modal visible={modalVisible} transparent animationType="blur">
+            <View style={styles.modalContainer}>
+              <AnimatedSpinner
+                size={100}
+                strokeWidth={6}
+                spinnerColor="#3498db"
+                successColor="#2ecc71"
+                failureColor="#e74c3c"
+                state={spinnerState}
+              />
+            </View>
+          </Modal>
 
           <Text style={styles.textM}>Your email and password</Text>
 
@@ -123,7 +122,8 @@ const SignIn = () => {
             textContent="Sign In"
             handlePress={submit}
             containerStyles={{ marginTop: 7 }}
-            isLoading={isSubmitting} />
+            isLoading={isSubmitting}
+          />
 
           <View style={styles.forgot}>
             <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: 'grey' }}>Don't have an account?</Text>
@@ -133,10 +133,9 @@ const SignIn = () => {
             </Link>
           </View>
         </View>
-
       </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -155,12 +154,18 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   forgot: {
-    // alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 15,
     flexDirection: 'row',
     gap: 2,
-  }
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
 });
 
-export default SignIn
+export default SignIn;

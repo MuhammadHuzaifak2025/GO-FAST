@@ -10,7 +10,7 @@ const travelHistory = [
 
 const RideCard = ({ from, to, date, time }) => (
   <LinearGradient
-    colors={['#ff6347', 'tomato']}
+    colors={['#ff6347', 'black']}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 1 }}
     style={styles.rideCard}
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'tomato',
+    color: 'black',
     textAlign: 'center',
     marginBottom: 20,
   },

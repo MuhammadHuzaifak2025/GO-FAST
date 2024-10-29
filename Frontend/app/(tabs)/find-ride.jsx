@@ -23,7 +23,7 @@ const rides = [
 
 const RideItem = ({ from, to, time, username }) => (
   <LinearGradient
-    colors={['tomato', '#ff6347']}
+    colors={['black', '#ff6347']}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 1 }}
     style={styles.rideItem}
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     fontSize: 26,
     fontWeight: 'bold',
-    color: 'tomato',
+    color: 'black',
     textAlign: 'center',
     marginVertical: 20,
   },
