@@ -25,6 +25,7 @@ const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submit = async () => {
+
     setModalVisible(true);  // Show modal with spinner
     setSpinnerState('spinning');
     setIsSubmitting(true);
@@ -33,16 +34,19 @@ const SignIn = () => {
       if (!form.username || !form.password) {
         toast.show('Please fill all fields', {
           type: "danger",
-          duration: 4000,
+          duration: 5000,
           offset: 30,
           animationType: "slide-in",
         });
         setModalVisible(false);
+        setSpinnerState('');
         return;
       }
 
       const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, { username: form.username, password: form.password }, { withCredentials: true });
+
       if (response.status === 200) {
+
         setSpinnerState('success');
         setUser(response.data.data);
         setIsAuthenticated(true);
@@ -61,17 +65,21 @@ const SignIn = () => {
         throw new Error(response);
       }
     } catch (error) {
+
       setSpinnerState('failure');
+
       toast.show(error.response.data.message, {
         type: "danger",
-        duration: 4000,
+        duration: 6000,
         offset: 30,
         animationType: "slide-in",
       });
-      console.log(error.response.data.message);
+
     } finally {
       setIsSubmitting(false);
-      setTimeout(() => setModalVisible(false), 1000);  // Hide modal after animation
+      setTimeout(() => {setModalVisible(false);
+                        setSpinnerState('');
+      }, 1000);  // Hide modal after animation
     }
   };
 
@@ -80,14 +88,14 @@ const SignIn = () => {
       <ScrollView>
         <View style={styles.container}>
           {/* Modal for Animated Spinner */}
-          <Modal visible={modalVisible} transparent animationType="blur">
+          <Modal visible={modalVisible} transparent animationType="fade">
             <View style={styles.modalContainer}>
               <AnimatedSpinner
                 size={100}
                 strokeWidth={6}
                 spinnerColor="#3498db"
                 successColor="#2ecc71"
-                failureColor="#e74c3c"
+                failureColor="red"
                 state={spinnerState}
               />
             </View>

@@ -30,7 +30,6 @@ const SignUp = () => {
     setIsSubmitting(true)
     
     try{
-      console.log(process.env.EXPO_PUBLIC_BACKEND_URL);
           if(!form.username || !form.email || !form.password || !form.address || !form.phone){
             toast.show('Please fill all fields', {
               type: "danger",
@@ -41,7 +40,6 @@ const SignUp = () => {
             return;
           }
             const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`, form, {withCredentials: true} );
-            console.log(response.data);
             
             if(response.status === 201){
               
@@ -67,7 +65,6 @@ const SignUp = () => {
             animationType: "slide-in",
           });
 
-          console.log(error.response.data.message);
         } finally {
           
           setIsSubmitting(false);
