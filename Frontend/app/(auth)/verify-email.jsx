@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, Modal } from 'react-native';
 import React, {useRef, useState} from 'react';
 import OTPTextInput from 'react-native-otp-textinput';
 import { StyleSheet } from 'react-native';
@@ -10,74 +10,123 @@ import { link, router } from 'expo-router';
 
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
+import AnimatedSpinner from '../../components/loader/AnimatedSpinner';
 
 const VerifyEmail = () => {
 
     const toast = useToast();
+    const otpInput = useRef(null)
 
     const {user} = useGlobalContext();
-    const otpInput = useRef(null)
+
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [spinnerState, setSpinnerState] = useState();
 
     const submit = async () => {
-        setIsSubmitting(true);
 
+        setIsSubmitting(true);
+        setModalVisible(true);
+        setSpinnerState('spinning');
+        
         try{
-          console.log(user.email);
           let verification = '';
           verification = otpInput.current.state.otpText.join('');
           
-          const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/verifyuser`, {email : user.email, key : verification}, {withCredentials: true});
-          
-          if(resp.status === 200){
-            toast.show("Successfully Verified account, Please Login", {
-                type: "success",
+          if(verification.length !== 6){
+
+            toast.show('Please enter valid OTP', {
+                type: "danger",
                 duration: 4000,
                 offset: 30,
                 animationType: "slide-in",
               });
-            
-            router.replace('/sign-in');
-          }
-        }
-        catch (error){
+            setIsSubmitting(false);
+            setModalVisible(false);
+            return;
 
+          }  
+
+          const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/verifyuser`, {email : user.email, key : verification}, {withCredentials: true});
+
+          if(resp.status === 200){
+
+            setSpinnerState('success');
+
+            toast.show("Successfully Verified account, Please Login", {
+                type: "success",
+                duration: 6000,
+                offset: 30,
+                animationType: "slide-in",
+              });
+
+              setTimeout(() => {setModalVisible(false);
+                                setSpinnerState('');
+                                router.replace('/sign-in');
+              }, 1000);
+            
+          }
+          else {
+            throw new Error(resp);
+          }
+        } catch (error){
+          
           otpInput.current.clear();
+          setSpinnerState('failure');
           
           toast.show(error.response.data.message, {
             type: "danger",
-            duration: 4000,
+            duration: 6000,
             offset: 30,
             animationType: "slide-in",
           });
 
         }
+        finally {
 
+          setIsSubmitting(false);
+          setTimeout(() => {setModalVisible(false);
+          }, 1000);
+        }
 
-
-        setIsSubmitting(false);
     }
 
     return (
-    <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
 
-        <Text style={styles.title}>Verify Your Email</Text>
+          {/* Modal for Animated Spinner */}
+          <Modal visible={modalVisible} transparent animationType="fade">
+            <View style={styles.modalContainer}>
+              <AnimatedSpinner
+                size={100}
+                strokeWidth={6}
+                spinnerColor="#3498db"
+                successColor="#2ecc71"
+                failureColor="#e74c3c"
+                state={spinnerState}
+                />
+            </View>
+          </Modal>
 
-        <OTPTextInput
-        ref= {otpInput}
-        inputCount={6}
-        containerStyle={styles.otpContainer}
-        textInputStyle={styles.otpInput}
-        />
+          <Text style={styles.title}>Verify Your Email</Text>
+
+          <OTPTextInput
+          ref= {otpInput}
+          inputCount={6}
+          containerStyle={styles.otpContainer}
+          textInputStyle={styles.otpInput}
+          />
 
 
-        <CustomButton
-            textContent= "Submit"
-            handlePress= {submit}
-            containerStyles={{marginTop: 7}}
-            isLoading={isSubmitting}/>
+          <CustomButton
+              textContent= "Submit"
+              handlePress= {submit}
+              containerStyles={{marginTop: 7}}
+              isLoading={isSubmitting}/>
     
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
   );
 };
 
@@ -106,6 +155,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     textAlign: 'center',
     fontSize: 18,
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: '100%',  
+    width: '100%',
   },
 });
 

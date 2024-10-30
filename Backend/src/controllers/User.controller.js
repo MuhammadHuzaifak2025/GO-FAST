@@ -120,7 +120,7 @@ const verifyuser = asynchandler(async (req, res, next) => {
     const result1 = await bcrypt.compare(key, userexsist.otp);
 
     if (!result1)
-      return next(new ApiError(401, "Incorrect Key"));
+      return next(new ApiError(402, "Incorrect Key"));
 
 
     const updateduser = await user.update(
