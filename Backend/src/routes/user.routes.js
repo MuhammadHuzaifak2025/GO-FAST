@@ -11,7 +11,8 @@ import {
   isuseradmin,
   forgetpassword,
   ChangePasword,
-  verifyuser
+  verifyuser,
+  resendotp
 } from "../controllers/User.controller.js";
 import AuthenticateToken from "../middlewares/Authenticate_token.js";
 const UserRouter = Router();
@@ -28,6 +29,6 @@ UserRouter.route("/user/resetpassword").post(resetpassword); // Forgot password
 UserRouter.route("/user/isadmin").get(AuthenticateToken, isuseradmin); // Check if user is admin
 UserRouter.route("/user/changepassword").put(AuthenticateToken, ChangePasword); // Change password
 UserRouter.route("/user/verifyuser").put(verifyuser); // Change password
-
+UserRouter.route("/user/resend-otp").post(resendotp); // Change otp
 
 export default UserRouter;

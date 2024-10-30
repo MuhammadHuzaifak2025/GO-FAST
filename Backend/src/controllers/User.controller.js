@@ -215,6 +215,9 @@ const signin = asynchandler(async (req, res, next) => {
       return next(new ApiError(400, "User does not exists"));
 
     }
+    // if (userexsist.isverified === false) {
+    //   return next(new ApiError(400, "User is not verified"));
+    // }
     const passcorrect = await bcrypt.compare(password, userexsist.password);
     if (!passcorrect) {
       return next(new ApiError(400, "Password is incorrect"));
@@ -458,6 +461,55 @@ const isuseradmin = asynchandler(async (req, res, next) => {
     throw new ApiError(500, error.message);
   }
 });
+const resendotp = asynchandler(async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return next(new ApiError(400, "Please fill all the fields"));
+    }
+
+    const userexsist = await user.findOne({ where: { email } });
+    if (!userexsist) {
+      return next(new ApiError(400, "User does not exist at this Email"));
+    }
+
+    const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      auth: {
+        user: process.env.GMAIL_USERNAME,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
+
+    const info = transporter.sendMail({
+      from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
+      to: email,
+      subject: "Verify User",
+      text: `Your New Otp key is ${plainKey}. Enter your key to reset your password.`,
+    });
+
+    if (!info) {
+      return next(new ApiError(500, "Email not sent"));
+    }
+    console.log(plainKey);
+    const updateduser = await user.update(
+      {
+        otp: await bcrypt.hash(plainKey, saltRounds),
+        isverified: false
+      },
+      { where: { email: email } }
+    );
+    return res.status(200).json(new ApiResponse(200, "A Key has been sent to your email"));
+
+  } catch (error) {
+    return next(new ApiError(500, error.message));
+  }
+})
+
 export {
   updateuser,
   Signup,
@@ -470,5 +522,6 @@ export {
   forgetpassword,
   isuseradmin,
   ChangePasword,
-  verifyuser
+  verifyuser,
+  resendotp
 };
