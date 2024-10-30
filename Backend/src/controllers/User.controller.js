@@ -216,13 +216,18 @@ const signin = asynchandler(async (req, res, next) => {
 
     }
     // if (userexsist.isverified === false) {
-    //   return next(new ApiError(400, "User is not verified"));
+    //   res.status(201).json(new ApiResponse(201, userexsist, "User Logged In"));
     // }
     const passcorrect = await bcrypt.compare(password, userexsist.password);
     if (!passcorrect) {
       return next(new ApiError(400, "Password is incorrect"));
 
     }
+
+    if (userexsist.isverified === false) {
+      res.status(201).json(new ApiResponse(201, userexsist, "User not verified"));
+    }
+
     userexsist.password = undefined;
     const [access_token, refresh_token] = GenerateToken(userexsist);
     if (refresh_token === null || access_token === null) {
@@ -250,9 +255,6 @@ const signin = asynchandler(async (req, res, next) => {
     });
     userexsist.refresh_token = undefined;
 
-    if (userexsist.isverified === false) {
-      return next(new ApiError(400, "User is not verified"));
-    }
 
     res.status(200).json(new ApiResponse(200, userexsist, "User Logged In"));
   } catch (error) {
@@ -463,18 +465,19 @@ const isuseradmin = asynchandler(async (req, res, next) => {
 });
 const resendotp = asynchandler(async (req, res, next) => {
   try {
-    const { email } = req.body;
-    if (!email) {
+    const { username } = req.body;
+    if (!username) {
       return next(new ApiError(400, "Please fill all the fields"));
     }
 
-    const userexsist = await user.findOne({ where: { email } });
+    const userexsist = await user.findOne({ where: { username } });
     if (!userexsist) {
       return next(new ApiError(400, "User does not exist at this Email"));
     }
 
     const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
-
+    console.log(plainKey);
+    
     const transporter = nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
@@ -501,7 +504,7 @@ const resendotp = asynchandler(async (req, res, next) => {
         otp: await bcrypt.hash(plainKey, saltRounds),
         isverified: false
       },
-      { where: { email: email } }
+      { where: { username: username } }
     );
     return res.status(200).json(new ApiResponse(200, "A Key has been sent to your email"));
 

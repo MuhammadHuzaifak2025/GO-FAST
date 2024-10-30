@@ -61,7 +61,27 @@ const SignIn = () => {
         await saveTokensFromCookies(response);
         router.dismissAll();
         router.replace('/find-ride');
-      } else {
+      } 
+      // else if(response.status === 201){
+
+      //   toast.show("Please verify your account", {
+      //     type: "warning",
+      //     duration: 5000,
+      //     offset: 30,
+      //     animationType: "slide-in",
+      //   });
+
+        // const responseVerify = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resend-otp`, { username: form.username }, { withCredentials: true });
+        // if(responseVerify.status === 200) {
+
+        //   setUser(responseVerify.data.data);
+        //   router.replace('/verify-email');
+        // }
+        // else{
+        //   throw new Error(responseVerify);
+        // }
+      // }  
+      else {
         throw new Error(response);
       }
     } catch (error) {
