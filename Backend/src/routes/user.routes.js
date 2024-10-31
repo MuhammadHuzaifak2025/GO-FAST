@@ -17,18 +17,18 @@ import {
 import AuthenticateToken from "../middlewares/Authenticate_token.js";
 const UserRouter = Router();
 
-UserRouter.route("/user").put(AuthenticateToken, updateuser);
 UserRouter.route("/users").get(AuthenticateToken, getalluser);
 UserRouter.route("/user/").get(AuthenticateToken, getuser);
-UserRouter.route("/user").delete(AuthenticateToken, deleteuser);
 UserRouter.route("/user").post(Signup); // Create User
 UserRouter.route("/user/login").post(signin); // Login User
 UserRouter.route("/user/logout").post(AuthenticateToken, signout); // Logout User
-UserRouter.route("/user/forgetpassword").post(forgetpassword); // Forgot password
-UserRouter.route("/user/resetpassword").post(resetpassword); // Forgot password
+UserRouter.route("/user").put(AuthenticateToken, updateuser);
+UserRouter.route("/user").delete(AuthenticateToken, deleteuser);
+UserRouter.route("/user/forgetpassword").post(forgetpassword); 
+UserRouter.route("/user/resetpassword").post(resetpassword); 
 UserRouter.route("/user/isadmin").get(AuthenticateToken, isuseradmin); // Check if user is admin
-UserRouter.route("/user/changepassword").put(AuthenticateToken, ChangePasword); // Change password
-UserRouter.route("/user/verifyuser").put(verifyuser); // Change password
-UserRouter.route("/user/resend-otp").post(resendotp); // Change otp
+UserRouter.route("/user/changepassword").put(AuthenticateToken, ChangePasword); 
+UserRouter.route("/user/verifyuser").put(verifyuser); 
+UserRouter.route("/user/resend-otp").post(resendotp);
 
 export default UserRouter;

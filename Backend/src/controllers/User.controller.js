@@ -43,16 +43,23 @@ const Signup = asynchandler(async (req, res, next) => {
       },
     });
 
-    const info = transporter.sendMail({
-      from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
-      to: email,
-      subject: "Verify User",
-      text: `Your New Otp key is ${plainKey}. Enter your key to reset your password.`,
-    });
+    try {
+      const info = await transporter.sendMail({
+        from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
+        to: email,
+        subject: "Verify User",
+        text: `Your New OTP key is ${plainKey}. Enter your key to reset your password.`,
+      });
 
-    if (!info) {
-      return next(new ApiError(500, "Email not sent"));
+      if (!info) {
+        return next(new ApiError(500, "Email not sent"));
+      }
+
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      return next(new ApiError(500, "Failed to send verification email. Please try again later."));
     }
+
     console.log(plainKey);
     const newuser = await user.create({
       username: username,
@@ -90,7 +97,7 @@ const Signup = asynchandler(async (req, res, next) => {
       const updateduser = await user.update(
         {
           otp: await bcrypt.hash(plainKey, saltRounds),
-          isverified: false
+          is_verified: false
         },
         { where: { email: email } }
       );
@@ -125,7 +132,7 @@ const verifyuser = asynchandler(async (req, res, next) => {
 
     const updateduser = await user.update(
       {
-        isverified: true,
+        is_verified: true,
         otp: null,
       },
       { where: { email: email } }
@@ -215,7 +222,7 @@ const signin = asynchandler(async (req, res, next) => {
       return next(new ApiError(400, "User does not exists"));
 
     }
-    // if (userexsist.isverified === false) {
+    // if (userexsist.is_verified === false) {
     //   res.status(201).json(new ApiResponse(201, userexsist, "User Logged In"));
     // }
     const passcorrect = await bcrypt.compare(password, userexsist.password);
@@ -224,11 +231,11 @@ const signin = asynchandler(async (req, res, next) => {
 
     }
 
-    if (userexsist.isverified === false) {
-      res.status(201).json(new ApiResponse(201, userexsist, "User not verified"));
+    userexsist.password = undefined;
+    if (userexsist.is_verified === false) {
+      return res.status(201).json(new ApiResponse(201, userexsist, "User not verified"));
     }
 
-    userexsist.password = undefined;
     const [access_token, refresh_token] = GenerateToken(userexsist);
     if (refresh_token === null || access_token === null) {
       return next(new ApiError(500, "Token Generation Failed"));
@@ -371,7 +378,7 @@ const forgetpassword = asynchandler(async (req, res, next) => {
       {
         otp: await bcrypt.hash(plainKey, saltRounds),
         forgetpassword: true,
-        isverified: userexsist.isverified ? false : true
+        is_verified: userexsist.is_verified ? false : true
         // password: await bcrypt.hash(plainKey, saltRounds),
       },
       { where: { email: email } }
@@ -465,19 +472,22 @@ const isuseradmin = asynchandler(async (req, res, next) => {
 });
 const resendotp = asynchandler(async (req, res, next) => {
   try {
-    const { username } = req.body;
-    if (!username) {
-      return next(new ApiError(400, "Please fill all the fields"));
+    const { username, email } = req.body;
+    if (!username && !email) {
+      return next(new ApiError(400, "Please fill all the fields: username or email"));
     }
 
-    const userexsist = await user.findOne({ where: { username } });
+    let userexsist = await user.findOne({ where: { username } });
+    userexsist = userexsist ? userexsist : await user.findOne({ where: { email } });
     if (!userexsist) {
       return next(new ApiError(400, "User does not exist at this Email"));
     }
-
+    if (userexsist.is_verified) {
+      return next(new ApiError(400, "User is already verified"));
+    }
     const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
     console.log(plainKey);
-    
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
@@ -488,30 +498,37 @@ const resendotp = asynchandler(async (req, res, next) => {
       },
     });
 
-    const info = transporter.sendMail({
-      from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
-      to: email,
-      subject: "Verify User",
-      text: `Your New Otp key is ${plainKey}. Enter your key to reset your password.`,
-    });
+    try {
+      const info = await transporter.sendMail({
+        from: { address: process.env.GMAIL_USERNAME, username: "GO-FAST" },
+        to: userexsist.email,
+        subject: "Verify Your Account",
+        text: `Your New OTP key is ${plainKey}. Enter your key to reset your password.`,
+      });
 
-    if (!info) {
-      return next(new ApiError(500, "Email not sent"));
+      if (!info) {
+        return next(new ApiError(500, "Email not sent"));
+      }
+
+      const updateduser = await user.update(
+        {
+          otp: await bcrypt.hash(plainKey, saltRounds),
+          is_verified: false
+        },
+        { where: { username: username } }
+      );
+      return res.status(200).json(new ApiResponse(200, "A Key has been sent to your email"));
+
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      return next(new ApiError(500, "Failed to send verification email. Please try again later."));
     }
-    console.log(plainKey);
-    const updateduser = await user.update(
-      {
-        otp: await bcrypt.hash(plainKey, saltRounds),
-        isverified: false
-      },
-      { where: { username: username } }
-    );
-    return res.status(200).json(new ApiResponse(200, "A Key has been sent to your email"));
 
   } catch (error) {
     return next(new ApiError(500, error.message));
   }
-})
+});
+
 
 export {
   updateuser,
