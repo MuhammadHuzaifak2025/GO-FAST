@@ -1,7 +1,7 @@
-import sequelize from "../database/index.js";
+import sequelize from "../database/index.js"
 import { DataTypes, ENUM } from "sequelize";
 import User from "./user.models.js";
-
+import carpool_vehicle from "./carpool_vehicle.models.js";
 const CarpoolRide = sequelize.define(
     "carpool_ride", {
     ride_id: {
@@ -16,7 +16,7 @@ const CarpoolRide = sequelize.define(
     driver: {
         type: DataTypes.INTEGER,
         references: {
-            model: "user",
+            model: User,
             key: "user_id"
         },
         allowNull: false
@@ -24,7 +24,7 @@ const CarpoolRide = sequelize.define(
     vehicle_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: "carpool_vehicle",
+            model: carpool_vehicle,
             key: "vehicle_id"
         },
         allowNull: false
@@ -42,16 +42,6 @@ const CarpoolRide = sequelize.define(
         values: ['available', 'in_progress', 'completed', 'canceled'],
         allowNull: true,
     },
-    passengers: {
-        type: DataTypes.ARRAY(DataTypes.INTEGER),
-        allowNull: true,
-        references: {
-            model: User,
-            key: "user_id"
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
-    }
 });
 
 export default CarpoolRide;
