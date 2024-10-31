@@ -1,4 +1,4 @@
-import sequelize from "../database/index.js";
+import sequelize from "../../database/index.js";
 
 import { DataTypes, ENUM } from "sequelize";
 
@@ -13,30 +13,15 @@ const Route = sequelize.define(
         type: DataTypes.STRING,
         allowNull: false
     },
-    start_point: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    end_point: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    starting_latitude: {
+    longitude: {
         type: DataTypes.DOUBLE,
         allowNull: false
     },
-    starting_longitude: {
+    latitude: {
         type: DataTypes.DOUBLE,
         allowNull: false
     },
-    ending_latitude: {
-        type: DataTypes.DOUBLE,
-        allowNull: false
-    },
-    ending_longitude: {
-        type: DataTypes.DOUBLE,
-        allowNull: false
-    },
+
 
 });
 export default Route;

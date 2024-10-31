@@ -1,5 +1,5 @@
-import sequelize from "../database/index.js";
-import User from "./user.models.js";
+import sequelize from "../../database/index.js";
+import User from "../user.models.js";
 import { DataTypes } from "sequelize";
 
 const carpool_vehicle = sequelize.define(

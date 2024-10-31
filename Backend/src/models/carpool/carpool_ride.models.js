@@ -1,6 +1,6 @@
-import sequelize from "../database/index.js"
+import sequelize from "../../database/index.js"
 import { DataTypes, ENUM } from "sequelize";
-import User from "./user.models.js";
+import User from "../user.models.js";
 import carpool_vehicle from "./carpool_vehicle.models.js";
 const CarpoolRide = sequelize.define(
     "carpool_ride", {
@@ -9,10 +9,7 @@ const CarpoolRide = sequelize.define(
         primaryKey: true,
         autoIncrement: true
     },
-    routes: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
+
     driver: {
         type: DataTypes.INTEGER,
         references: {
@@ -31,6 +28,10 @@ const CarpoolRide = sequelize.define(
     },
     start_time: {
         type: DataTypes.DATE,
+        allowNull: false
+    },
+    seat_available: {
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     fare: {
