@@ -1,13 +1,4 @@
-// import { View, Text } from 'react-native'
-// import React from 'react'
 
-// const FindRide = () => {
-//   return (
-//     <View>
-//       <Text>FindRide</Text>
-//     </View>
-//   )
-// }
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';

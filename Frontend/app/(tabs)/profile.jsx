@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -8,6 +8,8 @@ import { useToast } from 'react-native-toast-notifications';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { resetSecureStore, setAuthHeaders } from '../../utils/expo-store';
 import { router } from 'expo-router';
+
+import CarModal from '../../components/CarModal';
 
 const Profile = () => {
   const { user, setUser, isAuthenticated, setIsAuthenticated } = useGlobalContext();
@@ -18,7 +20,10 @@ const Profile = () => {
     totalDistance: 0,
     savedCarbon: 0,
   });
+
   const [isLogOut, setIsLogOut] = useState(false);
+
+  const [registerCarDisplay, setRegisterCarDisplay] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -57,6 +62,10 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
+
+        <CarModal visible={registerCarDisplay} 
+                  onClose={() => setRegisterCarDisplay(false)} />
+
         <Text style={styles.title}>Profile</Text>
         <View style={styles.userInfo}>
           <Text style={styles.username}>{user?.username}</Text>
@@ -87,6 +96,7 @@ const Profile = () => {
         <View style={styles.optionsContainer}>
           <Text style={styles.optionsTitle}>Account Options</Text>
           <CustomButton textContent="Reset Password" handlePress={() => {}} containerStyles={styles.optionButton} />
+          <CustomButton textContent="Register Car" handlePress={() => {setRegisterCarDisplay(true)}} containerStyles={styles.optionButton} />
           <CustomButton textContent="Sign Out" handlePress={handleLogOut} isLoading={isLogOut} containerStyles={styles.optionButton} />
         </View>
       </ScrollView>
@@ -164,6 +174,15 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     marginVertical: 10,
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: '80%',  
+    width: '100%',
   },
 });
 
