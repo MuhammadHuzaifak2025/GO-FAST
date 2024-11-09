@@ -55,10 +55,10 @@ const CreateRide = asynchandler(async (req, res, next) => {
             }
         }
         const ride = await sequelize.query(
-            `INSERT INTO carpool_rides (vehicle_id, start_time, fare, seat_available, driver, "createdAt", "updatedAt") VALUES (?,?,?,?,?,?,?)
+            `INSERT INTO carpool_rides (vehicle_id, start_time, fare, seat_available, driver, "createdAt", "updatedAt", "ride_status") VALUES (?,?,?,?,?,?,?,?)
             RETURNING ride_id`,
             {
-                replacements: [vehicle_id, start_time, price, seats, user_id, new Date(), new Date()],
+                replacements: [vehicle_id, start_time, price, seats, user_id, new Date(), new Date(), "available"],
                 type: QueryTypes.INSERT,
             }
         );
@@ -93,6 +93,7 @@ const CreateRide = asynchandler(async (req, res, next) => {
                 }
             );
             ride_details[0].routes = routes;
+            ride_details[0].vehicle_id = undefined;
             ride_details[0].vehicle = vehicle[0];
             return res.status(201).json(new ApiResponse(201, "Ride created successfully", ride_details[0]));
         } else {
@@ -104,4 +105,123 @@ const CreateRide = asynchandler(async (req, res, next) => {
     }
 });
 
-export { CreateRide };
+const GetRides = asynchandler(async (req, res, next) => {
+    try {
+        const rides = await sequelize.query(
+            `SELECT * FROM carpool_rides where ride_status = 'available' and "createdAt" >= now() - interval '1 day'`,
+            // `SELECT * FROM carpool_rides where "createdAt" >= now() - interval '1 day' and ride_status = 'available'`,
+            {
+                type: QueryTypes.SELECT,
+            }
+        );
+        if (rides) {
+            for (const rides_details of rides) {
+                const vehicle = await sequelize.query(`Select * from carpool_vehicles where vehicle_id =${rides_details.vehicle_id}; `, {})
+
+                rides_details.vehicle = vehicle[0];
+                rides_details.vehicle_id = undefined;
+
+                const ride_routes = await sequelize.query(
+                    `SELECT * FROM routes a inner join ride_routes as b on a.route_id = b.route_id WHERE ride_id = ${rides_details.ride_id}`,
+                    { type: QueryTypes.SELECT }
+                );
+
+                rides_details.routes = ride_routes;
+            }
+            return res.status(200).json(new ApiResponse(200, ["Rides retrieved successfully", rides]));
+        } else {
+            throw new ApiError(400, "Failed to retrieve rides");
+        }
+    } catch (error) {
+        next(error)
+    }
+});
+
+const complete_ride = asynchandler(async (req, res, next) => {
+    try {
+        const { ride_id } = req.body;
+        if (!ride_id) {
+            return next(new ApiError(400, "Please fill in all fields"));
+        }
+        const fetch_ride = await sequelize.query(
+            `SELECT * FROM carpool_rides WHERE ride_id = ?`,
+            { type: QueryTypes.SELECT, replacements: [ride_id] })
+
+        if (!fetch_ride[0]) {
+            return next(new ApiError(400, "Ride not found"));
+        }
+        if (fetch_ride[0].ride_status === 'completed') {
+            return next(new ApiError(400, "Ride already completed"));
+        }
+        const ride = await sequelize.query(
+            `UPDATE carpool_rides SET ride_status = 'completed' WHERE ride_id = ?`,
+            {
+                replacements: [ride_id],
+                type: QueryTypes.UPDATE,
+            }
+        );
+        if (ride) {
+            return res.status(200).json(new ApiResponse(200, "Ride completed successfully", ride));
+        } else {
+            throw new ApiError(400, "Failed to complete ride");
+        }
+    } catch (error) {
+        next(error)
+    }
+});
+
+const delete_ride = asynchandler(async (req, res, next) => {
+    try {
+        const { ride_id } = req.params;
+        if (!ride_id) {
+            return next(new ApiError(400, "Please fill in all fields: ride id"));
+        }
+        const fetch_ride = await sequelize.query(
+            `SELECT * FROM carpool_rides WHERE ride_id = ? `,
+            { type: QueryTypes.SELECT, replacements: [ride_id] })
+
+        if (!fetch_ride[0]) {
+            return next(new ApiError(400, "Ride not found"));
+        }
+        if (fetch_ride[0].ride_status === 'completed') {
+            return next(new ApiError(401, "Completed Ride cant be deleted"));
+        }
+        const route_id = await sequelize.query(`Delete from ride_routes where ride_id = ${ride_id}`, { type: QueryTypes.DELETE })
+        if (!route_id) {
+            return next(new ApiError(400, "Failed to delete ride route"));
+        }
+
+        const ride = await sequelize.query(
+            `DELETE FROM carpool_rides WHERE ride_id = ?`,
+            {
+                replacements: [ride_id],
+                type: QueryTypes.DELETE,
+            }
+        );
+        if (ride) {
+
+            return res.status(200).json(new ApiResponse(200, "Ride deleted successfully"));
+        } else {
+            throw new ApiError(400, "Failed to delete ride");
+        }
+    } catch (error) {
+        next(error)
+    }
+});
+
+// const update_ride = asynchandler(async (req, res, next) => {
+//     try {
+//         const { ride_id } = req.body;
+//         if (!ride_id) {
+//             return next(new ApiError(400, "Please fill in all fields"));
+//         }
+//         const fetch_ride = await sequelize.query(
+//             `SELECT * FROM carpool_rides WHERE ride_id = ?`,
+//             { type: QueryTypes.SELECT, replacements: [ride_id] })
+//     } catch (error) {
+
+//     }
+// });
+
+
+export { CreateRide, GetRides, complete_ride, delete_ride };

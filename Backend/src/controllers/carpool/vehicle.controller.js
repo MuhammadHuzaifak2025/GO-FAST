@@ -152,5 +152,8 @@ const updateVehicle = asynchandler(async (req, res, next) => {
 
 });
 
+// const delete_vehicle = asynchandler(async (req, res, next) => { 
+//     const {vehicle_id }
+// });
 
 export { createVehicle, getVehicles, getvehicle, updateVehicle };
