@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, FlatList, Modal, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, FlatList, Modal, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
-// import { BlurView } from '@react-native-community/blur';
 import FormField from './FormField';
 import CustomButton from './CustomButton';
 import { LinearGradient } from 'expo-linear-gradient';
