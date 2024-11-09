@@ -18,7 +18,7 @@ const CreateRide = asynchandler(async (req, res, next) => {
                 type: QueryTypes.SELECT,
             }
         );
-        if (!vehicle) {
+        if (!vehicle[0]) {
             return next(new ApiError(400, "Vehicle not found"));
         }
 
