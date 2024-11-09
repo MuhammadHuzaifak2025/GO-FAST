@@ -18,7 +18,7 @@ const carpool_vehicle = sequelize.define(
                 key: "user_id",
             },
         },
-        type_of_car: {
+        type_of_vehicle: {
             type: DataTypes.ENUM,
             values: ['Car', 'Bike',],
         },

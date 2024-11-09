@@ -10,6 +10,7 @@ const app = express();
 const allowedOrigins = [
   // https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev/
   'https://dkfmdoe-anonymous-8081.exp.direct',
+  '192.168.10.6:5001',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5432.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5005.app.github.dev',
@@ -47,10 +48,13 @@ app.use(express.static("public"));
 
 
 import UserRouter from "./routes/user.routes.js";
+import Vehicle_Router from "./routes/carpool/vehicle.routes.js";
+import RideRouter from "./routes/carpool/rides.routes.js";
 app.use(cookieparser());
 
 app.use("/gofast/api", UserRouter);
-
+app.use("/gofast/api", Vehicle_Router);
+app.use("/gofast/api", RideRouter);
 
 app.use(ErrorHandlerMiddleWare);
 

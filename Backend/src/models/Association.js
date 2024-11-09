@@ -11,7 +11,7 @@ import ride_routes from "./carpool/ride_routes.models.js";
 const syncModels = async () => {
   try {
     // console.log(sequelize)
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ force: false });
     console.log("Models synchronized successfully.");
   } catch (error) {
     console.error("Error synchronizing models:", error);

@@ -9,7 +9,7 @@ import syncModels from "./models/Association.js";
 
 verifyConnection()
     .then(() => {
-        app.listen(process.env.PORT, () => {
+        app.listen(process.env.PORT, process.env.IP, () => {
             console.log("Listening on port", process.env.PORT);
         });
 
