@@ -46,6 +46,7 @@ const CreateRide = asynchandler(async (req, res, next) => {
                         }
                     );
 
+
                     if (route) {
                         routes.route_id = route[0];
                     } else {
@@ -58,21 +59,23 @@ const CreateRide = asynchandler(async (req, res, next) => {
             `INSERT INTO carpool_rides (vehicle_id, start_time, fare, seat_available, driver, "createdAt", "updatedAt", "ride_status") VALUES (?,?,?,?,?,?,?,?)
             RETURNING ride_id`,
             {
-                replacements: [vehicle_id, start_time, price, seats, user_id, new Date(), new Date(), "available"],
+                replacements: [vehicle_id, start_time, price, seats, user_id, new Date(), new Date(), "available",],
                 type: QueryTypes.INSERT,
             }
         );
         const newRideId = ride[0][0].ride_id;
         console.log(newRideId);
         if (ride) {
+            let i = 0;
             for (const routes of route) {
                 const ride_route = await sequelize.query(
-                    `INSERT INTO ride_routes (ride_id, route_id,  "createdAt", "updatedAt") VALUES (?,?,?,? )`,
+                    `INSERT INTO ride_routes (ride_id, route_id,  "createdAt", "updatedAt", "order") VALUES (?,?,?,?,? )`,
                     {
-                        replacements: [newRideId, routes.route_id, new Date(), new Date()],
+                        replacements: [newRideId, routes.route_id, new Date(), new Date(), i],
                         type: QueryTypes.INSERT,
                     }
                 );
+                ++i;
                 if (!ride_route) {
                     throw new ApiError(400, "Failed to create ride route");
                 }
@@ -107,35 +110,57 @@ const CreateRide = asynchandler(async (req, res, next) => {
 
 const GetRides = asynchandler(async (req, res, next) => {
     try {
+        const page = parseInt(req.params.page) || 1; 
+        const limit = parseInt(req.params.limit) || 10; 
+        const offset = (page - 1) * limit;
+        console.log(page, limit, offset);
         const rides = await sequelize.query(
-            `SELECT * FROM carpool_rides where ride_status = 'available' and "createdAt" >= now() - interval '1 day'`,
-            // `SELECT * FROM carpool_rides where "createdAt" >= now() - interval '1 day' and ride_status = 'available'`,
-            {
-                type: QueryTypes.SELECT,
-            }
+            `SELECT * FROM carpool_rides 
+            WHERE ride_status = 'available' 
+            AND "createdAt" >= now() - interval '1 day' 
+            ORDER BY "createdAt" DESC 
+            LIMIT ${limit} OFFSET ${offset}`,
+            { type: QueryTypes.SELECT }
         );
-        if (rides) {
+
+        if (rides.length) {
+    
             for (const rides_details of rides) {
-                const vehicle = await sequelize.query(`Select * from carpool_vehicles where vehicle_id =${rides_details.vehicle_id}; `, {})
+                const vehicle = await sequelize.query(
+                    `SELECT * FROM carpool_vehicles WHERE vehicle_id = ${rides_details.vehicle_id};`,
+                    { type: QueryTypes.SELECT }
+                );
 
                 rides_details.vehicle = vehicle[0];
                 rides_details.vehicle_id = undefined;
 
                 const ride_routes = await sequelize.query(
-                    `SELECT * FROM routes a inner join ride_routes as b on a.route_id = b.route_id WHERE ride_id = ${rides_details.ride_id}`,
+                    `SELECT * FROM routes a 
+                    INNER JOIN ride_routes AS b ON a.route_id = b.route_id 
+                    WHERE ride_id = ${rides_details.ride_id} 
+                    ORDER BY b.order`,
                     { type: QueryTypes.SELECT }
                 );
 
                 rides_details.routes = ride_routes;
             }
-            return res.status(200).json(new ApiResponse(200, ["Rides retrieved successfully", rides]));
+
+            return res.status(200).json(
+                new ApiResponse(200, "Rides retrieved successfully", {
+                    rides,
+                    page,
+                    limit,
+                    totalRides: rides.length,
+                })
+            );
         } else {
-            throw new ApiError(400, "Failed to retrieve rides");
+            throw new ApiError(400, "No rides available");
         }
     } catch (error) {
-        next(error)
+        next(error);
     }
 });
+
 
 const complete_ride = asynchandler(async (req, res, next) => {
     try {

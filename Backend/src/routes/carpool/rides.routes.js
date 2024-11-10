@@ -5,7 +5,7 @@ import { CreateRide, GetRides, delete_ride, complete_ride } from "../../controll
 const RideRouter = Router();
 
 RideRouter.route("/ride").post(AuthenticateToken, CreateRide);
-RideRouter.route("/rides").get(AuthenticateToken, GetRides);
+RideRouter.route("/rides/:page?/:limit?").get(AuthenticateToken, GetRides);
 RideRouter.route("/ride/complete").put(AuthenticateToken, complete_ride);
 RideRouter.route("/ride/:ride_id").delete(AuthenticateToken, delete_ride);
 
