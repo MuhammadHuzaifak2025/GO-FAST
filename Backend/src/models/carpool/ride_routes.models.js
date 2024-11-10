@@ -23,6 +23,10 @@ const ride_routes = sequelize.define(
             model: Route,
             key: "route_id"
         }
+    },
+    order: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 
