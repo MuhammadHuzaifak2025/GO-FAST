@@ -5,11 +5,11 @@ import sequelize, { verifyConnection } from "./database/index.js";
 import app from "./app.js";
 import syncModels from "./models/Association.js";
 
-
+import server from "./websockets/index.js";
 
 verifyConnection()
     .then(() => {
-        app.listen(process.env.PORT, () => {
+        server.listen(process.env.PORT, () => {
             console.log("Listening on port", process.env.PORT);
         });
 
@@ -18,3 +18,5 @@ verifyConnection()
     .catch((err) => {
         console.error("Unable to connect to the database:", err);
     });
+
+export { server };
