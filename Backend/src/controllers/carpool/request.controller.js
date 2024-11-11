@@ -28,4 +28,20 @@ const reuqestride = asynchandler(async (req, res, next) => {
     }
 });
 
-export { reuqestride };
+const fetch_ride_requests = asynchandler(async (req, res, next) => {
+    try {
+        // const { rideId } = req.body;
+        const ride = await sequelize.query(
+            `select * from ride_requests `,
+            {
+                type: QueryTypes.SELECT,
+            });
+        console.log(ride[0])
+
+        return res.json(new ApiResponse(200, "Ride requests fetched successfully", ride[0]));
+    } catch (error) {
+        next(error);
+    }
+});
+
+export { reuqestride, fetch_ride_requests };
