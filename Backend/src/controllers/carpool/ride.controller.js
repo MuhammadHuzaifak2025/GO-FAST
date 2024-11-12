@@ -117,7 +117,8 @@ const GetRides = asynchandler(async (req, res, next) => {
         const rides = await sequelize.query(
             `SELECT * FROM carpool_rides 
             WHERE ride_status = 'available' 
-            AND "createdAt" >= now() - interval '1 day' 
+            AND "createdAt" >= now() - interval '1 day' AND
+            driver != ${req.user.user_id} 
             ORDER BY "createdAt" DESC 
             LIMIT ${limit} OFFSET ${offset}`,
             { type: QueryTypes.SELECT }
