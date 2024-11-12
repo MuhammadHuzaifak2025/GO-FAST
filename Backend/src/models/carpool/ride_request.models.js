@@ -30,6 +30,10 @@ const ride_request = sequelize.define(
         type: DataTypes.BOOLEAN,
         allowNull: false
     },
+    owner_socket_id: {
+        type: DataTypes.STRING,
+        allowNull: true
+    }
 });
 
 export default ride_request;

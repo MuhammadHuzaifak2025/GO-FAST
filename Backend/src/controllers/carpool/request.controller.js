@@ -12,7 +12,17 @@ const reuqestride = asynchandler(async (req, res, next) => {
             return next(new ApiError(401, "Please provide a ride id"));
         }
         const approved = false;
-        // console.log(rideId, user_id, approved);
+
+     
+        const alreadyRequested = await sequelize.query('SELECT * FROM ride_requests WHERE ride_id = ? AND requesting_user = ?', {
+            replacements: [rideId, user_id],
+            type: QueryTypes.SELECT
+        });
+    
+        if (alreadyRequested.length > 0) {
+            return next(new ApiError(401, ["You have already requested this ride, Request_id is : ", alreadyRequested[0].request_id]));
+        }
+      
         const ride = await sequelize.query(
             `INSERT INTO ride_requests (ride_id, requesting_user, is_approved, "createdAt", "updatedAt") 
              VALUES (?,?,?,?,?) RETURNING *`,
@@ -20,7 +30,6 @@ const reuqestride = asynchandler(async (req, res, next) => {
                 replacements: [rideId, user_id, approved, new Date(), new Date()],
                 type: QueryTypes.INSERT,
             });
-        console.log(ride[0])
 
         return res.json(new ApiResponse(200, "Ride requested successfully", ride[0]));
     } catch (error) {
@@ -36,7 +45,7 @@ const fetch_ride_requests = asynchandler(async (req, res, next) => {
             {
                 type: QueryTypes.SELECT,
             });
-        console.log(ride[0])
+        // console.log(ride[0])
 
         return res.json(new ApiResponse(200, "Ride requests fetched successfully", ride[0]));
     } catch (error) {

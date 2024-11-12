@@ -19,8 +19,6 @@ const createVehicle = asynchandler(async (req, res, next) => {
             return next(new ApiError("Number of seats must be greater than 0", 400));
         }
 
-
-
         const vehicle = await sequelize.query(
             `SELECT * 
             FROM carpool_vehicles
