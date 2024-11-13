@@ -10,13 +10,13 @@ const createVehicle = asynchandler(async (req, res, next) => {
         const user_id = req.user.user_id;
         const { type_of_vehicle, seats, registration_number, model, make, color } = req.body;
         if (!type_of_vehicle || !seats || !registration_number || !model || !make || !color) {
-            return next(new ApiError("Please fill in all fields", 400));
+            return next(new ApiError(402, "Please fill in all fields"));
         }
         if (type_of_vehicle !== "Car" && type_of_vehicle !== "Bike") {
-            return next(new ApiError("Invalid type of vehicle: Car or Bike is valid", 400));
+            return next(new ApiError(403, "Invalid type of vehicle: Car or Bike is valid"));
         }
         if (seats < 1) {
-            return next(new ApiError("Number of seats must be greater than 0", 400));
+            return next(new ApiError(403, "Number of seats must be greater than 0"));
         }
 
         const vehicle = await sequelize.query(
