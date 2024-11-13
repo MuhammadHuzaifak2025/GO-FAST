@@ -119,7 +119,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
         if (!ride_details[0]) {
             return next(new ApiError(401, "No ride requests found"));
         }
-        if (ride_details[0].driver == req.user.user_id) {
+        if (ride_details[0].driver !== req.user.user_id) {
             return next(new ApiError(401, "You can't accept or create your own request"));
         }
         if (ride_details[0].is_approved) {
@@ -132,10 +132,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
                 replacements: [requestId],
                 type: QueryTypes.UPDATE,
             });
-        // if (ride[0][0] && ride[0][0].is_approved == true) {
-        //     // return res.json(new ApiResponse(200, "Ride request accepted successfully", ride[0]));
-        //     return next(new ApiError(401, "Ride request already accepted"));
-        // }
+
         const rides_seats = await sequelize.query(
             `UPDATE carpool_rides SET seat_available = seat_available - 1 WHERE ride_id = ? RETURNING *`,
             {
