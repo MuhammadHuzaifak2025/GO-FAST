@@ -6,6 +6,7 @@ import app from "./app.js";
 import syncModels from "./models/Association.js";
 
 import server from "./websockets/index.js";
+import User from "./models/user.models.js";
 
 verifyConnection()
     .then(() => {
@@ -14,6 +15,7 @@ verifyConnection()
         });
 
         syncModels();
+        
     })
     .catch((err) => {
         console.error("Unable to connect to the database:", err);
