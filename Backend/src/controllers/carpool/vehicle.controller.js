@@ -30,7 +30,7 @@ const createVehicle = asynchandler(async (req, res, next) => {
         );
 
         if (vehicle[0])
-            return next(new ApiError(401, "Vehicle already exists"));
+            return next(new ApiError(400, "Vehicle already exists"));
         else {
             const create_vehicle = await sequelize.query(`
                 INSERT INTO carpool_vehicles (owner, type_of_vehicle, seats, registration_number, model, make, color, "createdAt", "updatedAt")
@@ -51,7 +51,7 @@ const createVehicle = asynchandler(async (req, res, next) => {
                 return res.status(200).json(new ApiResponse(200, ["Vehicle Created Successfully", get_vehicle[0]]));
             }
             else
-                return next(new ApiError(401, "Failed to create vehicle"));
+                return next(new ApiError(400, "Failed to create vehicle"));
         }
     } catch (error) {
         next(error);
@@ -142,7 +142,7 @@ const updateVehicle = asynchandler(async (req, res, next) => {
                 return res.status(200).json(new ApiResponse(200, ["Vehicle Updated Successfully", get_vehicle[0]]));
             }
             else
-                return next(new ApiError(401, "Failed to update vehicle"));
+                return next(new ApiError(400, "Failed to update vehicle"));
         }
     } catch (error) {
         next(error);

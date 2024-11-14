@@ -10,39 +10,15 @@ import CustomButton from './CustomButton';
 import axios from 'axios';
 import { setAuthHeaders } from '../utils/expo-store';
 
-const testCars = [
-    {
-        id: 1,
-        make: 'Toyota',
-        model: 'Camry',
-        registrationNumber: 'ABC123',
-        color: 'Blue',
-        otherDetails: 'Hybrid, 2019 model',
-    },
-    {
-        id: 2,
-        make: 'Honda',
-        model: 'Civic',
-        registrationNumber: 'XYZ456',
-        color: 'Red',
-        otherDetails: 'Sedan, 2020 model',
-    },
-    {
-        id: 3,
-        make: 'Ford',
-        model: 'F-150',
-        registrationNumber: 'DEF789',
-        color: 'Black',
-        otherDetails: 'Truck, 2021 model',
-    },
-];
 
 export default function CarModal({ visible, onClose }) {
     const toast = useToast();
     const [cars, setCars] = useState({});
     const [loading, setLoading] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [dropdownHeight] = useState(new Animated.Value(0));
+    const [isDropdownOpenList, setIsDropdownOpenList] = useState(false);
+    const [isDropdownOpenForm, setIsDropdownOpenForm] = useState(false);
+    const [dropdownHeightList] = useState(new Animated.Value(0));
+    const [dropdownHeightForm] = useState(new Animated.Value(0));
 
     const [form, setForm] = useState({
         type_of_car: '',
@@ -60,83 +36,101 @@ export default function CarModal({ visible, onClose }) {
     }, [visible]);
 
     const fetchCars = async () => {
+
         setLoading(true);
-        console.log("Hello")
         await setAuthHeaders(axios);
         try {
-            console.log(process.env.EXPO_PUBLIC_BACKEND_URL)
+
             const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicles`);
-            if (response)
-                setTimeout(() => {
-                    // console.log("hello")
-                    // console.log(response)
-                    setCars(response.data.data[1]);
-                    console.log(cars)
-                    setLoading(false);
-                }, 1000);
+            console.log(response.data.status);
+            if (response.status === 200){   
+                setCars(response.data.data[1]);
+                setLoading(false);
+            }
+                
         } catch (error) {
+            toast.show("Could not fetch cars, please try  again later", {
+                type: "danger",
+                duration: 3000,
+            });
             setLoading(false);
-            console.log(error)
         }
     };
 
-    const toggleDropdown = () => {
-        const toValue = isDropdownOpen ? 0 : 200; // Adjust this value based on your needs
-        Animated.timing(dropdownHeight, {
-            toValue,
-            duration: 300,
-            useNativeDriver: false,
-        }).start();
-        fetchCars();
-        setIsDropdownOpen(!isDropdownOpen);
+    const toggleDropdown = (check) => {
+
+        if(check === 'form'){
+
+            const toValue = isDropdownOpenForm ? 0 : 500; // Adjust this value based on your needs
+            Animated.timing(dropdownHeightForm, {
+                toValue,
+                duration: 400,
+                useNativeDriver: false,
+            }).start();
+            
+            if(isDropdownOpenList){
+                toggleDropdown('list');
+            }
+
+            setIsDropdownOpenForm(!isDropdownOpenForm);
+
+        }
+        else{
+            const toValue = isDropdownOpenList ? 0 : 200; // Adjust this value based on your needs
+
+            Animated.timing(dropdownHeightList, {
+                toValue,
+                duration: 400,
+                useNativeDriver: false,
+            }).start();
+            
+            if(isDropdownOpenForm){
+                toggleDropdown('form');
+            }
+
+            setIsDropdownOpenList(!isDropdownOpenList);
+        }
     };
 
-    const handleAddCar = () => {
+    const handleAddCar = async () => {
         if (!form.make || !form.model || !form.registrationNumber || !form.color || !form.seats || !form.type_of_car) 
             toast.show('Please fill all required fields', {
                 type: "danger",
                 duration: 3000,
             });
-            const addcar = async()=>{
-                try {
-                    await setAuthHeaders(axios);
-                    const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicle`, {
-                        "type_of_vehicle": form.type_of_car,
-                        "seats": form.seats,
-                        "registration_number": form.registrationNumber,
-                        "model": form.model,
-                        "make": form.make,
-                        "color": form.color
-                    })
-                    console.log(resp);
-                    if (resp) {
-                        toast.show("Car Added Successfully", {
-                            type: "success",
-                            duration: 3000,
-                        });
-                    }
-                } catch (error) {
-                    console.log(error)
-                    toast.show("Error Adding Car", {
-                        type: "danger",
+
+            try {
+
+                await setAuthHeaders(axios);
+
+                const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicle`, {
+                    "type_of_vehicle": form.type_of_car,
+                    "seats": form.seats,
+                    "registration_number": form.registrationNumber,
+                    "model": form.model,
+                    "make": form.make,
+                    "color": form.color
+                })
+
+                if (resp.status === 200) { 
+
+                    toast.show("Car Added Successfully", {
+                        type: "success",
                         duration: 3000,
                     });
+                    fetchCars();
                 }
-            }
-            addcar();
-        
+            } catch (error) {
+                console.log(error.response.data.message);   
+                toast.show("Error Adding Car", {
+                    type: "danger",
+                    duration: 3000,
+                });
+            
+        }
 
-        // const newCar = {
-        //     id: cars.length + 1,
-        //     ...form,
-        // };
+        setForm({ type_of_car: '', make: '', model: '', registrationNumber: '', color: '', otherDetails: '' });
 
-        // setCars([...cars, newCar]);
-        setForm({ make: '', model: '', registrationNumber: '', color: '', otherDetails: '' });
-        toast.show("Car Added Successfully", {
-            type: "success",
-            duration: 3000,
-        });
     };
 
     return (
@@ -149,18 +143,18 @@ export default function CarModal({ visible, onClose }) {
 
                 <Text style={styles.title}>Your Cars</Text>
 
-                <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownHeader}>
+                <TouchableOpacity onPress={() => toggleDropdown('list')} style={styles.dropdownHeader}>
                     <Text style={styles.dropdownHeaderText}>
-                        {isDropdownOpen ? 'Add New Car' : 'Show Cars'}
+                        {isDropdownOpenList ? 'Your Cars' : 'Show Cars'}
                     </Text>
                     <Ionicons
-                        name={isDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                        name={isDropdownOpenList ? 'chevron-up' : 'chevron-down'}
                         size={24}
                         color="white"
                     />
                 </TouchableOpacity>
 
-                <Animated.View style={[styles.dropdownContent, { height: dropdownHeight }]}>
+                <Animated.View style={[styles.dropdownContent, { height: dropdownHeightList }]}>
                     {loading ? (
                         <Text style={styles.loadingText}>Loading...</Text>
                     ) : (
@@ -184,50 +178,64 @@ export default function CarModal({ visible, onClose }) {
                     )}
                 </Animated.View>
 
-                <Text style={styles.subtitle}>Add a New Car</Text>
-                <ScrollView style={styles.formContainer}>
-                    <FormField
-                        placeholder="Make"
-                        value={form.make}
-                        handleChangeText={(e) => setForm({ ...form, make: e })}
-                        secureTextEntry={false}
+                <TouchableOpacity onPress={() => toggleDropdown('form')} style={styles.dropdownHeader}>
+                    <Text style={styles.dropdownHeaderText}>
+                        {isDropdownOpenForm ? 'Add Car' : 'Add Car'}
+                    </Text>
+                    <Ionicons
+                        name={isDropdownOpenForm ? 'chevron-up' : 'chevron-down'}
+                        size={24}
+                        color="white"
                     />
-                    <FormField
-                        placeholder="Model"
-                        value={form.model}
-                        handleChangeText={(e) => setForm({ ...form, model: e })}
-                        secureTextEntry={false}
-                    />
-                    <FormField
-                        placeholder="Type Of Vehicle"
-                        value={form.type_of_car}
-                        handleChangeText={(e) => setForm({ ...form, type_of_car: e })}
-                        secureTextEntry={false}
-                    />
-                    <FormField
-                        placeholder="Registration Number"
-                        value={form.registrationNumber}
-                        handleChangeText={(e) => setForm({ ...form, registrationNumber: e })}
-                        secureTextEntry={false}
-                    />
-                    <FormField
-                        placeholder="Color"
-                        value={form.color}
-                        handleChangeText={(e) => setForm({ ...form, color: e })}
-                        secureTextEntry={false}
-                    />
-                    <FormField
-                        placeholder="seats"
-                        value={form.seats}
-                        handleChangeText={(e) => setForm({ ...form, seats: e })}
-                        secureTextEntry={false}
-                    />
-                </ScrollView>
-                <CustomButton
-                    textContent="Add Car"
-                    handlePress={handleAddCar}
-                    containerStyles={styles.addButton}
-                />
+                </TouchableOpacity>
+                <Animated.View style={[styles.dropdownContent, { height: dropdownHeightForm }]}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+
+                        <FormField
+                            placeholder="Make"
+                            value={form.make}
+                            handleChangeText={(e) => setForm({ ...form, make: e })}
+                            secureTextEntry={false}
+                            />
+                        <FormField
+                            placeholder="Model"
+                            value={form.model}
+                            handleChangeText={(e) => setForm({ ...form, model: e })}
+                            secureTextEntry={false}
+                            />
+                        <FormField
+                            placeholder="Type Of Vehicle"
+                            value={form.type_of_car}
+                            handleChangeText={(e) => setForm({ ...form, type_of_car: e })}
+                            secureTextEntry={false}
+                            />
+                        <FormField
+                            placeholder="Registration Number"
+                            value={form.registrationNumber}
+                            handleChangeText={(e) => setForm({ ...form, registrationNumber: e })}
+                            secureTextEntry={false}
+                            />
+                        <FormField
+                            placeholder="Color"
+                            value={form.color}
+                            handleChangeText={(e) => setForm({ ...form, color: e })}
+                            secureTextEntry={false}
+                            />
+                        <FormField
+                            placeholder="seats"
+                            value={form.seats}
+                            keyboardType="numeric"
+                            handleChangeText={(e) => setForm({ ...form, seats: e })}
+                            secureTextEntry={false}
+                            />
+                        <CustomButton
+                            textContent="Add Car"
+                            handlePress={handleAddCar}
+                            containerStyles={styles.addButton}
+                            />
+
+                    </ScrollView>
+                </Animated.View>
             </View>
         </Modal>
     );
@@ -240,8 +248,8 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         flex: 1,
-        marginHorizontal: 20,
-        marginVertical: 60,
+        marginHorizontal: 10,
+        marginVertical: 30,
         padding: 20,
         backgroundColor: '#2c3e50',
         borderRadius: 10,
