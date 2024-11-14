@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView, TextInput, Button } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity, Animated, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
-
-
+// import Date
 // Sample ride data
 const rides = [
   { id: '1', from: 'Downtown', to: 'University', time: '08:30 AM', username: 'Alex', seats: 3 },
   { id: '2', from: 'Station', to: 'City Center', time: '09:00 AM', username: 'Maria', seats: 2 },
   { id: '3', from: 'Airport', to: 'Hotel', time: '07:15 PM', username: 'John', seats: 4 },
   { id: '4', from: 'Library', to: 'Park', time: '06:00 PM', username: 'Sara', seats: 1 },
-  { id: '5', from: 'Library', to: 'Park', time: '06:00 PM', username: 'Sara', seats: 1 },
 ];
 
-// Renders each ride in a list item
 const RideItem = ({ from, to, time, username }) => (
   <LinearGradient
     colors={['black', '#ff6347']}
@@ -35,9 +32,34 @@ const RideItem = ({ from, to, time, username }) => (
 
 const FindRide = () => {
   const [filteredRides, setFilteredRides] = useState(rides);
-  const [preference, setPreference] = useState({seats: '', time: '', pickup: '', dropoff: ''});
+  const [preference, setPreference] = useState({ seats: '', time: '', pickup: '', dropoff: '' });
+  const [showFilter, setShowFilter] = useState(false);
+  const animationValue = useRef(new Animated.Value(0)).current;
 
-  // Function to filter rides based on seats and time
+  // Function to animate dropdown
+  const toggleFilter = () => {
+    if (showFilter) {
+      Animated.timing(animationValue, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(animationValue, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+    setShowFilter(!showFilter);
+  };
+
+  const animatedHeight = animationValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 200],
+  });
+
+  // Function to filter rides based on p\references
   const filterRides = () => {
     const filtered = rides.filter(ride => {
       const rideSeats = parseInt(ride.seats, 10);
@@ -54,33 +76,48 @@ const FindRide = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Available Rides</Text>
-
-      <View style={styles.filterContainer}>
-        <FormField
-          placeholder="Seats required"
-          keyboardType="numeric"
-          value={preference.seats}
-          handleChangeText={(e) => setPreference({...preference, seats: e})}
-        />
-        <FormField
-          placeholder="Preferred Time (e.g., 08:30 AM)"
-          value={preference.time}
-          handleChangeText={(e) => setPreference({...preference, time: e})}
-        />
-        <FormField
-          placeholder="Preferred Pickup Location"
-          value={preference.pickup}
-          handleChangeText={(e) => setPreference({...preference, pickup: e})}
-        />
-        <FormField
-          placeholder="Preferred Dropoff Location"
-          value={preference.dropoff}
-          handleChangeText={(e) => setPreference({...preference, dropoff: e})}
-        />
-        <CustomButton textContent="Find Rides" handlePress={filterRides} containerStyles={{marginTop: 20}}/>
+      <View style={styles.header}>
+        <Text style={styles.title}>Available Rides</Text>
+        <TouchableOpacity onPress={toggleFilter} style={styles.filterIcon}>
+          <FontAwesome name="filter" size={24} color="black" />
+        </TouchableOpacity>
       </View>
 
+      {/* Animated Filter Form */}
+      <Animated.View style={[styles.filterContainer, { height: animatedHeight, overflow: 'hidden' }]}>
+        <ScrollView>
+
+          <FormField
+            placeholder="Seats required"
+            keyboardType="numeric"
+            value={preference.seats}
+            handleChangeText={(e) => setPreference({ ...preference, seats: e })}
+            />
+          <FormField
+            placeholder="Preferred Time (e.g., 08:30 AM)"
+            value={preference.time}
+            handleChangeText={(e) => setPreference({ ...preference, time: e })}
+          />
+          <FormField
+            placeholder="Preferred Pickup Location"
+            value={preference.pickup}
+            handleChangeText={(e) => setPreference({ ...preference, pickup: e })}
+            />
+          <FormField
+            placeholder="Preferred Dropoff Location"
+            value={preference.dropoff}
+            handleChangeText={(e) => setPreference({ ...preference, dropoff: e })}
+          />
+          <CustomButton
+            textContent="Filter Rides"
+            handlePress={filterRides}
+            containerStyles={{ marginTop: 20 }}
+            />
+
+        </ScrollView>
+      </Animated.View>
+
+      {/* Ride List */}
       <FlatList
         data={filteredRides}
         keyExtractor={(item) => item.id}
@@ -97,26 +134,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  title: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
     marginTop: 20,
-    paddingTop: 20,
+  },
+  title: {
     fontSize: 26,
     fontWeight: 'bold',
     color: 'black',
-    textAlign: 'center',
-    marginVertical: 20,
+    
+  },
+  filterIcon: {
+    padding: 10,
   },
   filterContainer: {
     marginHorizontal: 20,
     marginBottom: 20,
-  },
-  input: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 10,
-    paddingHorizontal: 10,
   },
   rideItem: {
     padding: 20,
@@ -145,6 +181,19 @@ const styles = StyleSheet.create({
     color: '#f8f8f8',
     marginTop: 10,
     fontStyle: 'italic',
+  },
+  seatsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  seatIcon: {
+    marginRight: 4,
+  },
+  seatText: {
+    color: '#fff',
+    fontSize: 14,
+    marginLeft: 8,
   },
 });
 
