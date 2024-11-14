@@ -2,7 +2,7 @@ import sequelize from "../../database/index.js";
 import { DataTypes } from "sequelize";
 
 const Semester = sequelize.define(
-    'Semester', {
+    'semester', {
     semester_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

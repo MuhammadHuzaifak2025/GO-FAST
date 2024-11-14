@@ -11,6 +11,9 @@ import nodemailer from "nodemailer";
 import otpGenerator from 'otp-generator'
 // var MailChecker = require('mailchecker');
 import MailChecker from 'mailchecker';
+import sequelize from "../database/index.js";
+import User from "../models/user.models.js";
+import { QueryTypes } from "sequelize";
 
 const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 
@@ -529,8 +532,35 @@ const resendotp = asynchandler(async (req, res, next) => {
   }
 });
 
+const make_admin = asynchandler(async (req, res, next) => {
+  try {
+    const user_id = req.user.user_id;
+    const get_admin = await sequelize.query(`select * from Users where user_id = ${user_id}`, {
+      type: QueryTypes.SELECT
+    });
+    if (!get_admin) {
+      return next(new ApiError(401, "User does not exist"));
+    }
+    if (get_admin[0].admin) {
+      return next(new ApiError(401, "User is already an admin"));
+    }
+    else {
+      const make_admin = await User.update(
+        { admin: true },
+        { where: { user_id: user_id } }
+      );
+      if (make_admin) {
+        return res.status(201).json(new ApiResponse(201, "User Maked Admin Succesfully"));
+      }
+    }
+    return next(new ApiError(401, "Error"));
+  } catch (error) {
+    next(error);
+  }
+});
 
 export {
+  make_admin,
   updateuser,
   Signup,
   getalluser,

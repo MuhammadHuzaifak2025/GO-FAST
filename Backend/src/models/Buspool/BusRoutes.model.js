@@ -4,7 +4,7 @@ import Bus from "./Bus.model.js";
 import Route from "../carpool/routes.models.js";
 
 const BusRoutes = sequelize.define(
-    'BusRoutes', {
+    'busroutes', {
     BusRoutes_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

@@ -51,6 +51,7 @@ import UserRouter from "./routes/user.routes.js";
 import Vehicle_Router from "./routes/carpool/vehicle.routes.js";
 import RideRouter from "./routes/carpool/rides.routes.js";
 import RideRequestRouter from "./routes/carpool/ride_request.routes.js";
+import Trasport_Manager from "./routes/Transport_manager.routes.js";
 
 app.use(cookieparser());
 
@@ -58,6 +59,7 @@ app.use("/gofast/api", UserRouter);
 app.use("/gofast/api", Vehicle_Router);
 app.use("/gofast/api", RideRouter);
 app.use('/gofast/api', RideRequestRouter);
+app.use('/gofast/api', Trasport_Manager);
 
 app.use(ErrorHandlerMiddleWare);
 

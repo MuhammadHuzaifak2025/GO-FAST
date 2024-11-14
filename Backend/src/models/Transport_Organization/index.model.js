@@ -3,7 +3,7 @@ import { DataTypes } from "sequelize"
 import User from "../user.models.js";
 
 const Transport_Organization = sequelize.define(
-    'Transport_Organization', {
+    'transport_organization', {
     organization_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

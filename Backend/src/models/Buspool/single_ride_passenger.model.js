@@ -3,7 +3,7 @@ import { DataTypes } from "sequelize";
 import Bus from "./Bus.model.js";
 
 const SingleRidePassenger = sequelize.define(
-    "SingleRidePassenger", {
+    "singleridepassenger", {
     single_ride_passenger_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

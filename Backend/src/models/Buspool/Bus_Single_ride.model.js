@@ -4,7 +4,7 @@ import Bus from "./Bus.model.js";
 import SingleRidePassenger from "./single_ride_passenger.model.js";
 
 const BusSingleRide = sequelize.define(
-    "BusSemesterRide", {
+    "bussingleride", {
     BusSemesterRide_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
