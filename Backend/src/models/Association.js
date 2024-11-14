@@ -8,6 +8,14 @@ import ride_request from "./carpool/ride_request.models.js";
 import ride_routes from "./carpool/ride_routes.models.js";
 import Chat from "./chatapp/chat.model.js";
 import ChatMessage from "./chatapp/chat_message.model.js";
+import Transport_Organization from "./Transport_Organization/index.model.js";
+import Bus from "./Buspool/Bus.model.js";
+import BusRoutes from "./Buspool/BusRoutes.model.js";
+import semester from "./Buspool/semester.model.js";
+import semester_passenger from "./Buspool/semester_passenger.model.js";
+import BusSemesterRide from "./Buspool/Bus_semester_ride.model.js";
+import SingleRidePassenger from "./Buspool/single_ride_passenger.model.js";
+import BusSingleRide from "./Buspool/Bus_Single_ride.model.js";
 
 
 const syncModels = async () => {
