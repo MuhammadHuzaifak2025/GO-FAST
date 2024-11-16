@@ -23,6 +23,7 @@ const FormField = ({title, value, placeholder, handleChangeText, otherStyles, se
           secureTextEntry={showPassword}
           onFocus={()=>setIsFocused(true)}
           onBlur={()=>setIsFocused(false)}
+          scrollEnabled={false}
         />
 
         {title === 'Password' && (

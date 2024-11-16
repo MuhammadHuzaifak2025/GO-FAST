@@ -9,7 +9,7 @@ const TabIcon = ({icon,color,name,focused}) => {
       alignItems: 'center',
       justifyContent: 'center',
       textAlign: 'center',
-      gap: 5,
+      gap:5,
     }}>
       <Image
         source={icon}
@@ -43,7 +43,9 @@ const TabsLayout = () => {
             borderTopWidth: 1,
             height: 60,
             padding: 5,
+            
           }
+          
         }}
       >
         <Tabs.Screen

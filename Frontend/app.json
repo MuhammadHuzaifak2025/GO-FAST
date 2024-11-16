@@ -3,6 +3,7 @@
     "name": "Gofast",
     "slug": "Gofast",
     "version": "1.0.0",
+    "newArchEnablied": true,
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",

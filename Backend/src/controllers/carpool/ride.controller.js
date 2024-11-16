@@ -23,7 +23,7 @@ const CreateRide = asynchandler(async (req, res, next) => {
         }
 
         for (const routes of route) {
-            if (!routes.route_name || !routes.longitude || !routes.latitude && route.length > 1) {
+            if ((!routes.route_name || !routes.longitude || !routes.latitude) && route.length <= 1) {
                 return next(new ApiError(400, "Please fill in all fields in each route"));
             }
             else {
