@@ -6,8 +6,8 @@ import { QueryTypes } from "sequelize";
 
 const create_Transport_Manager = asynchandler(async (req, res, next) => {
     try {
-        const { name, email, account_no, owner } = req.body;
-
+        const { name, email, account_no } = req.body;
+        let owner = req.user.user_id;
 
         if (!name || !email || !account_no || !owner) {
             return next(new ApiError(401, "All fields are required"));
@@ -54,7 +54,7 @@ const create_Transport_Manager = asynchandler(async (req, res, next) => {
 
 const update_Transport_Manager = asynchandler(async (req, res, next) => {
     try {
-        const { name, email, account_no } = req.body;
+        let { name, email, account_no } = req.body;
         const { organization_id } = req.params;
 
         if (!organization_id) {
@@ -69,14 +69,22 @@ const update_Transport_Manager = asynchandler(async (req, res, next) => {
         if (!get_organization || get_organization.length === 0) {
             return next(new ApiError(401, "Organization does not exist"));
         }
-
+        if (!name) {
+            name = get_organization.organization_name;
+        }
+        if (!email) {
+            email = get_organization.organization_email;
+        }
+        if (!account_no) {
+            account_no = get_organization.bank_account_no;
+        }
         await sequelize.query(
-            `UPDATE Transport_Organizations SET organization_name = :name, organization_email = :email, bank_account_no = :account_no,
+            `UPDATE "Transport_Organizations" SET organization_name = :name, organization_email = :email, bank_account_no = :account_no,
             "updatedAt" = :updatedAt WHERE organization_id = :organization_id`, {
             replacements: { name, email, account_no, updatedAt: new Date(), organization_id },
             type: QueryTypes.UPDATE
         });
-
+        return res.status(201).json(new ApiResponse(201, "Organization updated successfully"));
     } catch (error) {
         next(error);
     }
@@ -107,4 +115,4 @@ const Get_Transport_Manager = asynchandler(async (req, res, next) => {
 });
 
 
-export { create_Transport_Manager };
+export { create_Transport_Manager, update_Transport_Manager, Get_Transport_Manager };

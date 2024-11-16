@@ -25,6 +25,10 @@ const BusRoutes = sequelize.define(
             model: Bus,
             key: "bus_id"
         }
+    },
+    order:{
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 
 }
