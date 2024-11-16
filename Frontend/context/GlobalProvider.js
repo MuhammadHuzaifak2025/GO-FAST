@@ -51,8 +51,14 @@ const GlobalProvider = ({ children }) => {
           console.log("User authenticated:", response.data);
           setUser(response.data.data);
           setIsAuthenticated(true);
+
           if (router.pathname !== '/find-ride') {
-            router.replace('/find-ride'); // Redirect to dashboard
+            if (response.data.data.admin) {
+
+              router.replace('/dashboard'); // Redirect to dashboard
+            }
+            else
+              router.replace('/find-ride'); // Redirect to dashboard
           }
         }
       } catch (error) {

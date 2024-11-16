@@ -49,6 +49,7 @@ const SignIn = () => {
 
         setSpinnerState('success');
         setUser(response.data.data);
+
         setIsAuthenticated(true);
 
         toast.show("Successfully Logged In", {
@@ -60,8 +61,14 @@ const SignIn = () => {
 
         await saveTokensFromCookies(response);
         router.dismissAll();
-        router.replace('/find-ride');
-      } 
+        if (response.data.data.admin === true) {
+          // router.replace('/admin');
+          console.log("Hello")
+          router.push('/dashboard');
+        }
+        else
+          router.replace('/find-ride');
+      }
       // else if(response.status === 201){
 
       //   toast.show("Please verify your account", {
@@ -71,15 +78,15 @@ const SignIn = () => {
       //     animationType: "slide-in",
       //   });
 
-        // const responseVerify = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resend-otp`, { username: form.username }, { withCredentials: true });
-        // if(responseVerify.status === 200) {
+      // const responseVerify = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resend-otp`, { username: form.username }, { withCredentials: true });
+      // if(responseVerify.status === 200) {
 
-        //   setUser(responseVerify.data.data);
-        //   router.replace('/verify-email');
-        // }
-        // else{
-        //   throw new Error(responseVerify);
-        // }
+      //   setUser(responseVerify.data.data);
+      //   router.replace('/verify-email');
+      // }
+      // else{
+      //   throw new Error(responseVerify);
+      // }
       // }  
       else {
         throw new Error(response);
@@ -97,8 +104,9 @@ const SignIn = () => {
 
     } finally {
       setIsSubmitting(false);
-      setTimeout(() => {setModalVisible(false);
-                        setSpinnerState('');
+      setTimeout(() => {
+        setModalVisible(false);
+        setSpinnerState('');
       }, 1000);  // Hide modal after animation
     }
   };

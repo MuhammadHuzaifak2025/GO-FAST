@@ -1,5 +1,6 @@
 {
   "expo": {
+    "permissions": ["CAMERA"],
     "name": "Gofast",
     "slug": "Gofast",
     "version": "1.0.0",
@@ -17,6 +18,8 @@
       "supportsTablet": true
     },
     "android": {
+
+      "permissions": ["CAMERA"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
