@@ -23,7 +23,6 @@ const FormField = ({title, value, placeholder, handleChangeText, otherStyles, se
           secureTextEntry={showPassword}
           onFocus={()=>setIsFocused(true)}
           onBlur={()=>setIsFocused(false)}
-          scrollEnabled={false}
         />
 
         {title === 'Password' && (
@@ -46,7 +45,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     focus: 'border-color: black',
-    backgroundColor: '#eeeeee',
+    backgroundColor: '#FFF',
+    contain: 'strict',
+    
+    
   },
   text: {
     fontFamily: 'Poppins-Medium',

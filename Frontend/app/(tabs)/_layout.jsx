@@ -10,12 +10,15 @@ const TabIcon = ({icon,color,name,focused}) => {
       justifyContent: 'center',
       textAlign: 'center',
       gap:5,
+      flexDirection: 'column',
+      width: 50
     }}>
       <Image
         source={icon}
         resizeMode = "contain"
         tintColor = {color}
         style={{
+          marginTop: 20,
           width: 25,
           height: 25,
         }}
@@ -23,7 +26,7 @@ const TabIcon = ({icon,color,name,focused}) => {
       <Text style={[{
                     color: color},
                     {fontFamily: focused ? 'Poppins-SemiBold' : 'Poppins-Regular'},
-                    {fontSize: 10}]}>
+                    {fontSize: 10},]}>
                   {name}
       </Text>
     </View>
@@ -39,13 +42,13 @@ const TabsLayout = () => {
           tabBarActiveTintColor: '#EC5F5F',
           tabBarInactiveTintColor: '#CDCDE0',
           tabBarStyle: {
-            borderTopColor: 'transparent',
-            borderTopWidth: 1,
-            height: 60,
-            padding: 5,
-            
-          }
+          height: 60, // Standard tab bar height
+          borderTopColor: 'transparent',
+          paddingHorizontal: 5,
+          paddingVertical: 0, // Add vertical padding to center items
+          alignItems: 'center', // Centers the tabs
           
+        },
         }}
       >
         <Tabs.Screen
@@ -57,7 +60,7 @@ const TabsLayout = () => {
               <TabIcon
                 icon={icons.rides}
                 color={color}
-                name="Your Rides"
+                name="Your Ride"
                 focused={focused}/>
             )
           }}/>
