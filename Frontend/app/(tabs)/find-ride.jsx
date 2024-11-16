@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity, Animated, ScrollView  } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome , Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import CustomButton from '../../components/CustomButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from "@shopify/flash-list";
 import { Picker } from '@react-native-picker/picker';
+import { useFocusEffect } from 'expo-router';
 // Sample ride data
 const rides = [
   { id: '1', from: 'Downtown', to: 'University', time: '08:30 AM', username: 'Alex', seats: 3 },
@@ -77,7 +78,7 @@ const FindRide = () => {
       const rideSeats = parseInt(ride.seats, 10);
       const requestedSeats = parseInt(preference.seats, 10);
       return (
-        (!requestedSeats || rideSeats >= requestedSeats) &&
+        (!requestedSeats || rideSeats >= requestedSeats ) &&
         (!preference.dateTime || ride.time === preference.dateTime) && 
         (!preference.pickup || ride.from === preference.pickup) && 
         (!preference.dropoff || ride.to === preference.dropoff)
@@ -107,6 +108,11 @@ const FindRide = () => {
     }
   };
 
+  // useFocusEffect()
+  useEffect(() => {
+    filterRides();
+  }, [preference]);
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -121,12 +127,6 @@ const FindRide = () => {
       <Animated.View style={[styles.filterContainer, { height: animatedHeight, overflow: 'hidden' }]}>
         <ScrollView>
 
-          {/* <FormField
-            placeholder="Seats required"
-            keyboardType="numeric"
-            value={preference.seats}
-            handleChangeText={(e) => setPreference({ ...preference, seats: e })}
-          /> */}
           <View style={styles.picker}>
             <Picker
                 selectedValue={preference.seats}
@@ -169,17 +169,19 @@ const FindRide = () => {
             placeholder="Preferred Pickup Location"
             value={preference.pickup}
             handleChangeText={(e) => setPreference({ ...preference, pickup: e })}
+            otherStyles={{marginVertical: 10}}
           />
           <FormField
             placeholder="Preferred Dropoff Location"
             value={preference.dropoff}
             handleChangeText={(e) => setPreference({ ...preference, dropoff: e })}
+            otherStyles={{marginBottom: 10}}
           />
-          <CustomButton
+          {/* <CustomButton
             textContent="Filter Rides"
             handlePress={filterRides}
-            containerStyles={{ marginTop: 20 }}
-          />
+
+          /> */}
 
         </ScrollView>
       </Animated.View>
@@ -274,7 +276,7 @@ const styles = StyleSheet.create({
     borderColor: '#ff6347', // Tomato border for date/time field
     borderWidth: 1,
     borderRadius: 8,
-    marginTop: 10,
+    marginTop: 5,
     flexDirection: 'row',
     alignItems: 'center', // Center items vertically
     height: 50,
@@ -302,8 +304,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff', // Picker background is white
     color: '#333', // Darker text for better readability
     borderRadius: 10,
-    marginVertical: 10,
-    paddingHorizontal: 10,
+    marginVertical: 5,
+    paddingHorizontal: 0,
     height: 50, // Increased height for better touch target
     borderWidth: 1,
     borderColor: '#ff6347', // Border color set to tomato

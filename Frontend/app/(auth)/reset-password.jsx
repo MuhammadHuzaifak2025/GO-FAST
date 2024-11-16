@@ -81,6 +81,7 @@ const VerifyEmail = () => {
           handleChangeText={(e) => setForm({ ...form, password: e })}
           secureTextEntry={true}
           otherStyles={{ marginBottom: 20 }}
+          isCapital={false}
         />
 
         <CustomButton

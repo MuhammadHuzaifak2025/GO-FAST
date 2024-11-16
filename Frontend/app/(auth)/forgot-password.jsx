@@ -79,6 +79,7 @@ const ForgotPassword = () => {
           keyboardType="email-address"
           secureTextEntry={false}
           otherStyles={{ marginTop: 0 }}
+          isCapital={false} 
         />
 
         <CustomButton

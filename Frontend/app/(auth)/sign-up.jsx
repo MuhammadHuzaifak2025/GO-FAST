@@ -87,6 +87,7 @@ const SignUp = () => {
             handleChangeText = {(e) => setForm({...form, username: e})}
             secureTextEntry={false}
             otherStyles={{marginBottom: 20, marginTop: 10}}
+            isCapital={false}
           />
 
           <FormField
@@ -97,6 +98,7 @@ const SignUp = () => {
             keyboardType="email-address"
             secureTextEntry={false}
             otherStyles={{marginBottom: 20}}
+            isCapital={false}
           />
           <FormField
             title="Phone Number"
@@ -124,6 +126,7 @@ const SignUp = () => {
             handleChangeText = {(e) => setForm({...form, password: e})}
             secureTextEntry={true}
             otherStyles={{marginBottom: 20}}
+            isCapital={false}
           />
 
           <CustomButton

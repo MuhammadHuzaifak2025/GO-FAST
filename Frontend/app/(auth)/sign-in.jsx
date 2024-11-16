@@ -131,6 +131,7 @@ const SignIn = () => {
             keyboardType="email-address"
             secureTextEntry={false}
             otherStyles={{ marginBottom: 20 }}
+            isCapital={false}
           />
 
           <FormField
@@ -140,6 +141,7 @@ const SignIn = () => {
             handleChangeText={(e) => setForm({ ...form, password: e })}
             secureTextEntry={true}
             otherStyles={{ marginBottom: 20 }}
+            isCapital={false}
           />
 
           <Link href="./forgot-password"
