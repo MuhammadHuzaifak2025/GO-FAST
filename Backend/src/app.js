@@ -11,6 +11,7 @@ const allowedOrigins = [
   // https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev/
   'https://dkfmdoe-anonymous-8081.exp.direct',
   '192.168.10.6:5001',
+  '192.168.100.2:5001',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5432.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5005.app.github.dev',

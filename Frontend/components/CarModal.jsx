@@ -42,7 +42,7 @@ export default function CarModal({ visible, onClose }) {
         try {
 
             const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicles`);
-            console.log(response.data.status);
+            // console.log(response.data.status);
             if (response.status === 200){   
                 setCars(response.data.data[1]);
                 setLoading(false);
