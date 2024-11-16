@@ -84,7 +84,7 @@ const PublishRide = () => {
     try{
 
       await setAuthHeaders(axios);
-      console.log(form);
+
       const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride`, {'vehicle_id': form.selectedCar, 
                                                                                               'route': [{'route_name':form.startingPoint, 'longitude': 0, 'latitude': 0},
                                                                                                         {'route_name':form.destination, 'longitude': 0, 'latitude': 0}],
@@ -154,18 +154,21 @@ const PublishRide = () => {
         placeholder="Starting Point"
         value={form.startingPoint.route_name}
         handleChangeText={(e) => setForm({ ...form, startingPoint: e })}
+        otherStyles={{marginVertical: 5}}
       />
 
       <FormField
         placeholder="Destination"
         value={form.destination.route_name}
         handleChangeText={(e) => setForm({ ...form, destination: e })}
+        otherStyles={{marginVertical: 5}}
       />
       <FormField
         placeholder="Price per seat"
         value={form.price}
         keyboardType="numeric"
         handleChangeText={(e) => setForm({ ...form, price: e })}
+        otherStyles={{marginVertical: 5}}
       />
 
       <TouchableOpacity onPress={openDateTimePicker} style={styles.dateTimeField}>
