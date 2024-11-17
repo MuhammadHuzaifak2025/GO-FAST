@@ -39,7 +39,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       {isCameraActive && (
-        <View style={styles.cameraContainer}>
+        <View style={styles.startContainer}>
           <CameraView style={styles.camera} facing={facing}>
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
@@ -51,6 +51,7 @@ export default function App() {
             title="Stop QR"
             onPress={() => setIsCameraActive(false)}
             color="#d9534f"
+            style={styles.stopButton}
           />
         </View>
       )}
@@ -90,17 +91,19 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   cameraContainer: {
-    height: 250, // Limit the camera height
+    height: 300, // Limit the camera height
     alignSelf: 'center',
     width: '90%',
     borderRadius: 8,
     overflow: 'hidden',
-    marginVertical: 16,
+    // marginVertical: 16,
     borderColor: '#007bff',
     borderWidth: 2,
+    marginBottom:500,
   },
   camera: {
-    flex: 1,
+    height: 300,
+    width: 300,
   },
   buttonContainer: {
     position: 'absolute',
@@ -160,5 +163,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 18,
+  },
+  stopButton: {
+    paddingTop: 16,
+    marginTop: 16,
   },
 });

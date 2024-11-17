@@ -83,7 +83,7 @@ const add_routes_to_bus = asynchandler(async (req, res, next) => {
         const busroutes = [];
         for (const routes of route) {
             // Validate route fields
-            if (!routes.route_name || !routes.longitude || !routes.latitude) {
+            if (!routes.route_name) {
                 throw new ApiError(400, "Please fill in all fields for each route");
             }
 

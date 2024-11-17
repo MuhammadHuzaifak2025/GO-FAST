@@ -8,7 +8,7 @@ const DashboardScreen = () => {
   const actions = [
     { id: '1', name: 'Create Bus', icon: 'bus', onPress: () => router.replace('/create-bus') },
     { id: '2', name: 'Verify Student', icon: 'check-circle', onPress: () => router.replace('/verify-student') },
-    { id: '3', name: 'Manage Routes', icon: 'map-marked-alt', onPress: () => console.log('Manage Routes') },
+    { id: '3', name: 'Manage Routes', icon: 'map-marked-alt', onPress: () => router.replace('/routes') },
     { id: '4', name: 'Reports', icon: 'file-alt', onPress: () => console.log('Reports') },
   ];
 

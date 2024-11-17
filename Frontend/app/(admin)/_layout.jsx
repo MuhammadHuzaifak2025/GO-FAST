@@ -92,6 +92,20 @@ const AdminLayout = () => {
             ),
           }}
         />
+        <Tabs.Screen
+          name="routes"
+          options={{
+            title: 'Routes',
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                icon="chart-bar"
+                color={color}
+                name="Routes"
+                focused={focused}
+              />
+            ),
+          }}
+        />
       </Tabs>
     </>
   );
