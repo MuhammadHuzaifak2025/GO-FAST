@@ -6,6 +6,9 @@ import { QueryTypes } from "sequelize";
 
 const create_bus = asynchandler(async (req, res, next) => {
     try {
+        if (!req.user.admin) {
+            throw new ApiError(403, "You are not authorized to perform this action");
+        }
         const { bus_number, seats, single_ride_fair } = req.body;
         const [bus_organization] = await sequelize.query(`
             SELECT organization_id FROM transport_organizations 
@@ -63,6 +66,9 @@ const get_all_buses = asynchandler(async (req, res, next) => {
 
 const add_routes_to_bus = asynchandler(async (req, res, next) => {
     try {
+        if (!req.user.admin) {
+            throw new ApiError(403, "You are not authorized to perform this action");
+        }
         const { route, bus_id } = req.body;
 
         // Validate input
