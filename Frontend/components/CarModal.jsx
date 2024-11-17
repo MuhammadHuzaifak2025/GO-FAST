@@ -9,7 +9,7 @@ import FormField from './FormField';
 import CustomButton from './CustomButton';
 import axios from 'axios';
 import { setAuthHeaders } from '../utils/expo-store';
-
+import { FlashList } from '@shopify/flash-list';
 
 export default function CarModal({ visible, onClose }) {
     const toast = useToast();
@@ -154,11 +154,12 @@ export default function CarModal({ visible, onClose }) {
                     />
                 </TouchableOpacity>
 
-                <Animated.View style={[styles.dropdownContent, { height: dropdownHeightList }]}>
+                <Animated.View style={[styles.dropdownContent, { height: dropdownHeightList, overflow: 'hidden' }]}>
                     {loading ? (
                         <Text style={styles.loadingText}>Loading...</Text>
                     ) : (
-                        <FlatList
+                        <FlashList
+                            estimatedItemSize={136}
                             data={cars}
                             keyExtractor={(item) => item.vehicle_id}
                             renderItem={({ item }) => (
@@ -196,30 +197,35 @@ export default function CarModal({ visible, onClose }) {
                             value={form.make}
                             handleChangeText={(e) => setForm({ ...form, make: e })}
                             secureTextEntry={false}
+                            otherStyles={{marginVertical: 5}}
                             />
                         <FormField
                             placeholder="Model"
                             value={form.model}
                             handleChangeText={(e) => setForm({ ...form, model: e })}
                             secureTextEntry={false}
+                            otherStyles={{marginVertical: 5}}
                             />
                         <FormField
                             placeholder="Type Of Vehicle"
                             value={form.type_of_car}
                             handleChangeText={(e) => setForm({ ...form, type_of_car: e })}
                             secureTextEntry={false}
+                            otherStyles={{marginVertical: 5}}
                             />
                         <FormField
                             placeholder="Registration Number"
                             value={form.registrationNumber}
                             handleChangeText={(e) => setForm({ ...form, registrationNumber: e })}
                             secureTextEntry={false}
+                            otherStyles={{marginVertical: 5}}
                             />
                         <FormField
                             placeholder="Color"
                             value={form.color}
                             handleChangeText={(e) => setForm({ ...form, color: e })}
                             secureTextEntry={false}
+                            otherStyles={{marginVertical: 5}}
                             />
                         <FormField
                             placeholder="seats"
@@ -227,6 +233,7 @@ export default function CarModal({ visible, onClose }) {
                             keyboardType="numeric"
                             handleChangeText={(e) => setForm({ ...form, seats: e })}
                             secureTextEntry={false}
+                            otherStyles={{marginVertical: 5}}
                             />
                         <CustomButton
                             textContent="Add Car"
