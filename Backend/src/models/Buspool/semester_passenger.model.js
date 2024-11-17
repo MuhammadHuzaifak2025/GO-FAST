@@ -3,7 +3,7 @@ import { DataTypes } from "sequelize";
 import User from "../user.models.js";
 import Route from "../carpool/routes.models.js";
 import Semester from "./semester.model.js";
-
+import Bus from "./Bus.model.js";
 const semester_passenger = sequelize.define(
     'semester_passenger', {
     semester_passenger_id: {
@@ -44,6 +44,17 @@ const semester_passenger = sequelize.define(
     is_paid: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    amount: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    bus_id: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: Bus,
+            key: 'bus_id'
+        }
     }
 });
 export default semester_passenger;

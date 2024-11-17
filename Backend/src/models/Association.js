@@ -13,7 +13,7 @@ import Bus from "./Buspool/Bus.model.js";
 import BusRoutes from "./Buspool/BusRoutes.model.js";
 import semester from "./Buspool/semester.model.js";
 import semester_passenger from "./Buspool/semester_passenger.model.js";
-import BusSemesterRide from "./Buspool/Bus_semester_ride.model.js";
+// import BusSemesterRide from "./Buspool/Bus_semester_ride.model.js";
 import SingleRidePassenger from "./Buspool/single_ride_passenger.model.js";
 import BusSingleRide from "./Buspool/Bus_Single_ride.model.js";
 
