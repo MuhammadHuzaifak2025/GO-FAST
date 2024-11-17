@@ -1,12 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity,ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 // import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
 const DashboardScreen = () => {
   const actions = [
-    { id: '1', name: 'Create Bus', icon: 'bus', onPress: () => console.log('Create Bus') },
+    { id: '1', name: 'Create Bus', icon: 'bus', onPress: () => router.replace('/create-bus') },
     { id: '2', name: 'Verify Student', icon: 'check-circle', onPress: () => router.replace('/verify-student') },
     { id: '3', name: 'Manage Routes', icon: 'map-marked-alt', onPress: () => console.log('Manage Routes') },
     { id: '4', name: 'Reports', icon: 'file-alt', onPress: () => console.log('Reports') },
