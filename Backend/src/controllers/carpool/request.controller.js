@@ -10,7 +10,7 @@ const reuqestride = asynchandler(async (req, res, next) => {
         const user_id = req.user.user_id;
         console.log(user_id)
         if (!rideId) {
-            return next(new ApiError(401, "Please provide a ride id"));
+            return next(new ApiError(400, "Please provide a ride id"));
         }
         const approved = false;
 
@@ -22,11 +22,11 @@ const reuqestride = asynchandler(async (req, res, next) => {
          
         console.log(alreadyRequested)
         if (!alreadyRequested || alreadyRequested.length > 0) {
-            return next(new ApiError(401, ["You have already requested this ride, Request_id is : ", alreadyRequested[0].request_id]));
+            return next(new ApiError(400, ["You have already requested this ride, Request_id is : ", alreadyRequested[0].request_id]));
         }
         
         if (alreadyRequested[0].driver == user_id) {
-            return next(new ApiError(401, "You can't request your own ride"));
+            return next(new ApiError(400, "You can't request your own ride"));
         }
 
         const ride = await sequelize.query(
@@ -47,7 +47,7 @@ const delete_ride_request = asynchandler(async (req, res, next) => {
     try {
         const { requestId } = req.params;
         if (!requestId) {
-            return next(new ApiError(401, "Please provide a request id"));
+            return next(new ApiError(400, "Please provide a request id"));
         }
         console.log(requestId)
         const ride = await sequelize.query(
@@ -58,7 +58,7 @@ const delete_ride_request = asynchandler(async (req, res, next) => {
             });
             console.log(ride)
         if (!ride) {
-            return next(new ApiError(401, "No ride requests found"));
+            return next(new ApiError(400, "No ride requests found"));
         }
         return res.json(new ApiResponse(200, "Ride request deleted successfully", ride[0]));
     } catch (error) {
@@ -86,7 +86,7 @@ const fetch_ride_requests_by_ride_id = asynchandler(async (req, res, next) => {
     try {
         const { rideId } = req.body;
         if (!rideId) {
-            return next(new ApiError(401, "Please provide a ride id"));
+            return next(new ApiError(400, "Please provide a ride id"));
         }
         const ride = await sequelize.query(
             `select * from ride_requests where ride_id = ?`,
@@ -95,7 +95,7 @@ const fetch_ride_requests_by_ride_id = asynchandler(async (req, res, next) => {
                 type: QueryTypes.SELECT,
             });
         if (!ride) {
-            return next(new ApiError(401, "No ride requests found"));
+            return next(new ApiError(400, "No ride requests found"));
         }
         return res.json(new ApiResponse(200, "Ride requests fetched successfully", ride));
     } catch (error) {
@@ -107,7 +107,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
     try {
         const { requestId } = req.body;
         if (!requestId) {
-            return next(new ApiError(401, "Please provide a request id"));
+            return next(new ApiError(400, "Please provide a request id"));
         }
         const ride_details = await sequelize.query(
             `SELECT a.request_id,a.ride_id,a.is_approved, b.driver, b.seat_available FROM ride_requests a inner join carpool_rides b on a.ride_id = b.ride_id WHERE request_id = ?`,
@@ -117,13 +117,13 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
             });
 
         if (!ride_details[0]) {
-            return next(new ApiError(401, "No ride requests found"));
+            return next(new ApiError(400, "No ride requests found"));
         }
         if (ride_details[0].driver !== req.user.user_id) {
-            return next(new ApiError(401, "You can't accept or create your own request"));
+            return next(new ApiError(400, "You can't accept or create your own request"));
         }
         if (ride_details[0].is_approved) {
-            return next(new ApiError(401, "Ride request already accepted"));
+            return next(new ApiError(400, "Ride request already accepted"));
         }
 
         const ride = await sequelize.query(
@@ -140,7 +140,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
                 type: QueryTypes.UPDATE,
             });
         if (rides_seats[0][0].seats_available < 0) {
-            return next(new ApiError(401, "No seats available"));
+            return next(new ApiError(400, "No seats available"));
         }
         const ride_passenger = await sequelize.query(
             `INSERT INTO ride_passengers (ride_id, passenger_id, "createdAt", "updatedAt") 
@@ -150,7 +150,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
                 type: QueryTypes.INSERT,
             });
         if (ride_passenger[0].length == 0) {
-            return next(new ApiError(401, "Ride request not accepted"));
+            return next(new ApiError(400, "Ride request not accepted"));
         }
         return res.json(new ApiResponse(200, "Ride request accepted successfully", ride[0]));
     } catch (error) {

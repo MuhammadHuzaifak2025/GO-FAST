@@ -62,7 +62,7 @@ const GlobalProvider = ({ children }) => {
           }
         }
       } catch (error) {
-        console.error("Authentication error:", error);
+        // console.error("Authentication error:", error);
         setIsAuthenticated(false);
         if (router.pathname !== '/') {
           router.replace('/'); // Redirect to login

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, Animated, Dimensions } from 'react-native';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Picker } from '@react-native-picker/picker'; 
+import { Picker } from '@react-native-picker/picker';
 import FormField from '../../components/FormField';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { useToast } from "react-native-toast-notifications";
 import { setAuthHeaders } from '../../utils/expo-store';
 import { useFocusEffect } from '@react-navigation/native';
-import { FontAwesome , Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from '@shopify/flash-list';
 
@@ -96,12 +96,14 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
 };
 
 const PublishRide = () => {
-  
+
   const { height } = Dimensions.get('window');
 
-  const [form, setForm] = useState({ startingPoint: '', destination: '', 
-                                     availableSeats: '', selectedCar: '',
-                                     dateTime: '', price: '' });
+  const [form, setForm] = useState({
+    startingPoint: '', destination: '',
+    availableSeats: '', selectedCar: '',
+    dateTime: '', price: ''
+  });
 
   const [carOptions, setCarOptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,35 +122,36 @@ const PublishRide = () => {
     React.useCallback(() => {
 
       const fetchCarData = async () => {
-        
+
         try {
           await setAuthHeaders(axios);
-          
+
           const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicles`);
-          if(response.status === 200){
-            
-            setCarOptions(response.data.data[1]); 
+          if (response.status === 200) {
+
+            setCarOptions(response.data.data[1]);
             setLoading(false);
           }
           else {
             throw new Error(response);
           }
         } catch (error) {
-          
-          // console.log(error); 
+
+          console.log(error);
+
           toast.show('Error fetching car data, please try again later', {
             type: "danger",
             duration: 4000,
             offset: 30,
             animationType: "slide-in",
           });
-          
+
           setLoading(false);
         }
       };
-      
+
       fetchCarData();
-      
+
       return () => {
         // setLoading(true);
       };
@@ -160,15 +163,15 @@ const PublishRide = () => {
 
       const selected = carOptions.find((car) => car.vehicle_id === form.selectedCar);
       setMaxSeats(selected ? selected.seats : 0);
-      setForm({ ...form, availableSeats: '' }); 
+      setForm({ ...form, availableSeats: '' });
     }
   }, [form.selectedCar]);
 
-  useEffect(()=>{
-    
+  useEffect(() => {
+
     fetchRides();
 
-  },[]);
+  }, []);
 
   const fetchRides = async () => {
 
@@ -176,17 +179,18 @@ const PublishRide = () => {
     try {
       await setAuthHeaders(axios);
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user`);
-      
-      if(response.status === 200){
-
+      // console.log("Hekki", response)
+      if (response.status === 200) {
+        console.log("Hekki",response.data.message.rides[0].routes[0].route_name);
+        console.log("Hekki",response.data.message.rides[0].routes[1].route_name);
         setRides(response.data.message.rides);
         setLoadingF(false);
       }
-      else {
-        throw new Error(response);
-      }
+      // else {
+      //   throw new Error(response);
+      // }
     } catch (error) {
-      console.log(error); 
+      console.log(error);
       toast.show('Error fetching your rides, please try again later', {
         type: "danger",
         duration: 4000,
@@ -205,19 +209,21 @@ const PublishRide = () => {
       });
       return;
     }
-    try{
+    try {
 
       await setAuthHeaders(axios);
 
-      const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride`, {'vehicle_id': form.selectedCar, 
-                                                                                              'route': [{'route_name':form.startingPoint, 'longitude': 0, 'latitude': 0},
-                                                                                                        {'route_name':form.destination, 'longitude': 0, 'latitude': 0}],
-                                                                                              'seats': form.availableSeats,
-                                                                                              'start_time': form.dateTime,
-                                                                                              'price': form.price,
-                                                                                              'departure_date': form.dateTime});
-      
-      if(resp.status === 201){
+      const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride`, {
+        'vehicle_id': form.selectedCar,
+        'route': [{ 'route_name': form.startingPoint, 'longitude': 0, 'latitude': 0 },
+        { 'route_name': form.destination, 'longitude': 0, 'latitude': 0 }],
+        'seats': form.availableSeats,
+        'start_time': form.dateTime,
+        'price': form.price,
+        'departure_date': form.dateTime
+      });
+
+      if (resp.status === 201) {
         toast.show('Ride published successfully', {
           type: "success",
           duration: 4000,
@@ -225,15 +231,16 @@ const PublishRide = () => {
           animationType: "slide-in",
         });
 
-        setForm({ startingPoint: {route_name: ''}, destination: {route_name: ''}, availableSeats: '', selectedCar: '', dateTime: '', price: '' });
+        setForm({ startingPoint: { route_name: '' }, destination: { route_name: '' }, availableSeats: '', selectedCar: '', dateTime: '', price: '' });
         fetchRides();
       }
-      else{
+      else {
+
         throw new Error(resp);
-      }                   
-          
-    } catch (error){
-      console.log(error.response);
+      }
+
+    } catch (error) {
+
       toast.show('Error publishing ride, please try again later', {
         type: "danger",
         duration: 4000,
@@ -275,85 +282,85 @@ const PublishRide = () => {
 
   const toggleDropdown = (check) => {
 
-    if(check === 'form'){
+    if (check === 'form') {
 
-        const toValue = isDropdownOpenForm ? 0 : height; // Adjust this value based on your needs
-        Animated.timing(dropdownHeightForm, {
-            toValue,
-            duration: 400,
-            useNativeDriver: false,
-        }).start();
-        
-        if(isDropdownOpenList){
-            toggleDropdown('list');
-        }
+      const toValue = isDropdownOpenForm ? 0 : height; // Adjust this value based on your needs
+      Animated.timing(dropdownHeightForm, {
+        toValue,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
 
-        setIsDropdownOpenForm(!isDropdownOpenForm);
+      if (isDropdownOpenList) {
+        toggleDropdown('list');
+      }
+
+      setIsDropdownOpenForm(!isDropdownOpenForm);
 
     }
-    else{
-        const toValue = isDropdownOpenList ? 0 : 500; // Adjust this value based on your needs
+    else {
+      const toValue = isDropdownOpenList ? 0 : 500; // Adjust this value based on your needs
 
-        Animated.timing(dropdownHeightList, {
-            toValue,
-            duration: 400,
-            useNativeDriver: false,
-        }).start();
-        
-        if(isDropdownOpenForm){
-            toggleDropdown('form');
-        }
+      Animated.timing(dropdownHeightList, {
+        toValue,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
 
-        setIsDropdownOpenList(!isDropdownOpenList);
+      if (isDropdownOpenForm) {
+        toggleDropdown('form');
+      }
+
+      setIsDropdownOpenList(!isDropdownOpenList);
     }
   };
 
   return (
-  <SafeAreaView style={styles.container}>
-    
-    <TouchableOpacity style={styles.toggleButton} onPress={()=>toggleDropdown('form')}>
-      <Text style={styles.title}>Publish Ride</Text>
-      <Ionicons name={isDropdownOpenForm ? 'chevron-up' : 'chevron-down'} size={24} color="#000" />
-    </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
 
-    <Animated.View style={{height: dropdownHeightForm, overflow: 'hidden'}}>
+      <TouchableOpacity style={styles.toggleButton} onPress={() => toggleDropdown('form')}>
+        <Text style={styles.title}>Publish Ride</Text>
+        <Ionicons name={isDropdownOpenForm ? 'chevron-up' : 'chevron-down'} size={24} color="#000" />
+      </TouchableOpacity>
 
-      {/* <Text style={styles.title}>Publish a Ride</Text> */}
+      <Animated.View style={{ height: dropdownHeightForm, overflow: 'hidden' }}>
 
-      <FormField
-        placeholder="Starting Point"
-        value={form.startingPoint.route_name}
-        handleChangeText={(e) => setForm({ ...form, startingPoint: e })}
-        otherStyles={{marginVertical: 5}}
+        {/* <Text style={styles.title}>Publish a Ride</Text> */}
+
+        <FormField
+          placeholder="Starting Point"
+          value={form.startingPoint.route_name}
+          handleChangeText={(e) => setForm({ ...form, startingPoint: e })}
+          otherStyles={{ marginVertical: 5 }}
         />
 
-      <FormField
-        placeholder="Destination"
-        value={form.destination.route_name}
-        handleChangeText={(e) => setForm({ ...form, destination: e })}
-        otherStyles={{marginVertical: 5}}
+        <FormField
+          placeholder="Destination"
+          value={form.destination.route_name}
+          handleChangeText={(e) => setForm({ ...form, destination: e })}
+          otherStyles={{ marginVertical: 5 }}
         />
-      <FormField
-        placeholder="Price per seat"
-        value={form.price}
-        keyboardType="numeric"
-        handleChangeText={(e) => setForm({ ...form, price: e })}
-        otherStyles={{marginVertical: 5}}
+        <FormField
+          placeholder="Price per seat"
+          value={form.price}
+          keyboardType="numeric"
+          handleChangeText={(e) => setForm({ ...form, price: e })}
+          otherStyles={{ marginVertical: 5 }}
         />
 
-      <TouchableOpacity onPress={openDateTimePicker} style={styles.dateTimeField}>
-        <Ionicons name = "calendar" size={24} color="black" />
+        <TouchableOpacity onPress={openDateTimePicker} style={styles.dateTimeField}>
+          <Ionicons name="calendar" size={24} color="black" />
           <Text style={styles.dateTimeText}>
             {form.dateTime ? form.dateTime.toLocaleString() : 'Select Date and Time'}
           </Text>
-          <TouchableOpacity onPress={() => setForm({...form, dateTime : ''})} style={styles.cross}>
-            <Ionicons name = "close" size={24} color="black" />
+          <TouchableOpacity onPress={() => setForm({ ...form, dateTime: '' })} style={styles.cross}>
+            <Ionicons name="close" size={24} color="black" />
           </TouchableOpacity>
-      </TouchableOpacity>
+        </TouchableOpacity>
 
-      {showDatePicker && (
+        {showDatePicker && (
 
-        <DateTimePicker
+          <DateTimePicker
             value={new Date()}
             mode={isDate ? 'date' : 'time'}
             display="default"
@@ -363,69 +370,70 @@ const PublishRide = () => {
           />
         )}
 
-      <Picker
-        selectedValue={form.selectedCar}
-        onValueChange={(itemValue) => setForm({ ...form, selectedCar: itemValue })}
-        style={styles.picker}
-        mode="dropdown"
+        <Picker
+          selectedValue={form.selectedCar}
+          onValueChange={(itemValue) => setForm({ ...form, selectedCar: itemValue })}
+          style={styles.picker}
+          mode="dropdown"
         >
-        <Picker.Item label="Select your car" value="" />
-        {carOptions.map((car) => (
-          <Picker.Item key={car.vehicle_id} label={`${car.color} ${car.make} ${car.model}`} value={car.vehicle_id} />
-        ))}
-        
-      </Picker>
+          <Picker.Item label="Select your car" value="" />
+          {carOptions.map((car) => (
+            <Picker.Item key={car.vehicle_id} label={`${car.color} ${car.make} ${car.model}`} value={car.vehicle_id} />
+          ))}
 
-      <Picker
-        selectedValue={form.availableSeats}
-        onValueChange={(e) => setForm({ ...form, availableSeats: e })}
-        style={styles.picker}
-        mode="dropdown"
-        enabled={!!form.selectedCar}
+        </Picker>
+
+        <Picker
+          selectedValue={form.availableSeats}
+          onValueChange={(e) => setForm({ ...form, availableSeats: e })}
+          style={styles.picker}
+          mode="dropdown"
+          enabled={!!form.selectedCar}
         >
-        <Picker.Item label="Select available seats" value="" />
-        {Array.from({ length: maxSeats }, (_, index) => index + 1).map((seat) => (
-          <Picker.Item key={seat} label={`${seat}`} value={seat} />
-        ))}
-      </Picker>
+          <Picker.Item label="Select available seats" value="" />
+          {Array.from({ length: maxSeats }, (_, index) => index + 1).map((seat) => (
+            <Picker.Item key={seat} label={`${seat}`} value={seat} />
+          ))}
+        </Picker>
 
 
-      <TouchableOpacity onPress={handlePublish} style={styles.publishButton}>
-        <Text style={styles.publishButtonText}>Publish Ride</Text>
-      </TouchableOpacity>
-    </Animated.View>
-
-    <TouchableOpacity style={styles.toggleButton} onPress={()=>toggleDropdown('list')}>
-      <Text style={styles.title}>Manage Rides</Text>
-      <Ionicons name={isDropdownOpenList ? 'chevron-up' : 'chevron-down'} size={24} color="#000" />
-    </TouchableOpacity>
-
-    <Animated.View style={ { height: dropdownHeightList, overflow: 'hidden', flex: 1 } }>
-      {loadingF ? (
-          <Text style={styles.loadingText}>Loading...</Text>
-      ) : (      
-          <FlashList
-              estimatedItemSize={191}
-              data={rides}
-              keyExtractor={(item) => item.ride_id}
-              renderItem={({ item }) => (
-                  <RideItem
-                      id={item.ride_id} 
-                      from={item.routes[0].route_name}
-                      to={item.routes[1].route_name}
-                      time={item.start_time}
-                      price={item.fare}
-                      seats={item.seat_available}
-                      car={item.vehicle}
-                      refreshRides={fetchRides}
-                      />
-                    )}
-            contentContainerStyle={{paddingBottom: 40}}
-          />
-      )}
+        <TouchableOpacity onPress={handlePublish} style={styles.publishButton}>
+          <Text style={styles.publishButtonText}>Publish Ride</Text>
+        </TouchableOpacity>
       </Animated.View>
-  </SafeAreaView>
-);
+
+      <TouchableOpacity style={styles.toggleButton} onPress={() => toggleDropdown('list')}>
+        <Text style={styles.title}>Manage Rides</Text>
+        <Ionicons name={isDropdownOpenList ? 'chevron-up' : 'chevron-down'} size={24} color="#000" />
+      </TouchableOpacity>
+
+      <Animated.View style={{ height: dropdownHeightList, overflow: 'hidden', flex: 1 }}>
+        {loadingF ? (
+          <Text style={styles.loadingText}>Loading...</Text>
+        ) : (
+          <FlashList
+            estimatedItemSize={191}
+            data={rides}
+            keyExtractor={(item) => item.ride_id}
+            renderItem={({ item }) => (
+              <RideItem
+                id={item.ride_id}
+                from={item.routes[1].route_name}
+                to={item.routes[1].route_name}
+                rides
+                time={item.start_time}
+                price={item.fare}
+                seats={item.seat_available}
+                car={item.vehicle}
+                refreshRides={fetchRides}
+              />
+            )}
+            contentContainerStyle={{ paddingBottom: 40 }}
+          />
+        )}
+      </Animated.View>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -523,7 +531,7 @@ const styles = StyleSheet.create({
     flex: 1, // Allow text to take available space
     marginLeft: 10,
   },
-  
+
   cross: {
     position: 'absolute',
     right: 15,
@@ -533,7 +541,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    
+
     padding: 15,
     borderRadius: 10,
   },

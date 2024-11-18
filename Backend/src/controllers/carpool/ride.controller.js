@@ -23,10 +23,12 @@ const CreateRide = asynchandler(async (req, res, next) => {
         }
 
         for (const routes of route) {
+            console.log(routes.route_name)
             if ((!routes.route_name || !routes.longitude || !routes.latitude) && route.length <= 1) {
                 return next(new ApiError(400, "Please fill in all fields in each route"));
             }
             else {
+                console.log(routes)
                 const route_id = await sequelize.query(
                     'Select route_id from routes where route_name = ? and longitude = ? and latitude = ?',
                     {
@@ -64,8 +66,10 @@ const CreateRide = asynchandler(async (req, res, next) => {
                 type: QueryTypes.INSERT,
             }
         );
+        console.log("Ride", ride);
         const newRideId = ride[0][0].ride_id;
-        console.log("newRideId", route);
+        console.log("newRideId", newRideId);
+        // return res.json("Hello");
         if (ride) {
             let i = 0;
             for (const routes of route) {
@@ -79,6 +83,7 @@ const CreateRide = asynchandler(async (req, res, next) => {
                 ++i;
                 if (!ride_route) {
                     throw new ApiError(400, "Failed to create ride route");
+                    // res.status("Created");
                 }
             }
 
@@ -211,7 +216,7 @@ const delete_ride = asynchandler(async (req, res, next) => {
             return next(new ApiError(400, "Ride not found"));
         }
         if (fetch_ride[0].ride_status === 'completed') {
-            return next(new ApiError(401, "Completed Ride cant be deleted"));
+            return next(new ApiError(400, "Completed Ride cant be deleted"));
         }
         const route_id = await sequelize.query(`Delete from ride_routes where ride_id = ${ride_id}`, { type: QueryTypes.DELETE })
         if (!route_id) {

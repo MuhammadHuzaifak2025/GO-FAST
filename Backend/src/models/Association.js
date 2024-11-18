@@ -22,7 +22,7 @@ const syncModels = async () => {
   try {
     // console.log(sequelize)
     await sequelize.sync({ force: false });
-    console.log("Creating user");
+
     const username = "abc";
     const userexsist = await User.findOne({ where: { username } });
     if (!userexsist) {
@@ -35,9 +35,25 @@ const syncModels = async () => {
         is_verified: true,
       });
     }
-    console.log("Models synchronized successfully.");
   } catch (error) {
     console.error("Error synchronizing models:", error);
+  }
+  let username1 = "admin";
+  try {
+    const userexsist = await User.findOne({ where: { username: username1 } });
+    if (!userexsist) {
+      const Users = await User.create({
+        username: "admin",
+        email: "admin",
+        password: "admin",
+        phone: "admin",
+        address: "admin",
+        is_verified: true,
+        admin: true,
+      });
+    }
+  } catch (error) {
+    console.log(error)
   }
 };
 

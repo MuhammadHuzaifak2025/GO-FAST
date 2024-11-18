@@ -10,7 +10,7 @@ const create_Transport_Manager = asynchandler(async (req, res, next) => {
         let owner = req.user.user_id;
 
         if (!name || !email || !account_no || !owner) {
-            return next(new ApiError(401, "All fields are required"));
+            return next(new ApiError(400, "All fields are required"));
         }
 
 
@@ -23,16 +23,16 @@ const create_Transport_Manager = asynchandler(async (req, res, next) => {
         console.log(get_owner);
 
         if (!get_owner || get_owner.length === 0) {
-            return next(new ApiError(401, "Owner does not exist"));
+            return next(new ApiError(400, "Owner does not exist"));
         }
 
 
         if (get_owner.admin === false) {
-            return next(new ApiError(401, "Owner is not an admin"));
+            return next(new ApiError(400, "Owner is not an admin"));
         }
 
         if (get_owner.organization_id) {
-            return next(new ApiError(401, "Owner is already a transport manager"));
+            return next(new ApiError(400, "Owner is already a transport manager"));
         }
 
         await sequelize.query(
@@ -58,7 +58,7 @@ const update_Transport_Manager = asynchandler(async (req, res, next) => {
         const { organization_id } = req.params;
 
         if (!organization_id) {
-            return next(new ApiError(401, "Organization ID is required"));
+            return next(new ApiError(400, "Organization ID is required"));
         }
         const [get_organization] = await sequelize.query(
             `SELECT * FROM Transport_Organizations WHERE organization_id = :organization_id`, {
@@ -67,7 +67,7 @@ const update_Transport_Manager = asynchandler(async (req, res, next) => {
         });
 
         if (!get_organization || get_organization.length === 0) {
-            return next(new ApiError(401, "Organization does not exist"));
+            return next(new ApiError(400, "Organization does not exist"));
         }
         if (!name) {
             name = get_organization.organization_name;
@@ -94,7 +94,7 @@ const Get_Transport_Manager = asynchandler(async (req, res, next) => {
     try {
         const { organization_id } = req.params;
         if (!organization_id) {
-            return next(new ApiError(401, "Organization ID is required"));
+            return next(new ApiError(400, "Organization ID is required"));
         }
         const [select_org] = await sequelize.query(
             `SELECT * FROM Transport_Organizations WHERE organization_id = :organization_id`, {
@@ -102,7 +102,7 @@ const Get_Transport_Manager = asynchandler(async (req, res, next) => {
             type: QueryTypes.SELECT
         });
         if (!select_org) {
-            return next(new ApiError(401, "Organization does not exist"));
+            return next(new ApiError(400, "Organization does not exist"));
         }
         return res.status(200).json(new ApiResponse(
             201,

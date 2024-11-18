@@ -34,6 +34,7 @@ const AdminLayout = () => {
           tabBarActiveTintColor: '#EC5F5F',
           tabBarInactiveTintColor: '#CDCDE0',
           tabBarStyle: styles.tabBar,
+          tabBarHideOnKeyboard: true,
         }}
       >
         <Tabs.Screen
@@ -78,7 +79,7 @@ const AdminLayout = () => {
             ),
           }}
         />
-        <Tabs.Screen
+        {/* <Tabs.Screen
           name="reports"
           options={{
             title: 'Reports',
@@ -91,16 +92,16 @@ const AdminLayout = () => {
               />
             ),
           }}
-        />
+        /> */}
         <Tabs.Screen
-          name="routes"
+          name="admin-profile"
           options={{
-            title: 'Routes',
+            title: 'admin-profile',
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon="chart-bar"
                 color={color}
-                name="Routes"
+                name="admin-profile"
                 focused={focused}
               />
             ),
