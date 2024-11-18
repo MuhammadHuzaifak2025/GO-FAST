@@ -240,7 +240,7 @@ const PublishRide = () => {
       }
 
     } catch (error) {
-
+      console.log("Hello", error.response.data);
       toast.show('Error publishing ride, please try again later', {
         type: "danger",
         duration: 4000,

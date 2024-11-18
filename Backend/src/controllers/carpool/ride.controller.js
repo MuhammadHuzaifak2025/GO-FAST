@@ -34,7 +34,7 @@ const CreateRide = asynchandler(async (req, res, next) => {
                         type: QueryTypes.SELECT,
                     }
                 );
-                
+
 
                 if (route_id[0]) {
                     routes.route_id = route_id[0].route_id;
@@ -60,7 +60,16 @@ const CreateRide = asynchandler(async (req, res, next) => {
             `INSERT INTO carpool_rides (vehicle_id, start_time, fare, seat_available, driver, "createdAt", "updatedAt", "ride_status") VALUES (?,?,?,?,?,?,?,?)
             RETURNING ride_id`,
             {
-                replacements: [vehicle_id, start_time, price, seats, user_id, new Date(), new Date(), "available",],
+                replacements: [
+                    vehicle_id, 
+                    new Date(start_time).toISOString(), // Ensure ISO format for start_time
+                    price, 
+                    seats, 
+                    user_id, 
+                    new Date().toISOString(), // Use ISO format for createdAt
+                    new Date().toISOString(), // Use ISO format for updatedAt
+                    "available",
+                ],
                 type: QueryTypes.INSERT,
             }
         );
@@ -70,7 +79,7 @@ const CreateRide = asynchandler(async (req, res, next) => {
         if (ride[0]) {
             let i = 0;
             for (const routes of route) {
-                console.log(routes, newRideId)
+                console.log("Hello", routes, newRideId)
                 const ride_route = await sequelize.query(
                     `INSERT INTO ride_routes (ride_id, route_id,  "createdAt", "updatedAt", "order") VALUES (?,?,?,?,? )`,
                     {
