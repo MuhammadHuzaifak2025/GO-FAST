@@ -3,6 +3,8 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5 } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+
 
 // Reusable TabIcon component
 const TabIcon = ({ icon, color, name, focused }) => {
@@ -68,45 +70,46 @@ const AdminLayout = () => {
         <Tabs.Screen
           name="verify-student"
           options={{
-            title: 'Manage Routes',
+            title: 'Verify Student',
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
-                icon="route"
+                icon="camera"
                 color={color}
-                name="Routes"
+                name="Verify Student"
                 focused={focused}
               />
             ),
           }}
         />
-        {/* <Tabs.Screen
-          name="reports"
+        <Tabs.Screen
+          name="routes"
           options={{
-            title: 'Reports',
+            title: 'routes',
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
-                icon="chart-bar"
+                icon="search-location"
                 color={color}
-                name="Reports"
+                name="Bus Routes"
                 focused={focused}
               />
             ),
           }}
-        /> */}
+        />
         <Tabs.Screen
           name="admin-profile"
           options={{
-            title: 'admin-profile',
+            title: 'profile',
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
-                icon="chart-bar"
+                icon="user"
                 color={color}
-                name="admin-profile"
+                name="profile"
                 focused={focused}
               />
             ),
           }}
         />
+
       </Tabs>
     </>
   );
