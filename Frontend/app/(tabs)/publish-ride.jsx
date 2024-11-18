@@ -111,92 +111,49 @@ const PublishRide = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isDate, setIsDate] = useState(false);
   const [isDropdownOpenList, setIsDropdownOpenList] = useState(false);
-  const [isDropdownOpenForm, setIsDropdownOpenForm] = useState(true);
+  const [isDropdownOpenForm, setIsDropdownOpenForm] = useState(false);
+
   const [dropdownHeightList] = useState(new Animated.Value(0));
-  const [dropdownHeightForm] = useState(new Animated.Value(height));
+  const [dropdownHeightForm] = useState(new Animated.Value(0));
+  
   const [rides, setRides] = useState([]);
   const [loadingF, setLoadingF] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(false);
+
   const toast = useToast();
-
-  useFocusEffect(
-    React.useCallback(() => {
-
-      const fetchCarData = async () => {
-
-        try {
-          await setAuthHeaders(axios);
-
-          const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicles`);
-          if (response.status === 200) {
-
-            setCarOptions(response.data.data[1]);
-            setLoading(false);
-          }
-          else {
-            throw new Error(response);
-          }
-        } catch (error) {
-
-          console.log(error);
-
-          toast.show('Error fetching car data, please try again later', {
-            type: "danger",
-            duration: 4000,
-            offset: 30,
-            animationType: "slide-in",
-          });
-
-          setLoading(false);
-        }
-      };
-
-      fetchCarData();
-
-      return () => {
-        // setLoading(true);
-      };
-    }, [])
-  );
-
-  useEffect(() => {
-    if (form.selectedCar) {
-
-      const selected = carOptions.find((car) => car.vehicle_id === form.selectedCar);
-      setMaxSeats(selected ? selected.seats : 0);
-      setForm({ ...form, availableSeats: '' });
-    }
-  }, [form.selectedCar]);
-
-  useEffect(() => {
-
-    fetchRides();
-
-  }, []);
-
+  
   const fetchRides = async () => {
-
+    
+    setIsEmpty(false);
     setLoadingF(true);
     try {
+
       await setAuthHeaders(axios);
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user`);
       // console.log("Hekki", response)
       if (response.status === 200) {
-        console.log("Hekki",response.data.message.rides[0].routes[0].route_name);
-        console.log("Hekki",response.data.message.rides[0].routes[1].route_name);
+
+        console.log("hello", response);
         setRides(response.data.message.rides);
         setLoadingF(false);
       }
-      // else {
-      //   throw new Error(response);
-      // }
+      else {
+        throw new Error(response);
+      }
     } catch (error) {
-      console.log(error);
-      toast.show('Error fetching your rides, please try again later', {
-        type: "danger",
-        duration: 4000,
-        offset: 30,
-        animationType: "slide-in",
-      });
+      if(error.response.data.message === 'No rides available'){
+
+        setIsEmpty(true);
+      }
+      else{
+
+          toast.show('Error fetching your rides, please try again later', {
+            type: "danger",
+            duration: 4000,
+            offset: 30,
+          animationType: "slide-in",
+        });
+      }
       setLoadingF(false);
     }
   };
@@ -231,7 +188,7 @@ const PublishRide = () => {
           animationType: "slide-in",
         });
 
-        setForm({ startingPoint: { route_name: '' }, destination: { route_name: '' }, availableSeats: '', selectedCar: '', dateTime: '', price: '' });
+        // setForm({ startingPoint: { route_name: '' }, destination: { route_name: '' }, availableSeats: '', selectedCar: '', dateTime: '', price: '' });
         fetchRides();
       }
       else {
@@ -249,15 +206,6 @@ const PublishRide = () => {
       });
     }
   };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ff6347" />
-        <Text style={styles.loadingText}>Loading cars...</Text>
-      </View>
-    );
-  }
 
   const openDateTimePicker = () => {
     setIsDate(true);
@@ -291,7 +239,7 @@ const PublishRide = () => {
         useNativeDriver: false,
       }).start();
 
-      if (isDropdownOpenList) {
+      if (isDropdownOpenList && !isDropdownOpenForm) {
         toggleDropdown('list');
       }
 
@@ -299,21 +247,89 @@ const PublishRide = () => {
 
     }
     else {
-      const toValue = isDropdownOpenList ? 0 : 500; // Adjust this value based on your needs
 
+      const toValue = isDropdownOpenList ? 0 : 500; // Adjust this value based on your needs
+      
       Animated.timing(dropdownHeightList, {
         toValue,
         duration: 300,
         useNativeDriver: false,
       }).start();
 
-      if (isDropdownOpenForm) {
+      if (isDropdownOpenForm && !isDropdownOpenList) {
         toggleDropdown('form');
       }
 
       setIsDropdownOpenList(!isDropdownOpenList);
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+
+      toggleDropdown('list');
+      // console.log("Hello");
+      
+      const fetchCarData = async () => {
+
+        try {
+          await setAuthHeaders(axios);
+
+          const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicles`);
+          if (response.status === 200) {
+
+            setCarOptions(response.data.data[1]);
+            setLoading(false);
+          }
+          else {
+            throw new Error(response);
+          }
+        } catch (error) {
+
+          console.log(error);
+
+          toast.show('Error fetching car data, please try again later', {
+            type: "danger",
+            duration: 4000,
+            offset: 30,
+            animationType: "slide-in",
+          });
+          
+          setLoading(false);
+        }
+      };
+
+      fetchCarData();
+
+      return () => {
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    if (form.selectedCar) {
+
+      const selected = carOptions.find((car) => car.vehicle_id === form.selectedCar);
+      setMaxSeats(selected ? selected.seats : 0);
+      setForm({ ...form, availableSeats: '' });
+    }
+  }, [form.selectedCar]);
+
+  useEffect(() => {
+
+    fetchRides();
+
+  }, []);
+
+  
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#ff6347" />
+        <Text style={styles.loadingText}>Loading cars...</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -407,10 +423,12 @@ const PublishRide = () => {
         <Ionicons name={isDropdownOpenList ? 'chevron-up' : 'chevron-down'} size={24} color="#000" />
       </TouchableOpacity>
 
-      <Animated.View style={{ height: dropdownHeightList, overflow: 'hidden', flex: 1 }}>
+      <Animated.View style={{ height: dropdownHeightList, overflow: 'hidden' }}>
         {loadingF ? (
           <Text style={styles.loadingText}>Loading...</Text>
-        ) : (
+        ) : ( isEmpty ? 
+          <Text style={styles.subheading}>No rides published</Text> :
+          
           <FlashList
             estimatedItemSize={191}
             data={rides}
@@ -418,9 +436,8 @@ const PublishRide = () => {
             renderItem={({ item }) => (
               <RideItem
                 id={item.ride_id}
-                from={item.routes[1].route_name}
+                from={item.routes[0].route_name}
                 to={item.routes[1].route_name}
-                rides
                 time={item.start_time}
                 price={item.fare}
                 seats={item.seat_available}
@@ -608,6 +625,17 @@ const styles = StyleSheet.create({
   },
   seatIcon: {
     marginHorizontal: 2,
+  },
+  subheading : {
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000', // Tomato color for the subheading
+    marginTop: 20,
+    marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   // dropdownContent: {
   //   marginTop: 10,

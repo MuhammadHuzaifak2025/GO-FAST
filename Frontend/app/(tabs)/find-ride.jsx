@@ -7,7 +7,9 @@ import CustomButton from '../../components/CustomButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from "@shopify/flash-list";
 import { Picker } from '@react-native-picker/picker';
-import { useFocusEffect } from 'expo-router';
+import { setAuthHeaders } from '../../utils/expo-store';
+import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';  
 // Sample ride data
 const rides = [
   { id: '1', from: 'Downtown', to: 'University', time: '08:30 AM', username: 'Alex', seats: 3 },
@@ -42,12 +44,56 @@ const RideItem = ({ from, to, time, username, seats }) => (
 
 const FindRide = () => {
 
-  const [filteredRides, setFilteredRides] = useState(rides);
+  const [filteredRides, setFilteredRides] = useState([]);
   const [preference, setPreference] = useState({ seats: '', dateTime: '', pickup: '', dropoff: '' });
   const [showFilter, setShowFilter] = useState(false);
   const animationValue = useRef(new Animated.Value(0)).current;
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isDate, setIsDate] = useState(false);  
+
+  const [rides, setRides] = useState([]);
+  const [count, setCount] = useState(1);
+  const [loadingF, setLoadingF] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(false);
+
+  const fetchRides = async () => {
+    
+    setIsEmpty(false);
+    setLoadingF(true);
+    
+    try {
+      
+      await setAuthHeaders(axios);
+
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/rides/${count}/10`);
+
+      if (response.status === 200) {
+
+        setRides(response.data.message.rides);
+        setFilteredRides(rides);
+        console.log("hello", rides);
+        setLoadingF(false);
+      }
+      else {
+        throw new Error(response);
+      }
+    } catch (error) {
+      if(error.response.data.message === 'No rides available'){
+
+        setIsEmpty(true);
+      }
+      else{
+
+          toast.show('Error fetching your rides, please try again later', {
+            type: "danger",
+            duration: 4000,
+            offset: 30,
+          animationType: "slide-in",
+        });
+      }
+      setLoadingF(false);
+    }
+  };
 
   // Function to animate dropdown
   const toggleFilter = () => {
@@ -69,23 +115,23 @@ const FindRide = () => {
 
   const animatedHeight = animationValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 250], // Adjusted to fit date picker
+    outputRange: [0, 300], // Adjusted to fit date picker
   });
 
   // Function to filter rides based on preferences
-  const filterRides = () => {
-    const filtered = rides.filter(ride => {
-      const rideSeats = parseInt(ride.seats, 10);
-      const requestedSeats = parseInt(preference.seats, 10);
-      return (
-        (!requestedSeats || rideSeats >= requestedSeats ) &&
-        (!preference.dateTime || ride.time === preference.dateTime) && 
-        (!preference.pickup || ride.from === preference.pickup) && 
-        (!preference.dropoff || ride.to === preference.dropoff)
-      );
-    });
-    setFilteredRides(filtered);
-  };
+  // const filterRides = () => {
+  //   const filtered = rides.filter(ride => {
+  //     const rideSeats = ride.seats;
+  //     const requestedSeats = parseInt(preference.seats, 10);
+  //     return (
+  //       (!requestedSeats || rideSeats >= requestedSeats ) &&
+  //       (!preference.dateTime || ride.time === preference.dateTime) && 
+  //       (!preference.pickup || ride.from === preference.pickup) && 
+  //       (!preference.dropoff || ride.to === preference.dropoff)
+  //     );
+  //   });
+  //   setFilteredRides(filtered);
+  // };
 
   const openDateTimePicker = () => {
     setIsDate(true);
@@ -110,8 +156,16 @@ const FindRide = () => {
 
   // useFocusEffect()
   useEffect(() => {
-    filterRides();
+    // filterRides();
   }, [preference]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+    
+      fetchRides();
+
+     }, [])
+  );
 
 
   return (
@@ -192,7 +246,12 @@ const FindRide = () => {
         data={filteredRides}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <RideItem from={item.from} to={item.to} time={item.time} username={item.username} seats={item.seats}/>
+          <RideItem 
+            from={item.routes[0].route_name}
+            to={item.routes[1].route_name}
+            time={item.start_time} 
+            // username={item.username}
+            seats={item.seat_available}/>
         )}
         // onEndReached={} AFTER API INTEGRATION ADD THE P|AGINATION THING TO THIS FOR INFINITE SCROLL
       />

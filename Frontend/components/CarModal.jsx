@@ -32,6 +32,11 @@ export default function CarModal({ visible, onClose }) {
     useEffect(() => {
         if (visible) {
             fetchCars();
+            toggleDropdown('list');
+        }
+        else{
+            setIsDropdownOpenForm(false);
+            setIsDropdownOpenList(false);
         }
     }, [visible]);
 
@@ -119,6 +124,7 @@ export default function CarModal({ visible, onClose }) {
                         duration: 3000,
                     });
                     fetchCars();
+                    toggleDropdown('list');
                 }
             } catch (error) {
                 console.log(error.response.data.message);   
@@ -154,7 +160,7 @@ export default function CarModal({ visible, onClose }) {
                     />
                 </TouchableOpacity>
 
-                <Animated.View style={[styles.dropdownContent, { height: dropdownHeightList, overflow: 'hidden' }]}>
+                <Animated.View style={[styles.dropdownContent, { height: dropdownHeightList }]}>
                     {loading ? (
                         <Text style={styles.loadingText}>Loading...</Text>
                     ) : (
