@@ -23,12 +23,10 @@ const CreateRide = asynchandler(async (req, res, next) => {
         }
 
         for (const routes of route) {
-            console.log(routes.route_name)
             if ((!routes.route_name || !routes.longitude || !routes.latitude) && route.length <= 1) {
                 return next(new ApiError(400, "Please fill in all fields in each route"));
             }
             else {
-                console.log(routes)
                 const route_id = await sequelize.query(
                     'Select route_id from routes where route_name = ? and longitude = ? and latitude = ?',
                     {
@@ -36,13 +34,13 @@ const CreateRide = asynchandler(async (req, res, next) => {
                         type: QueryTypes.SELECT,
                     }
                 );
-                console.log(route_id);
+                
 
                 if (route_id[0]) {
-                    route.route_id = route_id[0].route_id;
+                    routes.route_id = route_id[0].route_id;
                 }
                 else {
-                    const route_detail = await sequelize.query(
+                    const [route_detail] = await sequelize.query(
                         `INSERT INTO routes ("route_name", "longitude", "latitude", "createdAt", "updatedAt") VALUES (?, ?, ?, ?, ?) RETURNING route_id`,
                         {
                             replacements: [routes.route_name, routes.longitude, routes.latitude, new Date(), new Date()],
@@ -50,15 +48,15 @@ const CreateRide = asynchandler(async (req, res, next) => {
                         }
                     );
 
-                    if (route) {
-                        route.route_id = route_detail[0].route_id;
+                    if (route_detail[0]) {
+                        routes.route_id = route_detail[0].route_id;
                     } else {
                         throw new ApiError(400, "Failed to create route");
                     }
                 }
             }
         }
-        const ride = await sequelize.query(
+        const [ride] = await sequelize.query(
             `INSERT INTO carpool_rides (vehicle_id, start_time, fare, seat_available, driver, "createdAt", "updatedAt", "ride_status") VALUES (?,?,?,?,?,?,?,?)
             RETURNING ride_id`,
             {
@@ -66,24 +64,23 @@ const CreateRide = asynchandler(async (req, res, next) => {
                 type: QueryTypes.INSERT,
             }
         );
-        console.log("Ride", ride);
-        const newRideId = ride[0][0].ride_id;
-        console.log("newRideId", newRideId);
-        // return res.json("Hello");
-        if (ride) {
+        const newRideId = ride[0].ride_id;
+        // console.log("newRideId", ride[0].ride_id);
+        // return ;
+        if (ride[0]) {
             let i = 0;
             for (const routes of route) {
+                console.log(routes, newRideId)
                 const ride_route = await sequelize.query(
                     `INSERT INTO ride_routes (ride_id, route_id,  "createdAt", "updatedAt", "order") VALUES (?,?,?,?,? )`,
                     {
-                        replacements: [newRideId, route.route_id, new Date(), new Date(), i],
+                        replacements: [newRideId, routes.route_id, new Date(), new Date(), i],
                         type: QueryTypes.INSERT,
                     }
                 );
                 ++i;
                 if (!ride_route) {
                     throw new ApiError(400, "Failed to create ride route");
-                    // res.status("Created");
                 }
             }
 
