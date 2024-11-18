@@ -1,125 +1,117 @@
-import { View, Text, Image } from 'react-native';
-import { Tabs, Redirect } from 'expo-router';
+import React from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { Tabs } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome5, AntDesign } from '@expo/vector-icons';
+// import AntDesign from '@expo/vector-icons/AntDesign';
 
-import { icons } from '../../constants';
 
-const TabIcon = ({icon,color,name,focused}) => {
+// Reusable TabIcon component
+const TabIcon = ({ icon, color, name, focused }) => {
   return (
-    <View style={{
-      alignItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center',
-      gap:5,
-      flexDirection: 'column',
-      width: 50
-    }}>
-      <Image
-        source={icon}
-        resizeMode = "contain"
-        tintColor = {color}
-        style={{
-          marginTop: 20,
-          width: 25,
-          height: 25,
-        }}
-      />
-      <Text style={[{
-                    color: color},
-                    {fontFamily: focused ? 'Poppins-SemiBold' : 'Poppins-Regular'},
-                    {fontSize: 10},]}>
-                  {name}
+    <View style={styles.tabIconContainer}>
+      <LinearGradient
+        colors={focused ? ['#FF6B6B', '#FF8E8E'] : ['#F0F0F0', '#F0F0F0']}
+        style={styles.iconBackground}
+      >
+        <FontAwesome5 name={icon} size={20} color={focused ? '#FFF' : '#CDCDE0'} />
+      </LinearGradient>
+      <Text style={[
+        styles.tabLabel,
+        { color: color, fontFamily: focused ? 'Poppins-SemiBold' : 'Poppins-Regular' }
+      ]}>
+        {name}
       </Text>
     </View>
-  )
-}
+  );
+};
 
-const TabsLayout = () => {
+const BusLayout = () => {
   return (
     <>
       <Tabs
         screenOptions={{
-          tabBarHideOnKeyboard: true,
+          headerShown: false,
           tabBarShowLabel: false,
           tabBarActiveTintColor: '#EC5F5F',
           tabBarInactiveTintColor: '#CDCDE0',
-          tabBarStyle: {
-          height: 60, // Standard tab bar height
-          borderTopColor: 'transparent',
-          paddingHorizontal: 5,
-          paddingVertical: 0, // Add vertical padding to center items
-          alignItems: 'center', // Centers the tabs
-          
-        },
+          tabBarStyle: styles.tabBar,
+          tabBarHideOnKeyboard: true,
         }}
       >
         <Tabs.Screen
-          name="your-rides"
+          name="viewbus"
           options={{
-            title: 'Your Rides',
-            headerShown: false,
-            tabBarIcon: ({color, focused}) => (
+            title: 'viewbus',
+            tabBarIcon: ({ color, focused }) => (
               <TabIcon
-                icon={icons.rides}
+                icon="bus"
                 color={color}
-                name="Your Ride"
-                focused={focused}/>
-            )
-          }}/>
-        <Tabs.Screen
-          name="find-ride"
-          options={{
-            title: 'Find Ride',
-            headerShown: false,
-            tabBarIcon: ({color, focused}) => (
-              <TabIcon
-                icon={icons.search}
-                color={color}
-                name="Find Ride"
-                focused={focused}/>
-            )
-          }}/>
-        <Tabs.Screen
-          name="publish-ride"
-          options={{
-            title: 'Publish',
-            headerShown: false,
-            tabBarIcon: ({color, focused}) => (
-              <TabIcon
-                icon={icons.add}
-                color={color}
-                name="Publish"
-                focused={focused}/>
-            )
-          }}/>
-        <Tabs.Screen
-          name="inbox"
-          options={{
-            title: 'Inbox',
-            headerShown: false,
-            tabBarIcon: ({color, focused}) => (
-              <TabIcon
-                icon={icons.chat}
-                color={color}
-                name="Inbox"
-                focused={focused}/>
-            )
-          }}/>
+                name="View Bus"
+                focused={focused}
+              />
+            ),
+          }}
+        />
+       
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Profile',
-            headerShown: false,
-            tabBarIcon: ({color, focused}) => (
+            title: 'profile',
+            tabBarIcon: ({ color, focused }) => (
               <TabIcon
-                icon={icons.profile}
+                icon="user"
                 color={color}
                 name="Profile"
-                focused={focused}/>
-            )
-          }}/>
+                focused={focused}
+              />
+            ),
+          }}
+        />
+
       </Tabs>
     </>
-  )
-}
+  );
+};
 
-export default TabsLayout
+const styles = StyleSheet.create({
+  tabBar: {
+    height: 70,
+    borderTopColor: 'transparent',
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  tabIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    gap: 5,
+    flexDirection: 'column',
+    width: 70,
+  },
+  iconBackground: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  tabLabel: {
+    fontSize: 10,
+  },
+});
+
+export default BusLayout;

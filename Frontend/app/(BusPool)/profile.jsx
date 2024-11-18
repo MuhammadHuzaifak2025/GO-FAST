@@ -26,7 +26,7 @@ const Profile = () => {
   const [registerCarDisplay, setRegisterCarDisplay] = useState(false);
 
   const handleswitch = () => {
-    router.replace('/viewbus');
+    router.replace('/find-ride');
   }
 
   useEffect(() => {
