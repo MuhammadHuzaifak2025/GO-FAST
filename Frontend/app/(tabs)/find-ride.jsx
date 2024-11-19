@@ -13,27 +13,32 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
 
 const RideItem = ({ from, to, time, username, seats }) => (
-  <LinearGradient
-    colors={['black', '#ff6347']}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={styles.rideItem}
-  >
-    <View style={styles.rideHeader}>
-      <FontAwesome name="car" size={24} color="#fff" />
-      <Text style={styles.usernameText}>{username}</Text>
-    </View>
-    <Text style={styles.rideText}>From: {from}</Text>
-    <Text style={styles.rideText}>To: {to}</Text>
-    <Text style={styles.rideTime}>{time}</Text>
-    
-    <View style={styles.seatsContainer}>
-      <Text style={styles.seatText}>Seats Available: </Text>
-      {Array.from({ length: seats }).map((_, index) => (
-        <MaterialIcons key={index} name="event-seat" size={20} color="#fff" style={styles.seatIcon} />
-      ))}
-    </View>
-  </LinearGradient>
+  <TouchableOpacity
+    activeOpacity={0.8}>
+
+    <LinearGradient
+      colors={['black', '#ff6347']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.rideItem}
+      >
+      <View style={styles.rideHeader}>
+        <FontAwesome name="car" size={24} color="#fff" />
+        <Text style={styles.usernameText}>{username}</Text>
+      </View>
+      <Text style={styles.rideText}>From: {from}</Text>
+      <Text style={styles.rideText}>To: {to}</Text>
+      <Text style={styles.rideTime}>{time}</Text>
+      
+      <View style={styles.seatsContainer}>
+        <Text style={styles.seatText}>Seats Available: </Text>
+        {Array.from({ length: seats }).map((_, index) => (
+          <MaterialIcons key={index} name="event-seat" size={20} color="#fff" style={styles.seatIcon} />
+        ))}
+      </View>
+    </LinearGradient>
+
+  </TouchableOpacity>
 );
 
 const FindRide = () => {
@@ -196,9 +201,14 @@ const FindRide = () => {
     if(pageCount <= pageLimit){
       fetchRides();
     }
-    else{
-      setListEnd(true);
-    }
+    // else{
+    //   setListEnd(true);
+    // }
+
+    // return () => {
+    //   setListEnd(false);
+
+    // };
     
   }, [pageCount]);
 
@@ -305,7 +315,6 @@ const FindRide = () => {
                                   )}                
         ListFooterComponent={()=> ( <View>
           
-          {/* {listEnd && <Text style={{textAlign: 'center'}}>No more rides available</Text>} */}
           {moreLoading && <ActivityIndicator size="large" color="#ff6347" />}
         </View>
           )}
