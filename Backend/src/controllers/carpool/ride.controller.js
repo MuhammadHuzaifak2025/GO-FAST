@@ -126,6 +126,7 @@ const GetRides = asynchandler(async (req, res, next) => {
         const limit = parseInt(req.params.limit) || 10;
         const offset = (page - 1) * limit;
         console.log(page, limit, offset);
+
         const rides = await sequelize.query(
             `SELECT * FROM carpool_rides 
             WHERE ride_status = 'available' 
@@ -136,6 +137,17 @@ const GetRides = asynchandler(async (req, res, next) => {
             { type: QueryTypes.SELECT }
         );
 
+        const rides_total = await sequelize.query(
+            `SELECT COUNT(*) FROM carpool_rides 
+            WHERE ride_status = 'available' 
+            AND "createdAt" >= now() - interval '1 day' AND
+            driver != ${req.user.user_id}`,
+            { type: QueryTypes.SELECT }
+        );
+
+        
+        const totalPages = Math.ceil(rides_total[0].count / limit);
+    
         if (rides.length) {
 
             for (const rides_details of rides) {
@@ -164,6 +176,7 @@ const GetRides = asynchandler(async (req, res, next) => {
                     page,
                     limit,
                     totalRides: rides.length,
+                    totalPages,
                 })
             );
         } else {

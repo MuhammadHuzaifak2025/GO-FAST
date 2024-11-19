@@ -424,11 +424,12 @@ const PublishRide = () => {
       </TouchableOpacity>
 
       <Animated.View style={{ height: dropdownHeightList, overflow: 'hidden' }}>
-        {loadingF ? (
+        {loadingF ? ( <View style={styles.loadingContainer}>
+
           <Text style={styles.loadingText}>Loading...</Text>
-        ) : ( isEmpty ? 
-          <Text style={styles.subheading}>No rides published</Text> :
-          
+          <ActivityIndicator size="large" color="#ff6347" />  
+        </View>
+        ) : (       
           <FlashList
             estimatedItemSize={191}
             data={rides}
@@ -445,6 +446,7 @@ const PublishRide = () => {
                 refreshRides={fetchRides}
               />
             )}
+            ListEmptyComponent={() => (<Text style={styles.subheading}>No rides published</Text>)}
             contentContainerStyle={{ paddingBottom: 40 }}
           />
         )}
