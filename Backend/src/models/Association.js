@@ -16,7 +16,7 @@ import semester_passenger from "./Buspool/semester_passenger.model.js";
 // import BusSemesterRide from "./Buspool/Bus_semester_ride.model.js";
 import SingleRidePassenger from "./Buspool/single_ride_passenger.model.js";
 import BusSingleRide from "./Buspool/Bus_Single_ride.model.js";
-
+import busRegistration from "./Buspool/bus_registration_models.js";
 
 const syncModels = async () => {
   try {

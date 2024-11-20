@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5 } from '@expo/vector-icons';
-import AntDesign from '@expo/vector-icons/AntDesign';
+// import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 // Reusable TabIcon component
@@ -42,7 +42,7 @@ const AdminLayout = () => {
         <Tabs.Screen
           name="dashboard"
           options={{
-            title: 'Dashboard',
+            title: 'dashboard',
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon="tachometer-alt"
