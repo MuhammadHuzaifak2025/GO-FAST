@@ -96,7 +96,7 @@ const Profile = () => {
         <View style={styles.optionsContainer}>
           <Text style={styles.optionsTitle}>Account Options</Text>
           <CustomButton textContent="Reset Password" handlePress={() => {}} containerStyles={styles.optionButton} />
-          <CustomButton textContent="Register Car" handlePress={() => {setRegisterCarDisplay(true)}} containerStyles={styles.optionButton} />
+          {/* <CustomButton textContent="Register Car" handlePress={() => {setRegisterCarDisplay(true)}} containerStyles={styles.optionButton} /> */}
           <CustomButton textContent="Sign Out" handlePress={handleLogOut} isLoading={isLogOut} containerStyles={styles.optionButton} />
         </View>
       </ScrollView>

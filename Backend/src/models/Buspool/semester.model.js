@@ -8,10 +8,7 @@ const Semester = sequelize.define(
         primaryKey: true,
         autoIncrement: true
     },
-    semester_name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
+
     year: {
         type: DataTypes.INTEGER,
         allowNull: false

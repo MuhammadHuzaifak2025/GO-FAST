@@ -17,10 +17,12 @@ const saveTokensFromCookies = async (response) => {
 
     if (refreshToken) {
         await saveToken('refreshToken', refreshToken.split(';')[0].split('=')[1]);
+        // console.log(refreshToken.split(';')[0].split('=')[1])
     }
 
     if (accessToken) {
         await saveToken('accessToken', accessToken.split(';')[0].split('=')[1]);
+        // console.log(accessToken.split(';')[0].split('=')[1])
     }
     // console.log(refreshToken, accessToken);
 };

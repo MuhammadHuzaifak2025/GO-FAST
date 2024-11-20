@@ -26,7 +26,7 @@ const Profile = () => {
   const [registerCarDisplay, setRegisterCarDisplay] = useState(false);
 
   const handleswitch = () => {
-    router.replace('/Buspool/viewbus');
+    router.replace('/BusPool/viewbus');
   }
 
   useEffect(() => {

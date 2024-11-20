@@ -9,25 +9,32 @@ const openbusregistration = asynchandler(async (req, res, next) => {
         const { start_date, due_date, } = req.body;
         const organization = req.user.user_id;
         const [getuserorganization] = await sequelize.query(
-            `SELECT * FROM transport_organization WHERE owner =?`,
+            `SELECT * FROM transport_organizations WHERE owner =?`,
             { replacements: [organization], type: QueryTypes.SELECT }
         );
-
+        if (!getuserorganization) {
+            return next(new ApiError(400, "You are not an Admin or Organization not found"));
+        }
         const [checkifalreadyregistered] = await sequelize.query(
-            `SELECT * FROM busregistration WHERE organization =? and start_date =? and due_date =?`,
+            `SELECT * FROM busregistrations WHERE organization =? and start_date =? and due_date =?`,
             { replacements: [getuserorganization.organization_id, start_date, due_date], type: QueryTypes.SELECT }
         );
         if (checkifalreadyregistered) {
             return next(new ApiError(400, "Bus Registration already exists"));
         }
-        else {
-            const [createbusregistration] = await sequelize.query(
-                `INSERT INTO busregistration (organization, start_date, due_date) VALUES (?,?,?) Returning *`,
-                { replacements: [getuserorganization.organization_id, start_date, due_date], type: QueryTypes.INSERT }
-            );
-            if (checkifalreadyregistered)
-                return ApiResponse(res, 200, [createbusregistration[0], "Bus Registration Created Successfully"]);
+
+        const [getcurrentsemester] = await sequelize.query(
+            `SELECT * FROM semesters order by semester_id desc limit 1`,
+            { replacements: [start_date, start_date], type: QueryTypes.SELECT }
+        );
+        if (!getcurrentsemester) {
+            return next(new ApiError(400, "No Semester Found"));
         }
+        const [createbusregistration] = await sequelize.query(
+            `INSERT INTO busregistrations (organization, start_date, due_date, "createdAt", "updatedAt", "semester_id") VALUES (?,?,?,?,?,?) Returning *`,
+            { replacements: [getuserorganization.organization_id, start_date, due_date, new Date(), new Date(), getcurrentsemester.semester_id], type: QueryTypes.INSERT }
+        );
+        res.json(new ApiResponse(200, [createbusregistration[0], "Bus Registration Created Successfully"]))
 
     } catch (error) {
         next(error)
@@ -38,14 +45,20 @@ const getbusregistration = asynchandler(async (req, res, next) => {
     try {
         const organization = req.user.user_id;
         const [getuserorganization] = await sequelize.query(
-            `SELECT * FROM transport_organization WHERE owner =?`,
+            `SELECT * FROM transport_organizations WHERE owner =?`,
             { replacements: [organization], type: QueryTypes.SELECT }
         );
         const [getbusregistration] = await sequelize.query(
-            `SELECT * FROM busregistration WHERE organization =?`,
+            `SELECT * FROM busregistrations WHERE organization =?`,
             { replacements: [getuserorganization.organization_id], type: QueryTypes.SELECT }
         );
-        return ApiResponse(res, 200, getbusregistration);
+        const [semester] = await sequelize.query(
+            `SELECT * FROM semesters where semester_id =?`,
+            { type: QueryTypes.SELECT, replacements: [getbusregistration.semester_id] }
+        );
+        getbusregistration.semester_id = semester
+        // return ApiResponse(res, 200, getbusregistration);
+        res.json(new ApiResponse(200, getbusregistration));
     } catch (error) {
         next(error)
     }
@@ -54,13 +67,47 @@ const getbusregistration = asynchandler(async (req, res, next) => {
 const showstudentregistration = asynchandler(async (req, res, next) => {
     try {
         const [getallregistration] = await sequelize.query(
-            `SELECT * FROM busregistration where due_date > ?`,
+            `SELECT * FROM busregistrations where due_date > ?`,
             { replacements: [Date.now], type: QueryTypes.SELECT }
         );
         if (!getallregistration) {
             return next(new ApiError(400, "No Bus Registration Found"));
         }
-        return ApiResponse(res, 200, getallregistration);
+        // return ApiResponse(res, 200, getallregistration);
+        res.json(new ApiResponse(200, getallregistration));
+    } catch (error) {
+        next(error);
+    }
+});
+
+const get_student_registrations = asynchandler(async (req, res, next) => {
+    try {
+        const [getuserorganization] = await sequelize.query(
+            `SELECT * FROM transport_organizations WHERE owner =?`,
+            { replacements: [req.user.user_id], type: QueryTypes.SELECT }
+        );
+        const getallregistration = await sequelize.query(
+            `SELECT distinct a.* FROM semester_passengers a inner join buses b on a.bus_id = b.bus_id
+             inner join busregistrations c on b.bus_organization = c.organization
+             where b.bus_organization = ? and a."createdAt" < c.due_date`,
+
+            { replacements: [getuserorganization.organization_id,], type: QueryTypes.SELECT }
+        );
+        console.log(getallregistration)
+        for(const i in getallregistration){
+            const user = await sequelize.query(
+                `SELECT * FROM users where user_id = ?`,
+                { replacements: [getallregistration[i].passenger_id], type: QueryTypes.SELECT }
+            );
+            getallregistration[i].passenger_id = user[0].username;
+        }  
+       
+        if (!getallregistration) {
+            return next(new ApiError(400, "No Bus Registration Found"));
+        }
+        console.log(getallregistration)
+        // return ApiResponse(res, 200, getallregistration);
+        res.json(new ApiResponse(200, getallregistration));
     } catch (error) {
         next(error);
     }
@@ -73,10 +120,10 @@ const updateduedate = asynchandler(async (req, res, next) => {
             `UPDATE busregistration SET due_date =? WHERE registration_id =? Returning *`,
             { replacements: [due_date, registration_id], type: QueryTypes.UPDATE }
         );
-
+        res.json(new ApiResponse(200, [updatedate[0], "Due Date Updated Successfully"]));
     } catch (error) {
         next(error);
     }
 });
 
-export { openbusregistration, getbusregistration, showstudentregistration, updateduedate };
+export { openbusregistration, getbusregistration, showstudentregistration, updateduedate, get_student_registrations };

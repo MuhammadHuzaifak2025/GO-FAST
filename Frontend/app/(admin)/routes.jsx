@@ -27,12 +27,14 @@ const routes = () => {
     }, []);
     const fetchBuses = async () => {
         try {
-            setAuthHeaders(axios);
-            const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/routes/all`, {
+            await setAuthHeaders(axios);
+            const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/routes/all/`, {
                 withCredentials: true,
             });
+            console.log(response.data.message);
             setBuses(response.data.message);
         } catch (error) {
+            console.log(error.response);
             Alert.alert('Error', 'Failed to fetch buses');
         }
     };

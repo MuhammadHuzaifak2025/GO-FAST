@@ -7,19 +7,25 @@ const create_Semester = asynchandler(async (req, res, next) => {
     try {
         const { Year, Type } = req.body;
         if (!Year || !Type) {
-            return next(ApiError.badRequest("Please provide all required fields"));
+            return next(new ApiError(400, "Please provide all required fields"));
         }
         if (Type !== 'Fall' && Type !== 'Spring' && Type !== 'Summer') {
             return next(new ApiError("Please provide valid semester type"));
         }
-        const [getSemester] = await sequelize.query(`SELECT * FROM semesters WHERE Year = '${Year}' AND Type = '${Type}'`,
+        const [getSemester] = await sequelize.query(`SELECT * FROM semesters WHERE Year = '${Year}' AND type_semester = '${Type}'`,
             { type: sequelize.QueryTypes.SELECT }
         );
-        if (getSemester.length > 0) {
-            return next(ApiError.badRequest("Semester already exists"));
+        if (getSemester) {
+            return next(new ApiError(400, "Semester already exists"));
         }
-        const semester = await sequelize.query(`INSERT INTO semesters (Year, Type) VALUES ('${Year}', '${Type}')`,
-            { type: sequelize.QueryTypes.INSERT }   
+        const semester = await sequelize.query(`INSERT INTO semesters (Year, type_semester, "createdAt", "updatedAt") VALUES (?, ?, ? , ?)`,
+            {
+                replacements: [
+                    Year, Type,
+                    new Date(), new Date()
+
+                ], type: sequelize.QueryTypes.INSERT
+            }
         );
         if (semester) {
             return res.status(201).json(new ApiResponse(201, "Semester created successfully"));
@@ -51,17 +57,32 @@ const register_Semester_Passenger = asynchandler(async (req, res, next) => {
         }
         const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers  WHERE semester_id = '
             ${semester_id}' AND passenger_id = '${passenger_id}'`, { type: sequelize.QueryTypes.SELECT });
-        if (getPassenger.length > 0) {
+        if (getPassenger) {
             return next(new ApiError("Passenger already registered for this semester"));
         }
         const [getBus] = await sequelize.query(`SELECT * FROM buses WHERE bus_id = '${bus_id}'`, { type: sequelize.QueryTypes.SELECT });
         if (getBus.seats <= 0) {
             return next(new ApiError("Bus is full"));
         }
-        const passenger = await sequelize.query(`INSERT INTO semester_passengers 
-            (semester_id, passenger_id, pickup, dropoff, bus_id, amount) 
-            VALUES ('${semester_id}', '${passenger_id}', '${pickup}', '${dropoff}', '${bus_id}, 46000')
-             Returning *`, { type: sequelize.QueryTypes.INSERT });
+        const passenger = await sequelize.query(
+            `INSERT INTO semester_passengers 
+              (semester_id, passenger_id, pickup, dropoff, bus_id, amount, "createdAt", "updatedAt") 
+             VALUES (:semester_id, :passenger_id, :pickup, :dropoff, :bus_id, :amount, :createdAt, :updatedAt ) 
+             RETURNING *`,
+            {
+                type: sequelize.QueryTypes.INSERT,
+                replacements: {
+                    semester_id,
+                    passenger_id,
+                    pickup,
+                    dropoff,
+                    bus_id,
+                    amount: 4600,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
+            }
+        );
         const update_Bus = await sequelize.query(`UPDATE buses SET seats = seats - 1 WHERE bus_id = 
             '${bus_id}' returning *`, { type: sequelize.QueryTypes.UPDATE });
         if (passenger && update_Bus) {
@@ -113,15 +134,35 @@ const getBill = asynchandler(async (req, res, next) => {
 
 const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
     try {
-        const { semester_passenger_id } = req.params;
-        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers WHERE
-             semester_passenger_id = '${semester_passenger_id}'`, { type: sequelize.QueryTypes.SELECT });
-        if (getPassenger.length === 0) {
+        const { semester_passenger_id } = req.body;
+        const [getorganization] = await sequelize.query(`SELECT * FROM transport_organizations WHERE owner = '${req.user.user_id}'`,
+            { type: sequelize.QueryTypes.SELECT });
+        if (!req.user.admin && !getorganization) {
+            return next(new ApiError("Unauthorized"));
+        }
+
+
+        const [getPassenger] = await sequelize.query(
+            `SELECT passenger_id FROM semester_passengers a inner join buses b on a.bus_id = b.bus_id
+            inner join busregistrations c on b.bus_organization = c.organization
+            inner join users d on a.passenger_id = d.user_id
+            where is_paid = false and b.bus_organization = ? and a."createdAt" < c.due_date and semester_passenger_id=?`, {
+            replacements: [getorganization.organization_id, semester_passenger_id]
+            , type: sequelize.QueryTypes.SELECT
+        });
+        if (!getPassenger) {
             return next(new ApiError("Passenger not found"));
         }
-        const pay = await sequelize.query(`UPDATE semester_passengers 
-            SET (is_paid, amount) Values (true, 0)  WHERE
-             semester_passenger_id = '${semester_passenger_id}' returning *`, { type: sequelize.QueryTypes.UPDATE });
+        const pay = await sequelize.query(
+            `UPDATE semester_passengers 
+             SET is_paid = ?, amount = ? 
+             WHERE semester_passenger_id = ? 
+             RETURNING *`,
+            {
+                type: sequelize.QueryTypes.UPDATE,
+                replacements: [true, 0, semester_passenger_id]
+            }
+        );
         if (pay) {
             return res.status(200).json(new ApiResponse(200, "Payment successful"));
         }
@@ -145,4 +186,23 @@ const getDetails = asynchandler(async (req, res, next) => {
     }
 });
 
-export { create_Semester, get_Semesters, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };
+const confirm_Payment = asynchandler(async (req, res, next) => {
+    try {
+        const { semester_passenger_id } = req.body;
+        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers WHERE
+             semester_passenger_id = '${semester_passenger_id}'`, { type: sequelize.QueryTypes.SELECT });
+        if (getPassenger.length === 0) {
+            return next(new ApiError("Passenger not found"));
+        }
+        const pay = await sequelize.query(`UPDATE semester_passengers 
+            SET (is_paid, amount) Values (true, 0)  WHERE
+             semester_passenger_id = '${semester_passenger_id}' returning *`, { type: sequelize.QueryTypes.UPDATE });
+        if (pay) {
+            return res.status(200).json(new ApiResponse(200, "Payment successful"));
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+export { create_Semester, confirm_Payment, get_Semesters, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };

@@ -60,10 +60,11 @@ const SignIn = () => {
         });
 
         await saveTokensFromCookies(response);
+        console.log(response)
         router.dismissAll();
         if (response.data.data.admin === true) {
           // router.replace('/admin');
-          console.log("Hello")
+          // console.log("Hello")
           router.push('/dashboard');
         }
         else

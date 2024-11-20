@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 // import AntDesign from '@expo/vector-icons/AntDesign';
 
 
@@ -14,7 +14,8 @@ const TabIcon = ({ icon, color, name, focused }) => {
         colors={focused ? ['#FF6B6B', '#FF8E8E'] : ['#F0F0F0', '#F0F0F0']}
         style={styles.iconBackground}
       >
-        <FontAwesome5 name={icon} size={20} color={focused ? '#FFF' : '#CDCDE0'} />
+        {icon === "app-registration" && <MaterialIcons name={icon} size={20} color={focused ? '#FFF' : '#CDCDE0'}></MaterialIcons>}
+        {icon != "app-registration" && <FontAwesome5 name={icon} size={20} color={focused ? '#FFF' : '#CDCDE0'} />}
       </LinearGradient>
       <Text style={[
         styles.tabLabel,
@@ -61,7 +62,7 @@ const AdminLayout = () => {
               <TabIcon
                 icon="bus"
                 color={color}
-                name="Create Bus"
+                name="Bus"
                 focused={focused}
               />
             ),
@@ -75,7 +76,7 @@ const AdminLayout = () => {
               <TabIcon
                 icon="camera"
                 color={color}
-                name="Verify Student"
+                name="Verify"
                 focused={focused}
               />
             ),
@@ -89,7 +90,21 @@ const AdminLayout = () => {
               <TabIcon
                 icon="search-location"
                 color={color}
-                name="Bus Routes"
+                name="Routes"
+                focused={focused}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="registrationhandler"
+          options={{
+            title: 'registrationhandler',
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                icon="app-registration"
+                color={color}
+                name="Registration"
                 focused={focused}
               />
             ),
