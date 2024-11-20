@@ -2,34 +2,46 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity, Animated, ScrollView, ActivityIndicator  } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome , Ionicons, MaterialIcons } from '@expo/vector-icons';
-import FormField from '../../components/FormField';
-import CustomButton from '../../components/CustomButton';
+import FormField from '../../../components/FormField';
+import CustomButton from '../../../components/CustomButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from "@shopify/flash-list";
 import { Picker } from '@react-native-picker/picker';
-import { setAuthHeaders } from '../../utils/expo-store';
+import { setAuthHeaders } from '../../../utils/expo-store';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';  
 import { useToast } from 'react-native-toast-notifications';
+import { router } from 'expo-router';
+import { useGlobalContext } from '../../../context/GlobalProvider';
 
-const RideItem = ({ from, to, time, username, seats }) => (
-  <TouchableOpacity
-    activeOpacity={0.8}>
+const RideItem = ({ from, to, time, username, seats, ride_item }) => {
 
+  const { setRide } = useGlobalContext();
+
+  return (
+
+    <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={()=>{
+      setRide(ride_item);
+      router.push('/ride-details');           
+    }}
+    >
+    
     <LinearGradient
-      colors={['black', '#ff6347']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.rideItem}
-      >
-      <View style={styles.rideHeader}>
-        <FontAwesome name="car" size={24} color="#fff" />
-        <Text style={styles.usernameText}>{username}</Text>
-      </View>
-      <Text style={styles.rideText}>From: {from}</Text>
-      <Text style={styles.rideText}>To: {to}</Text>
-      <Text style={styles.rideTime}>{time}</Text>
-      
+    colors={['black', '#ff6347']}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.rideItem}
+    >
+    <View style={styles.rideHeader}>
+    <FontAwesome name="car" size={24} color="#fff" />
+    <Text style={styles.usernameText}>{username}</Text>
+    </View>
+    <Text style={styles.rideText}>From: {from}</Text>
+    <Text style={styles.rideText}>To: {to}</Text>
+    <Text style={styles.rideTime}>{time}</Text>
+    
       <View style={styles.seatsContainer}>
         <Text style={styles.seatText}>Seats Available: </Text>
         {Array.from({ length: seats }).map((_, index) => (
@@ -39,7 +51,10 @@ const RideItem = ({ from, to, time, username, seats }) => (
     </LinearGradient>
 
   </TouchableOpacity>
-);
+
+  );
+
+};
 
 const FindRide = () => {
 
@@ -151,7 +166,10 @@ const FindRide = () => {
         (!preference.dropoff || ride.routes[1].route_name === preference.dropoff)
       );
     });
-    
+    if(filtered.length === 0){
+      setListEnd(true);
+    }
+
     setFilteredRides(filtered);
   };
 
@@ -179,7 +197,7 @@ const FindRide = () => {
   };
 
   const fetchMoreRides = () => {
-    console.log(listEnd,moreLoading,isLoading);
+    // console.log(listEnd,moreLoading,isLoading);
 
     if(!listEnd && !moreLoading && !isLoading){
       // console.log('more',pageCount);
@@ -201,20 +219,15 @@ const FindRide = () => {
     if(pageCount <= pageLimit){
       fetchRides();
     }
-    // else{
-    //   setListEnd(true);
-    // }
 
-    // return () => {
-    //   setListEnd(false);
-
-    // };
-    
   }, [pageCount]);
-
 
   return (
     <SafeAreaView style={styles.container}>
+
+      {/* <RideModal visible={rideModalDisplay} 
+                 onClose={() => setRideModalDisplay(false)} /> */}
+
       <View style={styles.header}>
         <Text style={styles.title}>Available Rides</Text>
         <TouchableOpacity onPress={toggleFilter} style={styles.filterIcon}>
@@ -304,8 +317,10 @@ const FindRide = () => {
             from={item.routes[0]?.route_name || 'Unknown'}
             to={item.routes[1]?.route_name || 'Unknown'}
             time={item.start_time || 'Unknown time'}
-            // username={item.username || 'Anonymous'}
-            seats={item.seat_available || 0}/>
+            ride_item={item}
+            seats={item.seat_available || 0}
+            username={item.username || 'Unknown User'}
+            />
           ) 
         }}
         onEndReached={ fetchMoreRides }    
@@ -326,6 +341,7 @@ const FindRide = () => {
           setPreference({ seats: '', dateTime: '', pickup: '', dropoff: '' });
           setRefreshing(false);
         }}
+        removeClippedSubviews={false}
       />
       )}
     </SafeAreaView>

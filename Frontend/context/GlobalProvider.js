@@ -13,6 +13,7 @@ const GlobalProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const router = useRouter();
+  const [ride, setRide] = useState(null);
 
   // Axios response interceptor for error handling
   useEffect(() => {
@@ -86,6 +87,8 @@ const GlobalProvider = ({ children }) => {
         isAuthenticated,
         setIsAuthenticated,
         isLoading,
+        ride,
+        setRide,
       }}
     >
       {children}

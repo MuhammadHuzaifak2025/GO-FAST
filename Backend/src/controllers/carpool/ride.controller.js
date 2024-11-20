@@ -128,11 +128,12 @@ const GetRides = asynchandler(async (req, res, next) => {
         console.log(page, limit, offset);
 
         const rides = await sequelize.query(
-            `SELECT * FROM carpool_rides 
-            WHERE ride_status = 'available' 
-            AND "createdAt" >= now() - interval '1 day' AND
-            driver != ${req.user.user_id} 
-            ORDER BY "createdAt" DESC 
+            `SELECT c.*, u.username FROM carpool_rides c
+            JOIN users u ON c.driver = u.user_id
+            WHERE c.ride_status = 'available' 
+            AND c."start_time" >= now() AND
+            c.driver != ${req.user.user_id} 
+            ORDER BY c."createdAt" DESC 
             LIMIT ${limit} OFFSET ${offset}`,
             { type: QueryTypes.SELECT }
         );
@@ -140,7 +141,7 @@ const GetRides = asynchandler(async (req, res, next) => {
         const rides_total = await sequelize.query(
             `SELECT COUNT(*) FROM carpool_rides 
             WHERE ride_status = 'available' 
-            AND "createdAt" >= now() - interval '1 day' AND
+            AND "start_time" >= now() AND
             driver != ${req.user.user_id}`,
             { type: QueryTypes.SELECT }
         );

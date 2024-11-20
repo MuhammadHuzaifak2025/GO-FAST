@@ -66,7 +66,7 @@ const TabsLayout = () => {
             )
           }}/>
         <Tabs.Screen
-          name="find-ride"
+          name="(ride)"
           options={{
             title: 'Find Ride',
             headerShown: false,

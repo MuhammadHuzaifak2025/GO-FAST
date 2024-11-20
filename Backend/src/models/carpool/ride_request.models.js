@@ -33,6 +33,10 @@ const ride_request = sequelize.define(
     owner_socket_id: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    seats_requested: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 
