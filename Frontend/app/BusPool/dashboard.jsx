@@ -192,9 +192,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 10,
     marginLeft: 10,
+    padding: 5,
   },
   detailItem: {
-    
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 5,
