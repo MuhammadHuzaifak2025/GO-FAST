@@ -4,9 +4,10 @@ import ApiResponse from "../../utils/ResponseHandling.js";
 import sequelize from "../../database/index.js";
 import { QueryTypes } from "sequelize";
 
-const reuqestride = asynchandler(async (req, res, next) => {
+const create_request = asynchandler(async (req, res, next) => {
     try {
         const { rideId,seats } = req.body;
+
         const user_id = req.user.user_id;
 
         if (!rideId) {
@@ -30,10 +31,9 @@ const reuqestride = asynchandler(async (req, res, next) => {
             replacements: [rideId, user_id],
             type: QueryTypes.SELECT
         });
-         
-        console.log('2',alreadyRequested)
+
         if (alreadyRequested[0]) {
-            console.log('3',alreadyRequested[0].request_id);
+            // console.log('3',alreadyRequested[0].request_id);
             return next(new ApiError(400, ["you have already sent a request for this ride before"]));
         }
 
@@ -66,17 +66,36 @@ const reuqestride = asynchandler(async (req, res, next) => {
 const delete_ride_request = asynchandler(async (req, res, next) => {
     try {
         const { requestId } = req.params;
+        
         if (!requestId) {
             return next(new ApiError(400, "Please provide a request id"));
         }
         console.log(requestId)
+        const ride_details = await sequelize.query(
+            `SELECT a.request_id,a.ride_id,a.is_approved,a.seats_requested, b.driver, b.seat_available, a.requesting_user FROM ride_requests a inner join carpool_rides b on a.ride_id = b.ride_id WHERE request_id = ?`,
+            {
+                replacements: [requestId],
+                type: QueryTypes.SELECT,
+            });
+
+        if (!ride_details[0]) {
+            return next(new ApiError(400, "No ride requests found"));
+        }
+        console.log(ride_details[0])
+        if (ride_details[0].requesting_user !== req.user.user_id) {
+            return next(new ApiError(400, "You can't delete this request"));
+        }
+        if (ride_details[0].is_approved) {
+            return next(new ApiError(400, "Ride request already accepted"));
+        }
+
         const ride = await sequelize.query(
-            `DELETE FROM ride_requests WHERE request_id = ? RETURNING *`,
+            `DELETE FROM ride_requests WHERE request_id = ?`,
             {
                 replacements: [requestId],
                 type: QueryTypes.DELETE,
             });
-            console.log(ride)
+        console.log(ride)
         if (!ride) {
             return next(new ApiError(400, "No ride requests found"));
         }
@@ -85,6 +104,8 @@ const delete_ride_request = asynchandler(async (req, res, next) => {
         next(error);
     }
 });
+
+
 
 const fetch_ride_requests = asynchandler(async (req, res, next) => {
     try {
@@ -102,9 +123,34 @@ const fetch_ride_requests = asynchandler(async (req, res, next) => {
     }
 });
 
+const fetch_pending_requests = asynchandler(async (req, res, next) => {
+   
+    try {
+        
+        const  user_id = req.user.user_id;  
+
+        const requests = await sequelize.query(
+            `select a.*,d.*,b.*,c.username from ride_requests a JOIN carpool_rides b ON a.ride_id = b.ride_id JOIN users c ON b.driver = c.user_id JOIN carpool_vehicles d ON b.vehicle_id = d.vehicle_id WHERE requesting_user = ? AND is_approved = ${false}`,
+            {
+                replacements: [user_id],
+                type: QueryTypes.SELECT,
+            });
+        
+        if (!requests) {
+            return next(new ApiError(400, "No pending requests found"));
+        }
+
+        return res.json(new ApiResponse(200, "Ride requests fetched successfully", requests));
+    } catch (error) {
+        next(error);
+    }
+});
+
 const fetch_ride_requests_by_ride_id = asynchandler(async (req, res, next) => {
     try {
-        const { rideId } = req.body;
+
+        const { rideId } = req.params;
+
         if (!rideId) {
             return next(new ApiError(400, "Please provide a ride id"));
         }
@@ -125,8 +171,9 @@ const fetch_ride_requests_by_ride_id = asynchandler(async (req, res, next) => {
 
 const accept_ride_request = asynchandler(async (req, res, next) => {
 
+    const transaction = await sequelize.transaction(); // Start a transaction
+    
     try {
-        const transaction = await sequelize.transaction(); // Start a transaction
 
         const { requestId } = req.body;
         if (!requestId) {
@@ -155,10 +202,8 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
             {
                 replacements: [requestId],
                 type: QueryTypes.UPDATE,
-                transaction
             });
-            
-        await transaction.savepoint('SP1');
+        
 
         const rides_seats = await sequelize.query(
             `UPDATE carpool_rides SET seat_available = seat_available - ${ride_details[0].seats_requested} WHERE ride_id = ? RETURNING *`,
@@ -169,7 +214,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
             });
 
         if (rides_seats[0][0].seats_available < 0) {
-            await transaction.rollback('SP1');  
+            await transaction.rollback();  
 
             const delete_request = await sequelize.query(`DELETE FROM ride_requests WHERE request_id = ?`, 
             {
@@ -195,13 +240,69 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
 
             return next(new ApiError(400, "Ride request not accepted"));
         }
-            await transaction.commit();
 
+        await transaction.commit();
+            
+        if(rides_seats[0][0].seat_available === 0){
+
+            const delete_request = await sequelize.query(`DELETE FROM ride_requests WHERE ride_id = ?`,
+            {
+                replacements: [ride[0][0].ride_id],
+                type: QueryTypes.DELETE,
+            });
+            const change_ride_status = await sequelize.query(`UPDATE carpool_rides SET ride_status = 'in_progress' WHERE ride_id = ?`,    
+            {
+                replacements: [ride[0][0].ride_id],
+                type: QueryTypes.UPDATE,
+            });
+            return res.json(new ApiResponse(200, "Request accepted. Remaining requests auto-rejected as seats are filled.", ride[0]));
+        }
+        else{
             return res.json(new ApiResponse(200, "Ride request accepted successfully", ride[0]));
+        }
+        
     } catch (error) {
         transaction.rollback();
         next(error);
     }
 });
 
-export { reuqestride, fetch_ride_requests_by_ride_id, accept_ride_request, delete_ride_request };
+const reject_ride_request = asynchandler(async (req, res, next) => {
+    try {
+        const { requestId } = req.params;
+        if (!requestId) {
+            return next(new ApiError(400, "Please provide a request id"));
+        }
+        console.log(requestId)
+        const ride_details = await sequelize.query(
+            `SELECT a.request_id,a.ride_id,a.is_approved,a.seats_requested, b.driver, b.seat_available, a.requesting_user FROM ride_requests a inner join carpool_rides b on a.ride_id = b.ride_id WHERE request_id = ?`,
+            {
+                replacements: [requestId],
+                type: QueryTypes.SELECT,
+            });
+
+        if (!ride_details[0]) {
+            return next(new ApiError(400, "No ride requests found"));
+        }
+        console.log(ride_details[0])
+        if (ride_details[0].driver === req.user.user_id) {
+            return next(new ApiError(400, "You can't delete this request"));
+        }
+
+        const ride = await sequelize.query(
+            `DELETE FROM ride_requests WHERE request_id = ?`,
+            {
+                replacements: [requestId],
+                type: QueryTypes.DELETE,
+            });
+        console.log(ride)
+        if (!ride) {
+            return next(new ApiError(400, "No ride requests found"));
+        }
+        return res.json(new ApiResponse(200, "Ride request deleted successfully", ride[0]));
+    } catch (error) {
+        next(error);
+    }
+});
+
+export { create_request, fetch_ride_requests_by_ride_id, accept_ride_request, delete_ride_request, fetch_pending_requests, reject_ride_request };

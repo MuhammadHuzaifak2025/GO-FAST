@@ -53,9 +53,9 @@ const TabsLayout = () => {
         }}
       >
         <Tabs.Screen
-          name="your-rides"
+          name="your-requests"
           options={{
-            title: 'Your Rides',
+            title: 'Your Requests',
             headerShown: false,
             tabBarIcon: ({color, focused}) => (
               <TabIcon

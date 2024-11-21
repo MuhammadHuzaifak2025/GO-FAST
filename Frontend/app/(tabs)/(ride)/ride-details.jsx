@@ -16,14 +16,14 @@ const RideDetailsScreen = () => {
   const toast = useToast();
 
   const { ride } = useGlobalContext();
-  console.log(ride);
+  const maxSeats = ride.seat_available;
+
   const rideDate = new Date(ride.start_time);
   const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const month = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   ];
-  const maxSeats = ride.seat_available;
   
   let hours = rideDate.getHours();
   let minutes = rideDate.getMinutes();

@@ -18,6 +18,24 @@ const RideItem = ({ from, to, time, username, seats, ride_item }) => {
 
   const { setRide } = useGlobalContext();
 
+  const rideDate = new Date(time);
+  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const month = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  
+  let hours = rideDate.getHours();
+  let minutes = rideDate.getMinutes();
+  const newformat = hours >= 12 ? "PM" : "AM";
+  
+  hours = hours % 12 || 12;
+  hours = hours < 10 ? `0${hours}` : hours;
+  minutes = minutes < 10 ? `0${minutes}` : minutes;
+
+  const formatTime = `${hours}:${minutes} ${newformat}`;
+
+
   return (
 
     <TouchableOpacity
@@ -40,7 +58,8 @@ const RideItem = ({ from, to, time, username, seats, ride_item }) => {
     </View>
     <Text style={styles.rideText}>From: {from}</Text>
     <Text style={styles.rideText}>To: {to}</Text>
-    <Text style={styles.rideTime}>{time}</Text>
+    <Text style={styles.rideTime}>Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]} </Text>
+    <Text style={styles.rideTime}>Time: {formatTime}</Text>
     
       <View style={styles.seatsContainer}>
         <Text style={styles.seatText}>Seats Available: </Text>
@@ -333,8 +352,8 @@ const FindRide = () => {
           {moreLoading && <ActivityIndicator size="large" color="#ff6347" />}
         </View>
           )}
-        refreshing={refreshing}
-        onRefresh={() => {
+          refreshing={refreshing}
+          onRefresh={() => {
           setRefreshing(true);
           setListEnd(false);
           setPageCount(1);
@@ -416,7 +435,7 @@ const styles = StyleSheet.create({
   rideTime: {
     fontSize: 14,
     color: '#f8f8f8',
-    marginTop: 10,
+    marginTop: 5,
     fontStyle: 'italic',
   },
   dateTimeField: {

@@ -12,11 +12,10 @@ import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from '@shopify/flash-list';
 
-
-const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
+const RequestItem = ({time, car, id, refreshRides, username, req_id }) => {
 
   const toast = useToast();
-
+  
   const rideDate = new Date(time);
   const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const month = [
@@ -34,10 +33,9 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
 
   const formatTime = `${hours}:${minutes} ${newformat}`;
 
-
   const handleDelete = async () => {
     Alert.alert(
-      "Delete Ride",
+      "Delete Request",
       "You sure?",
       [
         { text: "Cancel", style: "cancel" },
@@ -48,10 +46,10 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
             try {
 
               await setAuthHeaders(axios); // Set authorization headers
-              const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/${id}`);
+              const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${req_id}`);
 
               if (response.status === 200) {
-                toast.show('Ride deleted successfully', {
+                toast.show('Request deleted successfully', {
                   type: "success",
                   duration: 4000,
                   offset: 30,
@@ -63,8 +61,8 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
                 throw new Error(response);
               }
             } catch (error) {
-              console.error(error);
-              toast.show('Failed to delete ride. Please try again.', {
+              console.log(error.response);
+              toast.show('Failed to delete request. Please try again.', {
                 type: "danger",
                 duration: 4000,
                 offset: 30,
@@ -82,7 +80,7 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
       colors={['black', '#ff6347']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.rideItem}
+      style={styles.RequestItem}
     >
       {/* Delete Icon */}
       <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
@@ -90,161 +88,65 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
       </TouchableOpacity>
 
       <View style={styles.rideHeader}>
-        <FontAwesome name="car" size={24} color="#fff" />
-        <Text style={styles.usernameText}>Ride#{id}</Text>
+        <FontAwesome name="check" size={24} color="#fff" />
+        <Text style={styles.usernameText}>{username}</Text>
       </View>
-      <Text style={styles.rideText}>Starting Location: {from}</Text>
-      <Text style={styles.rideText}>Destination: {to}</Text>
       <Text style={styles.rideTime}>Start Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]}</Text>
       <Text style={styles.rideTime}>Start Time: {formatTime}</Text>
       <Text style={styles.rideText}>Vehicle: {car.color} {car.make} {car.model}</Text>
-      <Text style={styles.rideText}>Fare: {price} </Text>
-      <View style={styles.seatsContainer}>
-        <Text style={styles.seatText}>Seats Available: </Text>
-        {Array.from({ length: seats }).map((_, index) => (
-          <MaterialIcons
-            key={index}
-            name="event-seat"
-            size={20}
-            color="#fff"
-            style={styles.seatIcon}
-          />
-        ))}
-      </View>
+      
     </LinearGradient>
   );
 };
 
-const PublishRide = () => {
+const YourRequests = () => {
 
-  const { height } = Dimensions.get('window');
+  const height = Dimensions.get('window').height - 200;
 
-  const [form, setForm] = useState({
-    startingPoint: '', destination: '',
-    availableSeats: '', selectedCar: '',
-    dateTime: '', price: ''
-  });
-
-  const [carOptions, setCarOptions] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [maxSeats, setMaxSeats] = useState(0);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isDate, setIsDate] = useState(false);
+
   const [isDropdownOpenList, setIsDropdownOpenList] = useState(false);
   const [isDropdownOpenForm, setIsDropdownOpenForm] = useState(false);
 
   const [dropdownHeightList] = useState(new Animated.Value(0));
   const [dropdownHeightForm] = useState(new Animated.Value(0));
-  
-  const [rides, setRides] = useState([]);
-  const [loadingF, setLoadingF] = useState(false);
-  const [isEmpty, setIsEmpty] = useState(false);
 
   const toast = useToast();
   
-  const fetchRides = async () => {
-    
-    setIsEmpty(false);
-    setLoadingF(true);
+  const fetchRequests = async () => {
+
+    setLoading(true);
     try {
 
       await setAuthHeaders(axios);
-      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user`);
-      // console.log("Hekki", response)
+
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/requests/pending`);
+
       if (response.status === 200) {
 
         console.log("hello", response);
-        setRides(response.data.message.rides);
-        setLoadingF(false);
+        setRequests(response.data.message);
+        setLoading(false);
       }
       else {
         throw new Error(response);
       }
     } catch (error) {
-      if(error.response.data.message === 'No rides available'){
+      
+      if(error.response.data.message === 'No pending requests found'){
 
-        setIsEmpty(true);
       }
       else{
 
-          toast.show('Error fetching your rides, please try again later', {
+          toast.show('Error fetching your requests, please try again later', {
             type: "danger",
             duration: 4000,
             offset: 30,
           animationType: "slide-in",
         });
       }
-      setLoadingF(false);
-    }
-  };
-
-  const handlePublish = async () => {
-    if (!form.startingPoint || !form.destination || !form.selectedCar || !form.availableSeats || !form.dateTime || !form.price) {
-      toast.show('Please fill all required fields', {
-        type: "danger",
-        duration: 3000,
-      });
-      return;
-    }
-    try {
-
-      await setAuthHeaders(axios);
-
-      const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride`, {
-        'vehicle_id': form.selectedCar,
-        'route': [{ 'route_name': form.startingPoint, 'longitude': 0, 'latitude': 0 },
-        { 'route_name': form.destination, 'longitude': 0, 'latitude': 0 }],
-        'seats': form.availableSeats,
-        'start_time': form.dateTime,
-        'price': form.price,
-        'departure_date': form.dateTime
-      });
-
-      if (resp.status === 201) {
-        toast.show('Ride published successfully', {
-          type: "success",
-          duration: 4000,
-          offset: 30,
-          animationType: "slide-in",
-        });
-
-        // setForm({ startingPoint: { route_name: '' }, destination: { route_name: '' }, availableSeats: '', selectedCar: '', dateTime: '', price: '' });
-        fetchRides();
-      }
-      else {
-
-        throw new Error(resp);
-      }
-
-    } catch (error) {
-      console.log("Hello", error.response.data);
-      toast.show('Error publishing ride, please try again later', {
-        type: "danger",
-        duration: 4000,
-        offset: 30,
-        animationType: "slide-in",
-      });
-    }
-  };
-
-  const openDateTimePicker = () => {
-    setIsDate(true);
-    setShowDatePicker(true);
-  };
-
-  const onDateChange = (e, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      if (isDate) {
-        setForm({ ...form, dateTime: selectedDate });
-        setIsDate(false);
-        setShowDatePicker(true); // Open time picker next
-      } else {
-        const newDateTime = new Date(form.dateTime);
-        newDateTime.setHours(selectedDate.getHours());
-        newDateTime.setMinutes(selectedDate.getMinutes());
-        setForm({ ...form, dateTime: newDateTime.toLocaleString() });
-      }
+      setLoading(false);
     }
   };
 
@@ -287,59 +189,16 @@ const PublishRide = () => {
   useFocusEffect(
     React.useCallback(() => {
 
-      toggleDropdown('list');
+      // toggleDropdown('list');
       // console.log("Hello");
       
-      const fetchCarData = async () => {
-
-        try {
-          await setAuthHeaders(axios);
-
-          const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/vehicles`);
-          if (response.status === 200) {
-
-            setCarOptions(response.data.data[1]);
-            setLoading(false);
-          }
-          else {
-            throw new Error(response);
-          }
-        } catch (error) {
-
-          console.log(error);
-
-          toast.show('Error fetching car data, please try again later', {
-            type: "danger",
-            duration: 4000,
-            offset: 30,
-            animationType: "slide-in",
-          });
-          
-          setLoading(false);
-        }
-      };
-
-      fetchCarData();
+      fetchRequests();
 
       return () => {
       };
     }, [])
   );
 
-  useEffect(() => {
-    if (form.selectedCar) {
-
-      const selected = carOptions.find((car) => car.vehicle_id === form.selectedCar);
-      setMaxSeats(selected ? selected.seats : 0);
-      setForm({ ...form, availableSeats: '' });
-    }
-  }, [form.selectedCar]);
-
-  useEffect(() => {
-
-    fetchRides();
-
-  }, []);
 
   
   if (loading) {
@@ -355,87 +214,32 @@ const PublishRide = () => {
     <SafeAreaView style={styles.container}>
 
       <TouchableOpacity style={styles.toggleButton} onPress={() => toggleDropdown('form')}>
-        <Text style={styles.title}>Publish Ride</Text>
+        <Text style={styles.title}>Your Pending Requests</Text>
         <Ionicons name={isDropdownOpenForm ? 'chevron-up' : 'chevron-down'} size={24} color="#000" />
       </TouchableOpacity>
 
       <Animated.View style={{ height: dropdownHeightForm, overflow: 'hidden' }}>
+          <FlashList
+            estimatedItemSize={179}
+            data={requests}
+            keyExtractor={(item) => item.ride_id}
+            renderItem={({ item }) => (
+              <RequestItem
+                // from={item.routes[0].route_name}
+                // to={item.routes[1].route_name}
+                username={item.username}
+                time={item.start_time}
+                price={item.fare}
+                seats={item.seat_available}
+                car = {{color: item.color, make: item.make, model: item.model}}
+                req_id = {item.request_id}
+                refreshRides={fetchRequests}
+              />
+            )}
+            ListEmptyComponent={() => (<Text style={styles.subheading}>No rides published</Text>)}
+            contentContainerStyle={{ paddingBottom: 20 }}
 
-        {/* <Text style={styles.title}>Publish a Ride</Text> */}
-
-        <FormField
-          placeholder="Starting Point"
-          value={form.startingPoint.route_name}
-          handleChangeText={(e) => setForm({ ...form, startingPoint: e })}
-          otherStyles={{ marginVertical: 5 }}
-        />
-
-        <FormField
-          placeholder="Destination"
-          value={form.destination.route_name}
-          handleChangeText={(e) => setForm({ ...form, destination: e })}
-          otherStyles={{ marginVertical: 5 }}
-        />
-        <FormField
-          placeholder="Price per seat"
-          value={form.price}
-          keyboardType="numeric"
-          handleChangeText={(e) => setForm({ ...form, price: e })}
-          otherStyles={{ marginVertical: 5 }}
-        />
-
-        <TouchableOpacity onPress={openDateTimePicker} style={styles.dateTimeField}>
-          <Ionicons name="calendar" size={24} color="black" />
-          <Text style={styles.dateTimeText}>
-            {form.dateTime ? form.dateTime.toLocaleString() : 'Select Date and Time'}
-          </Text>
-          <TouchableOpacity onPress={() => setForm({ ...form, dateTime: '' })} style={styles.cross}>
-            <Ionicons name="close" size={24} color="black" />
-          </TouchableOpacity>
-        </TouchableOpacity>
-
-        {showDatePicker && (
-
-          <DateTimePicker
-            value={new Date()}
-            mode={isDate ? 'date' : 'time'}
-            display="default"
-            onChange={onDateChange}
-            minimumDate={new Date()}
-            maximumDate={new Date().setMonth(new Date().getMonth() + 1)}
           />
-        )}
-
-        <Picker
-          selectedValue={form.selectedCar}
-          onValueChange={(itemValue) => setForm({ ...form, selectedCar: itemValue })}
-          style={styles.picker}
-          mode="dropdown"
-        >
-          <Picker.Item label="Select your car" value="" />
-          {carOptions.map((car) => (
-            <Picker.Item key={car.vehicle_id} label={`${car.color} ${car.make} ${car.model}`} value={car.vehicle_id} />
-          ))}
-
-        </Picker>
-
-        <Picker
-          selectedValue={form.availableSeats}
-          onValueChange={(e) => setForm({ ...form, availableSeats: e })}
-          style={styles.picker}
-          mode="dropdown"
-          enabled={!!form.selectedCar}
-        >
-          <Picker.Item label="Select available seats" value="" />
-          {Array.from({ length: maxSeats }, (_, index) => index + 1).map((seat) => (
-            <Picker.Item key={seat} label={`${seat}`} value={seat} />
-          ))}
-        </Picker>
-
-
-        <TouchableOpacity onPress={handlePublish} style={styles.publishButton}>
-          <Text style={styles.publishButtonText}>Publish Ride</Text>
-        </TouchableOpacity>
       </Animated.View>
 
       <TouchableOpacity style={styles.toggleButton} onPress={() => toggleDropdown('list')}>
@@ -444,45 +248,49 @@ const PublishRide = () => {
       </TouchableOpacity>
 
       <Animated.View style={{ height: dropdownHeightList, overflow: 'hidden' }}>
-        {loadingF ? ( <View style={styles.loadingContainer}>
+        {/* {loadingF ? ( <View style={styles.loadingContainer}>
 
           <Text style={styles.loadingText}>Loading...</Text>
           <ActivityIndicator size="large" color="#ff6347" />  
         </View>
         ) : (       
-          <FlashList
-            estimatedItemSize={191}
-            data={rides}
-            keyExtractor={(item) => item.ride_id}
-            renderItem={({ item }) => (
-              <RideItem
-                id={item.ride_id}
-                from={item.routes[0].route_name}
-                to={item.routes[1].route_name}
-                time={item.start_time}
-                price={item.fare}
-                seats={item.seat_available}
-                car={item.vehicle}
-                refreshRides={fetchRides}
-              />
-            )}
-            ListEmptyComponent={() => (<Text style={styles.subheading}>No rides published</Text>)}
-            contentContainerStyle={{ paddingBottom: 40 }}
-          />
-        )}
+          // <FlashList
+          //   estimatedItemSize={191}
+          //   data={rides}
+          //   keyExtractor={(item) => item.ride_id}
+          //   renderItem={({ item }) => (
+          //     <RequestItem
+          //       id={item.ride_id}
+          //       from={item.routes[0].route_name}
+          //       to={item.routes[1].route_name}
+          //       time={item.start_time}
+          //       price={item.fare}
+          //       seats={item.seat_available}
+          //       car={item.vehicle}
+          //       refreshRides={fetchRequests}
+          //     />
+          //   )}
+          //   ListEmptyComponent={() => (<Text style={styles.subheading}>No pending requ</Text>)}
+          //   contentContainerStyle={{ paddingBottom: 40 }}
+          // />
+        )} */}
       </Animated.View>
     </SafeAreaView>
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingBottom: 70,
     backgroundColor: '#ffffff', // Changed background to white
   },
   title: {
-    fontSize: 32,
+    flex: 1,
+    paddingRight: 10,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#ff6347', // Changed title color to tomato
     textAlign: 'center',
@@ -596,7 +404,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 3,
   },
-  rideItem: {
+  RequestItem: {
     marginVertical: 10,
     padding: 20,
     borderRadius: 10,
@@ -633,7 +441,7 @@ const styles = StyleSheet.create({
   rideTime: {
     color: '#fff',
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   seatsContainer: {
     flexDirection: 'row',
@@ -671,5 +479,4 @@ const styles = StyleSheet.create({
   // },
 });
 
-
-export default PublishRide;
+export default YourRequests;

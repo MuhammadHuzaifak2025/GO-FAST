@@ -261,6 +261,7 @@ const delete_ride = asynchandler(async (req, res, next) => {
     }
 });
 
+
 // const update_ride = asynchandler(async (req, res, next) => {
 //     try {
 //         const { ride_id } = req.body;

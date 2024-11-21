@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Modal, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { View, Text, FlatList, Modal, StyleSheet, TouchableOpacity, ScrollView, Animated, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useToast } from 'react-native-toast-notifications';
@@ -162,7 +162,10 @@ export default function CarModal({ visible, onClose }) {
 
                 <Animated.View style={[styles.dropdownContent, { height: dropdownHeightList }]}>
                     {loading ? (
-                        <Text style={styles.loadingText}>Loading...</Text>
+                        <View style={{ flex: 1, justifyContent: 'center' }}>
+                            <ActivityIndicator size="large" color="white" />
+                            <Text style={styles.loadingText}>Loading...</Text>
+                        </View>
                     ) : (
                         <FlashList
                             estimatedItemSize={136}
