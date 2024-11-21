@@ -202,6 +202,8 @@ const delete_bus = asynchandler(async (req, res, next) => {
             throw new ApiError(403, "You are not authorized to perform this action");
         }
         const { bus_id } = req.params;
+        const setbuorgnill = await sequelize.query(`
+            UPDATE buses SET bus_organization = null WHERE bus_id = ${bus_id}`, { type: QueryTypes.UPDATE });
         const [bus] = await sequelize.query(`
             DELETE FROM buses WHERE bus_id = ${bus_id} RETURNING *`, { type: QueryTypes.DELETE });
         if (!bus) {
@@ -219,5 +221,6 @@ export {
     create_bus,
     add_routes_to_bus,
     get_all_buses,
-    get_all_buses_with_routes
+    get_all_buses_with_routes,
+    delete_bus
 };

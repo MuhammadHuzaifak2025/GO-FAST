@@ -12,10 +12,12 @@ import {
     ScrollView,
     TouchableWithoutFeedback,
     Keyboard,
+    ToastAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { setAuthHeaders } from '../../utils/expo-store';
+import { Trash2 } from 'lucide-react-native';
 
 
 const routes = () => {
@@ -25,6 +27,20 @@ const routes = () => {
     useEffect(() => {
         fetchBuses();
     }, []);
+
+    const deleteBus = async (busId) => {
+        ToastAndroid.show('Deleting bus', ToastAndroid.SHORT);
+        return;
+        try {
+            await setAuthHeaders(axios);
+            const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/${busId}`);
+            Alert.alert('Success', response.data.message);
+            fetchBuses();
+        } catch (error) {
+            console.log(error.response);
+            Alert.alert('Error', 'Failed to delete bus');
+        }
+    };
     const fetchBuses = async () => {
         try {
             await setAuthHeaders(axios);
@@ -44,10 +60,18 @@ const routes = () => {
     };
     const renderBusItem = ({ item }) => (
         <TouchableOpacity style={styles.busItem} onPress={() => openModal(item)}>
-            <Text style={styles.busNumber}>Bus Number: {item.bus.bus_number}</Text>
+            <View style={styles.delbutton}>
+                <Text style={styles.busNumber}>Bus Number: {item.bus.bus_number}</Text>
+                <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => deleteBus(item.bus.bus_id)}
+                >
+                    <Trash2 color="#007AFF" size={20} />
+                </TouchableOpacity>
+            </View>
             <Text>Seats: {item.bus.seats}</Text>
             <Text>Single Ride Fair: {item.bus.single_ride_fair}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity >
     );
     const renderRouteItem = ({ item }) => (
         <View style={styles.routeItem}>
@@ -97,6 +121,15 @@ const routes = () => {
 export default routes
 
 const styles = StyleSheet.create({
+    deleteButton: {
+
+
+    },
+    delbutton: {
+        flexDirection: 'row',
+        alignSelf: 'flex-end',
+        // flex: 1,,
+    },
     closeButton: {
         position: 'absolute',
         right: 20,
