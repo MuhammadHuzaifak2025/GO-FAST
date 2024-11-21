@@ -10,7 +10,7 @@ import {
     Alert,
     Modal,
     ScrollView,
-    TouchableWithoutFeedback,
+    TouchableWithoutFeedback, 
     Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,7 +27,7 @@ const ViewBus = () => {
     }, []);
     const fetchBuses = async () => {
         try {
-            setAuthHeaders(axios);
+           await setAuthHeaders(axios);
             const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/routes/all`, {
                 withCredentials: true,
             });

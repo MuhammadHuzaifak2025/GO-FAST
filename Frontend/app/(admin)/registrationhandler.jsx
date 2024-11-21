@@ -49,10 +49,10 @@ const RegistrationHandler = () => {
             const resp = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration/student`, { withCredentials: true });
 
             if (resp.status === 200) {
-                // console.log(resp.data.data);
+
                 setStudents(resp.data.data);
             } else {
-                throw new Error(resp);
+                // throw new Error(resp);
             }
         } catch (error) {
             console.log(error.response);
@@ -88,20 +88,16 @@ const RegistrationHandler = () => {
                         console.log(resp);
                     }
                 } catch (error) {
+                    console.log("Muhammad", error.response)
                     setIsRegistrationOpen(false);
                 }
                 finally {
-                    setLoading(false); // Hide loader
+                    setLoading(false);
                 }
             };
 
             fetchRegistrationStatus();
             fetchStudents();
-
-            // Cleanup function (if needed)
-            return () => {
-                console.log("Cleanup executed");
-            };
         }, []) // Dependencies array
     );
     const handlesubmitregistration = async () => {
@@ -110,11 +106,11 @@ const RegistrationHandler = () => {
             const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration`, { "start_date": startDate, 'due_date': dueDate }, { withCredentials: true });
             if (resp.status === 201) {
                 toast.show("Registration Opened", { type: "success", duration: 6000, offset: 30 });
+                setIsRegistrationOpen(true);
             } else {
                 throw new Error(resp);
             }
         } catch (error) {
-            setIsRegistrationOpen(true);
             console.log(error.response);
         }
     }

@@ -52,13 +52,18 @@ const getbusregistration = asynchandler(async (req, res, next) => {
             `SELECT * FROM busregistrations WHERE organization =?`,
             { replacements: [getuserorganization.organization_id], type: QueryTypes.SELECT }
         );
-        const [semester] = await sequelize.query(
-            `SELECT * FROM semesters where semester_id =?`,
-            { type: QueryTypes.SELECT, replacements: [getbusregistration.semester_id] }
-        );
-        getbusregistration.semester_id = semester
+        let semester;
+        if (getbusregistration) {
+            [semester] = await sequelize.query(
+                `SELECT * FROM semesters where semester_id =?`,
+                { type: QueryTypes.SELECT, replacements: [getbusregistration.semester_id] }
+            );
+            getbusregistration.semester_id = semester
+            res.json(new ApiResponse(200, getbusregistration));
+        }else{
+            res.status(400).json("No Data Found");
+        }
         // return ApiResponse(res, 200, getbusregistration);
-        res.json(new ApiResponse(200, getbusregistration));
     } catch (error) {
         next(error)
     }
@@ -94,14 +99,14 @@ const get_student_registrations = asynchandler(async (req, res, next) => {
             { replacements: [getuserorganization.organization_id,], type: QueryTypes.SELECT }
         );
         console.log(getallregistration)
-        for(const i in getallregistration){
+        for (const i in getallregistration) {
             const user = await sequelize.query(
                 `SELECT * FROM users where user_id = ?`,
                 { replacements: [getallregistration[i].passenger_id], type: QueryTypes.SELECT }
             );
             getallregistration[i].passenger_id = user[0].username;
-        }  
-       
+        }
+
         if (!getallregistration) {
             return next(new ApiError(400, "No Bus Registration Found"));
         }

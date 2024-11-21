@@ -38,7 +38,22 @@ const BusLayout = () => {
           tabBarStyle: styles.tabBar,
           tabBarHideOnKeyboard: true,
         }}
+
       >
+        <Tabs.Screen
+          name="dashboard"
+          options={{
+            title: 'dashboard',
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                icon="bus"
+                color={color}
+                name="dashboard"
+                focused={focused}
+              />
+            ),
+          }}
+        />
         <Tabs.Screen
           name="viewbus"
           options={{
@@ -53,7 +68,22 @@ const BusLayout = () => {
             ),
           }}
         />
-       
+
+        <Tabs.Screen
+          name="BusSubscription"
+          options={{
+            title: 'BusSubscription',
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                icon="bus"
+                color={color}
+                name="BusSubscription"
+                focused={focused}
+              />
+            ),
+          }}
+        />
+
         <Tabs.Screen
           name="profile"
           options={{

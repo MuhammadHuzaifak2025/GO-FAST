@@ -42,7 +42,7 @@ export default function BusManagement() {
 
     const handleSubmit = async () => {
         try {
-            setAuthHeaders(axios)
+            await setAuthHeaders(axios)
             const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus`, {
                 ...newBus,
                 seats: Number(newBus.seats),
@@ -52,7 +52,7 @@ export default function BusManagement() {
             })
             if (response.status === 201) {
                 try {
-                    setAuthHeaders(axios);
+                    await setAuthHeaders(axios);
                     const routesWithCoordinates = newBus.routes.map((route) => ({
                         route_name: route, // Assuming `route` is a string
                         longitude: 0.0,
