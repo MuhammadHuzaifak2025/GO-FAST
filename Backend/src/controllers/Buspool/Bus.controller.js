@@ -195,10 +195,32 @@ const get_all_buses_with_routes = asynchandler(async (req, res, next) => {
         next(error);
     }
 });
+
+const delete_bus = asynchandler(async (req, res, next) => {
+    try {
+        if (!req.user.admin) {
+            throw new ApiError(403, "You are not authorized to perform this action");
+        }
+        const { bus_id } = req.params;
+        const setbuorgnill = await sequelize.query(`
+            UPDATE buses SET bus_organization = null WHERE bus_id = ${bus_id}`, { type: QueryTypes.UPDATE });
+        const [bus] = await sequelize.query(`
+            DELETE FROM buses WHERE bus_id = ${bus_id} RETURNING *`, { type: QueryTypes.DELETE });
+        if (!bus) {
+            throw new ApiError(404, "Bus not found");
+        }
+        return res.status(200).json(new ApiResponse(200, "Bus deleted successfully", bus));
+    } catch (error) {
+        next(error);
+    }
+}
+);
+
 export {
     getbusroutes,
     create_bus,
     add_routes_to_bus,
     get_all_buses,
-    get_all_buses_with_routes
+    get_all_buses_with_routes,
+    delete_bus
 };

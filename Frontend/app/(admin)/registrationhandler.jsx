@@ -55,7 +55,7 @@ const RegistrationHandler = () => {
                 // throw new Error(resp);
             }
         } catch (error) {
-            console.log(error.response);
+            // console.log(error.response);
         }
     }
 
@@ -63,7 +63,27 @@ const RegistrationHandler = () => {
 
     useFocusEffect(
         useCallback(() => {
+            const createsemester = async () => {
+                try {
+                    await setAuthHeaders(axios);
+                    const resp = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semesters`, { withCredentials: true });
+                    // console.log("resp", resp);
+                    if (resp.status === 200) {
+                        // console.log("Helloalhadlhhlhasdl",resp.data.data.type_semester + " " + resp.data.data.year);
+                        setCurrentSemester(resp.data.data.type_semester + " " + resp.data.data.year);
+                    } else {
+                        await setAuthHeaders(axios);
+                        const resp2 = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semester`, { "type_semester": "Fall", "year": 2024 }, { withCredentials: true });
+                        if (resp2.status === 201) {
+                            setCurrentSemester(resp2.data.data.type_semester + " " + resp2.data.data.year);
+                        } else {
 
+                        }
+                    }
+                } catch (error) {
+                    // console.log(error.response);
+                }
+            }
             const fetchRegistrationStatus = async () => {
                 try {
                     // Set authorization headers
@@ -76,26 +96,29 @@ const RegistrationHandler = () => {
                         { withCredentials: true }
                     );
 
-                    console.log("Hello", resp);
+                    // console.log("Hello", resp);
 
                     if (resp.status === 200) {
                         setIsRegistrationOpen(true);
+                        // console.log("Hello");
                         const formattedDate = new Intl.DateTimeFormat('en-US').format(new Date(resp.data.data.due_date));
                         setSemester(resp.data.data.type_semester + " " + resp.data.data.year);
                         setDueDate(formattedDate);
                     } else {
                         setIsRegistrationOpen(true);
-                        console.log(resp);
+                        // console.log(resp);
                     }
                 } catch (error) {
-                    console.log("Muhammad", error.response)
+                    // console.log("Muhammad", error.response)
                     setIsRegistrationOpen(false);
                 }
                 finally {
                     setLoading(false);
                 }
             };
-
+            setDueDate(null);
+            setStartDate(null);
+            createsemester();
             fetchRegistrationStatus();
             fetchStudents();
         }, []) // Dependencies array
@@ -104,14 +127,17 @@ const RegistrationHandler = () => {
         try {
             await setAuthHeaders(axios)
             const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration`, { "start_date": startDate, 'due_date': dueDate }, { withCredentials: true });
-            if (resp.status === 201) {
+            if (resp.status === 200) {
                 toast.show("Registration Opened", { type: "success", duration: 6000, offset: 30 });
+                console.log(dueDate);
                 setIsRegistrationOpen(true);
+                fetchStudents();
+                setDueDate(null);
             } else {
                 throw new Error(resp);
             }
         } catch (error) {
-            console.log(error.response);
+            // console.log(error.response);
         }
     }
 
@@ -137,8 +163,8 @@ const RegistrationHandler = () => {
                     throw new Error(resp);
                 }
             } catch (error) {
-                console.log("Hello")
-                console.log(error.response);
+                // console.log("Hello")
+                // console.log(error.response);
             };
         }
         verifyPayment();
@@ -191,7 +217,7 @@ const RegistrationHandler = () => {
                     {/* Date Pickers */}
                     {showStartDatePicker && (
                         <DateTimePicker
-                            value={startDate || new Date()}
+                            value={new Date()}
                             minimumDate={new Date()}
                             mode="date"
                             display="default"
@@ -203,7 +229,7 @@ const RegistrationHandler = () => {
                     )}
                     {showDueDatePicker && (
                         <DateTimePicker
-                            value={dueDate || new Date()}
+                            value={new Date()}
                             minimumDate={startDate || new Date()}
                             mode="date"
                             display="default"

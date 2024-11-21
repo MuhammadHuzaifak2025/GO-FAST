@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, ToastAndroid } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import axios from 'axios'
 import { setAuthHeaders } from '../../utils/expo-store'
 import { MapPin, Plus, X } from 'lucide-react-native'
+import { useToast } from "react-native-toast-notifications";
 
 export default function BusManagement() {
     const [newBus, setNewBus] = useState({
@@ -13,7 +14,7 @@ export default function BusManagement() {
         routes: [],
     })
     const [newRoute, setNewRoute] = useState('')
-
+    const toast = useToast();
     const addRoute = () => {
         if (newRoute.trim()) {
             setNewBus((prev) => ({
@@ -42,6 +43,61 @@ export default function BusManagement() {
 
     const handleSubmit = async () => {
         try {
+            if (!newBus.bus_number || !newBus.seats || !newBus.single_ride_fair || newBus.routes.length === 0) {
+                toast.show('Please fill all fields', {
+                    type: "danger",
+                    duration: 5000,
+                    offset: 30,
+                    animationType: "slide-in",
+                });
+                return;
+            }
+            if (newBus.seats < 1 || newBus.single_ride_fair < 1) {
+                toast.show('Seats and Single ride fair must be greater than 0', {
+                    type: "danger",
+                    duration: 5000,
+                    offset: 30,
+                    animationType: "slide-in",
+                });
+                return;
+            }
+            if (newBus.routes.length < 2) {
+                toast.show('Please add at least 2 routes', {
+                    type: "danger",
+                    duration: 5000,
+                    offset: 30,
+                    animationType: "slide-in",
+                });
+                return;
+            }
+            // Error on Repeated Route
+            let repeatedRoute = false;
+            for (let i = 0; i < newBus.routes.length; i++) {
+                for (let j = i + 1; j < newBus.routes.length; j++) {
+                    if (newBus.routes[i] === newBus.routes[j]) {
+                        repeatedRoute = true;
+                        break;
+                    }
+                }
+            }
+            if (repeatedRoute) {
+                toast.show('Routes cannot be repeated', {
+                    type: "danger",
+                    duration: 5000,
+                    offset: 30,
+                    animationType: "slide-in",
+                });
+                return;
+            }
+            if (newBus.seats > 100) {
+                toast.show('Seats cannot be greater than 100', {
+                    type: "danger",
+                    duration: 5000,
+                    offset: 30,
+                    animationType: "slide-in",
+                });
+                return;
+            }
             await setAuthHeaders(axios)
             const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus`, {
                 ...newBus,
@@ -67,7 +123,19 @@ export default function BusManagement() {
                     })
                     if (routeresp.status === 201) {
                         console.log(routeresp.data.message);
-                        Alert.alert('Success', 'Routes created successfully')
+                        toast.show('Please fill all fields', {
+                            type: "Success",
+                            duration: 5000,
+                            offset: 30,
+                            animationType: "slide-in",
+                        });
+                        setNewBus({
+                            bus_number: '',
+                            seats: '',
+                            single_ride_fair: '',
+                            routes: [],
+                        })
+                        setNewBus({})
                     }
 
                 } catch (error) {

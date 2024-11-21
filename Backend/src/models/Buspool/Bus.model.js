@@ -23,7 +23,7 @@ const Bus = sequelize.define(
             model: Transport_Organization,
             key: "organization_id"
         },
-        allowNull: false
+        allowNull: true
     },
     single_ride_fair: {
         type: DataTypes.FLOAT,

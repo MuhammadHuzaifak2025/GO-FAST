@@ -1,11 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { Animated, Text, TouchableOpacity, StyleSheet, View, Image, Dimensions } from 'react-native';
+import { Animated, Text, TouchableOpacity, StyleSheet, View, Image, Dimensions, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = CARD_WIDTH * 0.6;
+const CARD_HEIGHT = CARD_WIDTH * 0.8;
 
 const ProfileCard = () => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -51,7 +51,7 @@ const ProfileCard = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <TouchableOpacity
         onPress={flipCard}
         activeOpacity={0.8}
@@ -112,30 +112,30 @@ const ProfileCard = () => {
                 end={{ x: 1, y: 1 }}
                 style={styles.gradient}
               > */}
-                <View style={styles.backContent}>
-                  <MaterialCommunityIcons name="qrcode" size={200} color="#3949ab" />
-                  <Text style={styles.backText}>Scan for more details</Text>
-                </View>
+              <View style={styles.backContent}>
+                <MaterialCommunityIcons name="qrcode" size={200} color="#3949ab" />
+                <Text style={styles.backText}>Scan for more details</Text>
+              </View>
               {/* </LinearGradient> */}
             </Animated.View>
           </Animated.View>
         </View>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingTop: 25,
+    // flex: 1,
+    marginTop: 70,
     alignItems: 'center',
     // backgroundColor: '#f5f5f5',
   },
   cardWrapper: {
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#000',
+    // shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
   },
   card: {
+    // padding: 20,
     width: '100%',
     height: '100%',
     position: 'absolute',
@@ -175,9 +176,10 @@ const styles = StyleSheet.create({
   },
   dataContainer: {
     flex: 1,
-    marginLeft: 20,
+    // marginLeft: 20,
   },
   name: {
+
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
@@ -189,7 +191,8 @@ const styles = StyleSheet.create({
   detailsWrapper: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 10,
-    padding: 10,
+    marginLeft: 10,
+    padding: 5,
   },
   detailItem: {
     flexDirection: 'row',
@@ -197,6 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   detailText: {
+    paddingHorizontal: 5,
     fontSize: 14,
     color: '#fff',
   },
@@ -206,10 +210,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   validity: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#fff',
   },
   cardBack: {
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
