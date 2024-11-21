@@ -15,26 +15,38 @@ const openbusregistration = asynchandler(async (req, res, next) => {
         if (!getuserorganization) {
             return next(new ApiError(400, "You are not an Admin or Organization not found"));
         }
-        const [checkifalreadyregistered] = await sequelize.query(
-            `SELECT * FROM busregistrations WHERE organization =? and start_date =? and due_date =?`,
-            { replacements: [getuserorganization.organization_id, start_date, due_date], type: QueryTypes.SELECT }
-        );
-        if (checkifalreadyregistered) {
-            return next(new ApiError(400, "Bus Registration already exists"));
-        }
-
         const [getcurrentsemester] = await sequelize.query(
             `SELECT * FROM semesters order by semester_id desc limit 1`,
             { replacements: [start_date, start_date], type: QueryTypes.SELECT }
         );
-        if (!getcurrentsemester) {
-            return next(new ApiError(400, "No Semester Found"));
-        }
-        const [createbusregistration] = await sequelize.query(
-            `INSERT INTO busregistrations (organization, start_date, due_date, "createdAt", "updatedAt", "semester_id") VALUES (?,?,?,?,?,?) Returning *`,
-            { replacements: [getuserorganization.organization_id, start_date, due_date, new Date(), new Date(), getcurrentsemester.semester_id], type: QueryTypes.INSERT }
+        console.log(getcurrentsemester)
+        const [checkifalreadyregistered] = await sequelize.query(
+            `SELECT * FROM busregistrations order by registration_id desc limit 1`,
+            { replacements: [getuserorganization.organization_id, start_date, due_date], type: QueryTypes.SELECT }
         );
-        res.json(new ApiResponse(200, [createbusregistration[0], "Bus Registration Created Successfully"]))
+
+        if (checkifalreadyregistered.semester_id !== getcurrentsemester.semester_id) {
+            console.log("semester", getcurrentsemester, checkifalreadyregistered)
+            const [createbusregistration] = await sequelize.query(
+                `INSERT INTO busregistrations (organization, start_date, due_date, "createdAt", "updatedAt", "semester_id") VALUES (?,?,?,?,?,?) Returning *`,
+                { replacements: [getuserorganization.organization_id, start_date, due_date, new Date(), new Date(), getcurrentsemester.semester_id], type: QueryTypes.INSERT }
+            );
+            console.log(createbusregistration, "hello")
+            res.json(new ApiResponse(200, [createbusregistration[0], "Bus Registration Created Successfully"]))
+
+        }
+        else {
+
+            return next(new ApiError(400, "Bus Registration already exists"));
+        }
+
+        // const [getcurrentsemester] = await sequelize.query(
+        //     `SELECT * FROM semesters order by semester_id desc limit 1`,
+        //     { replacements: [start_date, start_date], type: QueryTypes.SELECT }
+        // );
+        // if (!getcurrentsemester) {
+        //     return next(new ApiError(400, "No Semester Found"));
+        // }
 
     } catch (error) {
         next(error)
@@ -48,19 +60,25 @@ const getbusregistration = asynchandler(async (req, res, next) => {
             `SELECT * FROM transport_organizations WHERE owner =?`,
             { replacements: [organization], type: QueryTypes.SELECT }
         );
+
         const [getbusregistration] = await sequelize.query(
-            `SELECT * FROM busregistrations WHERE organization =?`,
+            `SELECT * FROM busregistrations WHERE organization =? order by registration_id desc limit 1`,
             { replacements: [getuserorganization.organization_id], type: QueryTypes.SELECT }
         );
         let semester;
         if (getbusregistration) {
-            [semester] = await sequelize.query(
-                `SELECT * FROM semesters where semester_id =?`,
-                { type: QueryTypes.SELECT, replacements: [getbusregistration.semester_id] }
-            );
+            semester = await sequelize.query(`SELECT * FROM semesters order by 
+                semester_id desc LIMIT 1`,
+                { type: sequelize.QueryTypes.SELECT });
+
+
+            if (getbusregistration.semester_id != semester[0].semester_id) {
+                return next(new ApiError(400, "No Open Registration"));
+            }
+            console.log("semester", semester)
             getbusregistration.semester_id = semester
             res.json(new ApiResponse(200, getbusregistration));
-        }else{
+        } else {
             res.status(400).json("No Data Found");
         }
         // return ApiResponse(res, 200, getbusregistration);

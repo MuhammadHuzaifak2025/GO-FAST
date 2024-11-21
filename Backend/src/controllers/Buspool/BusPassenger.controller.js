@@ -37,7 +37,7 @@ const create_Semester = asynchandler(async (req, res, next) => {
 
 const get_Semesters = asynchandler(async (req, res, next) => {
     try {
-        const semesters = await sequelize.query(`SELECT * FROM semesters`, { type: sequelize.QueryTypes.SELECT });
+        const semesters = await sequelize.query(`SELECT * FROM semesters order by semester_id desc LIMIT 1`, { type: sequelize.QueryTypes.SELECT });
         if (semesters) {
             return res.status(200).json(new ApiResponse(200, semesters[0]));
         }
