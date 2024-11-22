@@ -43,13 +43,19 @@ export default function BusManagement() {
 
     const handleSubmit = async () => {
         try {
-            if (!newBus.bus_number || !newBus.seats || !newBus.single_ride_fair || newBus.routes.length === 0) {
+            if (!newBus.bus_number || !newBus.seats || !newBus.single_ride_fair || newBus.routes.length < 0) {
                 toast.show('Please fill all fields', {
                     type: "danger",
                     duration: 5000,
                     offset: 30,
                     animationType: "slide-in",
                 });
+                setNewBus({
+                    bus_number: '',
+                    seats: '',
+                    single_ride_fair: '',
+                    routes: [],
+                })
                 return;
             }
             if (newBus.seats < 1 || newBus.single_ride_fair < 1) {
@@ -59,6 +65,12 @@ export default function BusManagement() {
                     offset: 30,
                     animationType: "slide-in",
                 });
+                setNewBus({
+                    bus_number: '',
+                    seats: '',
+                    single_ride_fair: '',
+                    routes: [],
+                })
                 return;
             }
             if (newBus.routes.length < 2) {
@@ -68,6 +80,12 @@ export default function BusManagement() {
                     offset: 30,
                     animationType: "slide-in",
                 });
+                setNewBus({
+                    bus_number: '',
+                    seats: '',
+                    single_ride_fair: '',
+                    routes: [],
+                })
                 return;
             }
             // Error on Repeated Route
@@ -87,6 +105,12 @@ export default function BusManagement() {
                     offset: 30,
                     animationType: "slide-in",
                 });
+                setNewBus({
+                    bus_number: '',
+                    seats: '',
+                    single_ride_fair: '',
+                    routes: [],
+                })
                 return;
             }
             if (newBus.seats > 100) {
@@ -96,6 +120,12 @@ export default function BusManagement() {
                     offset: 30,
                     animationType: "slide-in",
                 });
+                setNewBus({
+                    bus_number: '',
+                    seats: '',
+                    single_ride_fair: '',
+                    routes: [],
+                })
                 return;
             }
             await setAuthHeaders(axios)
@@ -123,7 +153,7 @@ export default function BusManagement() {
                     })
                     if (routeresp.status === 201) {
                         console.log(routeresp.data.message);
-                        toast.show('Please fill all fields', {
+                        toast.show('Bus Created', {
                             type: "Success",
                             duration: 5000,
                             offset: 30,
@@ -135,10 +165,15 @@ export default function BusManagement() {
                             single_ride_fair: '',
                             routes: [],
                         })
-                        setNewBus({})
                     }
 
                 } catch (error) {
+                    setNewBus({
+                        bus_number: '',
+                        seats: '',
+                        single_ride_fair: '',
+                        routes: [],
+                    })
                     console.log(error.response);
                     Alert.alert('Error', 'Failed to create routes')
                 }
@@ -196,7 +231,7 @@ export default function BusManagement() {
                             </TouchableOpacity>
                         </View>
                     )}
-                    keyExtractor={(item, index) => index.toString()}
+                    keyExtractor={(item, index) => index?.toString()}
                     style={styles.routeList}
                 />
                 <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>

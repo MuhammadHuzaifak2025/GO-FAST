@@ -71,7 +71,7 @@ const Profile = () => {
 
         <CarModal visible={registerCarDisplay}
           onClose={() => setRegisterCarDisplay(false)} />
-        <RideHistory visible={Ridehistory} user_id={user.user_id}
+        <RideHistory visible={Ridehistory} user_id={user?.user_id}
           onClose={() => { setRideHistory(false) }} />
         <Text style={styles.title}>Profile</Text>
         <View style={styles.userInfo}>
@@ -102,7 +102,7 @@ const Profile = () => {
 
         <View style={styles.optionsContainer}>
           <Text style={styles.optionsTitle}>Account Options</Text>
-          <CustomButton textContent="Reset Password" handlePress={() => { setRideHistory(true) }} containerStyles={styles.optionButton} />
+          <CustomButton textContent="Ride History" handlePress={() => { setRideHistory(true) }} containerStyles={styles.optionButton} />
           <CustomButton textContent="Register Car" handlePress={() => { setRegisterCarDisplay(true) }} containerStyles={styles.optionButton} />
           <CustomButton textContent="Sign Out" handlePress={handleLogOut} isLoading={isLogOut} containerStyles={styles.optionButton} />
           <CustomButton textContent="Switch Modes" handlePress={handleswitch} containerStyles={styles.optionButton} />

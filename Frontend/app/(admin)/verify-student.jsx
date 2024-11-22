@@ -1,20 +1,28 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
+import { Audio } from 'expo-av';
 export default function App() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [studentId, setStudentId] = useState('');
   const [isCameraActive, setIsCameraActive] = useState(false); // State to control camera visibility
-
+  const [sound, setSound] = useState();
   if (!permission) {
     // Camera permissions are still loading.
     return <View />;
   }
+  async function playSound() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/store-scanner-beep-90395.mp3')
+    );
+    setSound(sound);
+
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
     return (
       <View style={styles.container}>
         <Text style={styles.message}>We need your permission to show the camera</Text>
@@ -35,12 +43,16 @@ export default function App() {
       alert('Please enter a valid Student ID.');
     }
   }
+  const fetchResult = (result) => {
+    playSound();
 
+    setIsCameraActive(false);
+  }
   return (
     <View style={styles.container}>
       {isCameraActive && (
         <View style={styles.startContainer}>
-          <CameraView style={styles.camera} facing={facing}>
+          <CameraView style={styles.camera} facing={facing} onBarcodeScanned={fetchResult}>
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
                 <Text style={styles.text}>Flip Camera</Text>
@@ -99,7 +111,7 @@ const styles = StyleSheet.create({
     // marginVertical: 16,
     borderColor: '#007bff',
     borderWidth: 2,
-    marginBottom:500,
+    marginBottom: 500,
   },
   camera: {
     height: 300,
