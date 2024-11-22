@@ -28,16 +28,51 @@ const store_driver = async (data) => {
     }
 };
 
-const store_requesting_passenger = async (data) => {
-    const { request_id, passenger_socket_id, request_user } = data;
+const searchForPassenger = async (socket, request_id, passenger_id) => {
     try {
-        const request_user = await sequelize.query(
-            `select * from ride_requests a inner join rides b on a.ride_id = b.ride_id  where request_id = ? and b.requesting_user = ?`,
+        const passengers = await sequelize.query(
+            `SELECT * FROM ride_requests a 
+             INNER JOIN carpool_rides b ON a.ride_id = b.ride_id 
+             WHERE request_id = ? and b.driver =?`,
+            {
+                replacements: [request_id, socket.user.user_id],
+                type: QueryTypes.SELECT,
+            }
+        );
+
+        if (passengers.length > 0) {
+            if (passengers[0].requesting_user_socket_id) {
+                socket.reciever = passengers[0].requesting_user_socket_id;
+                socket.to(socket.reciever).emit('ride-request-chat', {
+                    message: 'Driver is ready to chat',
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error in searchForPassenger:", error.message); // Log for debugging
+        socket.emit('error', { message: error.message || 'Error processing ride request' });
+    }
+};
+
+const search_for_driver = async (data) => {
+    try {
+        
+
+    } catch (error) {
+
+    }
+}
+
+const store_requesting_passenger = async (data) => {
+    const [request_id, passenger_socket_id, request_user] = data;
+    try {
+        const request_user_details = await sequelize.query(
+            `select * from ride_requests a inner join carpool_rides b on a.ride_id = b.ride_id  where request_id = ? and a.requesting_user = ?`,
             {
                 replacements: [request_id, request_user],
                 type: QueryTypes.SELECT,
             });
-        if (request_user[0]) {
+        if (request_user_details[0]) {
 
             await sequelize.query(
                 `update ride_requests set requesting_user_socket_id = ? where request_id = ?`,
@@ -51,6 +86,7 @@ const store_requesting_passenger = async (data) => {
             throw new Error("Passenger not found");
         }
     } catch (error) {
+        console.error("Error in is_driver_is_requester:", error.message);
         throw new Error("Error processing ride request");
     }
 }
@@ -98,6 +134,4 @@ const is_driver_is_requester = async (data) => {
     }
 };
 
-
-
-export { store_driver, store_requesting_passenger, is_driver_is_requester };
+export { store_driver, store_requesting_passenger, is_driver_is_requester, searchForPassenger };
