@@ -152,7 +152,7 @@ const YourRequests = () => {
 
   const toggleDropdown = (check) => {
 
-    if (check === 'form') {
+    if (check === 'pending') {
 
       const toValue = isDropdownOpenForm ? 0 : height; // Adjust this value based on your needs
       Animated.timing(dropdownHeightForm, {
@@ -179,7 +179,7 @@ const YourRequests = () => {
       }).start();
 
       if (isDropdownOpenForm && !isDropdownOpenList) {
-        toggleDropdown('form');
+        toggleDropdown('pending');
       }
 
       setIsDropdownOpenList(!isDropdownOpenList);
@@ -188,10 +188,7 @@ const YourRequests = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-
-      // toggleDropdown('list');
-      // console.log("Hello");
-      
+     
       fetchRequests();
 
       return () => {
@@ -205,7 +202,7 @@ const YourRequests = () => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#ff6347" />
-        <Text style={styles.loadingText}>Loading cars...</Text>
+        <Text style={styles.loadingText}>Loading pending requests...</Text>
       </View>
     );
   }
@@ -213,7 +210,7 @@ const YourRequests = () => {
   return (
     <SafeAreaView style={styles.container}>
 
-      <TouchableOpacity style={styles.toggleButton} onPress={() => toggleDropdown('form')}>
+      <TouchableOpacity style={styles.toggleButton} onPress={() => toggleDropdown('pending')}>
         <Text style={styles.title}>Your Pending Requests</Text>
         <Ionicons name={isDropdownOpenForm ? 'chevron-up' : 'chevron-down'} size={24} color="#000" />
       </TouchableOpacity>

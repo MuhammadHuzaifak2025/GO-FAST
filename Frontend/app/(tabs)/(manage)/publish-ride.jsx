@@ -3,19 +3,21 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator,
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
-import FormField from '../../components/FormField';
-import { useGlobalContext } from '../../context/GlobalProvider';
+import FormField from '../../../components/FormField';
+import { useGlobalContext } from '../../../context/GlobalProvider';
 import { useToast } from "react-native-toast-notifications";
-import { setAuthHeaders } from '../../utils/expo-store';
+import { setAuthHeaders } from '../../../utils/expo-store';
 import { useFocusEffect } from '@react-navigation/native';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from '@shopify/flash-list';
-
+import { router } from 'expo-router';
 
 const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
 
   const toast = useToast();
+
+  const { setMyRide } = useGlobalContext();
 
   const rideDate = new Date(time);
   const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -64,7 +66,7 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
               }
             } catch (error) {
               console.error(error);
-              toast.show('Failed to delete ride. Please try again.', {
+              toast.show(error.response.data.message, {
                 type: "danger",
                 duration: 4000,
                 offset: 30,
@@ -78,40 +80,49 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
   };
 
   return (
-    <LinearGradient
-      colors={['black', '#ff6347']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.rideItem}
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={()=>{
+        setMyRide(id);
+        router.push('/manage-ride');           
+      }}
     >
-      {/* Delete Icon */}
-      <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
-        <Ionicons name="close" size={24} color="#fff" />
-      </TouchableOpacity>
+      <LinearGradient
+        colors={['black', '#ff6347']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.rideItem}
+        >
+        {/* Delete Icon */}
+        <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
+          <Ionicons name="close" size={24} color="#fff" />
+        </TouchableOpacity>
 
-      <View style={styles.rideHeader}>
-        <FontAwesome name="car" size={24} color="#fff" />
-        <Text style={styles.usernameText}>Ride#{id}</Text>
-      </View>
-      <Text style={styles.rideText}>Starting Location: {from}</Text>
-      <Text style={styles.rideText}>Destination: {to}</Text>
-      <Text style={styles.rideTime}>Start Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]}</Text>
-      <Text style={styles.rideTime}>Start Time: {formatTime}</Text>
-      <Text style={styles.rideText}>Vehicle: {car.color} {car.make} {car.model}</Text>
-      <Text style={styles.rideText}>Fare: {price} </Text>
-      <View style={styles.seatsContainer}>
-        <Text style={styles.seatText}>Seats Available: </Text>
-        {Array.from({ length: seats }).map((_, index) => (
-          <MaterialIcons
+        <View style={styles.rideHeader}>
+          <FontAwesome name="car" size={24} color="#fff" />
+          <Text style={styles.usernameText}>Ride#{id}</Text>
+        </View>
+        <Text style={styles.rideText}>Starting Location: {from}</Text>
+        <Text style={styles.rideText}>Destination: {to}</Text>
+        <Text style={styles.rideTime}>Start Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]}</Text>
+        <Text style={styles.rideTime}>Start Time: {formatTime}</Text>
+        <Text style={styles.rideText}>Vehicle: {car.color} {car.make} {car.model}</Text>
+        <Text style={styles.rideText}>Fare: {price} </Text>
+        <View style={styles.seatsContainer}>
+          <Text style={styles.seatText}>Seats Available: </Text>
+          {Array.from({ length: seats }).map((_, index) => (
+            <MaterialIcons
             key={index}
-            name="event-seat"
-            size={20}
-            color="#fff"
-            style={styles.seatIcon}
-          />
-        ))}
-      </View>
-    </LinearGradient>
+              name="event-seat"
+              size={20}
+              color="#fff"
+              style={styles.seatIcon}
+              />
+            ))}
+        </View>
+      </LinearGradient>
+
+    </TouchableOpacity>
   );
 };
 
@@ -138,13 +149,12 @@ const PublishRide = () => {
 
   const [rides, setRides] = useState([]);
   const [loadingF, setLoadingF] = useState(false);
-  const [isEmpty, setIsEmpty] = useState(false);
 
   const toast = useToast();
 
   const fetchRides = async () => {
 
-    setIsEmpty(false);
+
     setLoadingF(true);
     try {
 
@@ -163,11 +173,10 @@ const PublishRide = () => {
     } catch (error) {
       if (error.response.data.message === 'No rides available') {
 
-        setIsEmpty(true);
       }
       else {
 
-        toast.show('Error fetching your rides, please try again later', {
+        toast.show(error.response.data.message, {
           type: "danger",
           duration: 4000,
           offset: 30,
@@ -287,7 +296,6 @@ const PublishRide = () => {
   useFocusEffect(
     React.useCallback(() => {
 
-      toggleDropdown('list');
       // console.log("Hello");
 
       const fetchCarData = async () => {
@@ -323,7 +331,7 @@ const PublishRide = () => {
 
       return () => {
       };
-    }, [])
+    }, [isDropdownOpenForm])
   );
 
   useEffect(() => {
@@ -337,6 +345,7 @@ const PublishRide = () => {
 
   useEffect(() => {
 
+    toggleDropdown('list'); 
     fetchRides();
 
   }, []);

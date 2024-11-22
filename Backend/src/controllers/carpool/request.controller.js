@@ -34,7 +34,12 @@ const create_request = asynchandler(async (req, res, next) => {
 
         if (alreadyRequested[0]) {
             // console.log('3',alreadyRequested[0].request_id);
-            return next(new ApiError(400, ["you have already sent a request for this ride before"]));
+            if(alreadyRequested[0].is_approved === true){
+                return next(new ApiError(400, "You have already been approved for this ride"));
+            }
+            else{
+                return next(new ApiError(400, "you have already sent a request for this ride before"));
+            }
         }
 
         const ride_details = await sequelize.query('SELECT b.ride_id, b.driver, b.seat_available FROM carpool_rides b WHERE b.ride_id = ?', {
@@ -127,7 +132,7 @@ const fetch_pending_requests = asynchandler(async (req, res, next) => {
    
     try {
         
-        const  user_id = req.user.user_id;  
+        const user_id = req.user.user_id;  
 
         const requests = await sequelize.query(
             `select a.*,d.*,b.*,c.username from ride_requests a JOIN carpool_rides b ON a.ride_id = b.ride_id JOIN users c ON b.driver = c.user_id JOIN carpool_vehicles d ON b.vehicle_id = d.vehicle_id WHERE requesting_user = ? AND is_approved = ${false}`,
@@ -150,12 +155,26 @@ const fetch_ride_requests_by_ride_id = asynchandler(async (req, res, next) => {
     try {
 
         const { rideId } = req.params;
+        const user_id = req.user.user_id;  
 
         if (!rideId) {
             return next(new ApiError(400, "Please provide a ride id"));
         }
+        const driver = await sequelize.query(
+            `SELECT driver FROM carpool_rides WHERE ride_id = ?`,
+            {
+                replacements: [rideId],
+                type: QueryTypes.SELECT,
+            }); 
+        if (!driver) {
+            return next(new ApiError(400, "No ride requests found"));
+        }
+        if (driver[0].driver !== user_id) {
+            return next(new ApiError(400, "You can't view requests for this ride"));
+        }
+
         const ride = await sequelize.query(
-            `select * from ride_requests where ride_id = ?`,
+            `select a.*,b.username from ride_requests a JOIN users b ON a.requesting_user = b.user_id where ride_id = ? AND is_approved = ${false}`,
             {
                 replacements: [rideId],
                 type: QueryTypes.SELECT,
@@ -190,7 +209,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
             return next(new ApiError(400, "No ride requests found"));
         }
         if (ride_details[0].driver !== req.user.user_id) {
-            return next(new ApiError(400, "You can't accept or create your own request"));
+            return next(new ApiError(400, "You can't accept this request"));
         }
         if (ride_details[0].is_approved) {
             return next(new ApiError(400, "Ride request already accepted"));
@@ -285,8 +304,8 @@ const reject_ride_request = asynchandler(async (req, res, next) => {
             return next(new ApiError(400, "No ride requests found"));
         }
         console.log(ride_details[0])
-        if (ride_details[0].driver === req.user.user_id) {
-            return next(new ApiError(400, "You can't delete this request"));
+        if (ride_details[0].driver !== req.user.user_id) {
+            return next(new ApiError(400, "You can't reject this request"));
         }
 
         const ride = await sequelize.query(
@@ -299,7 +318,7 @@ const reject_ride_request = asynchandler(async (req, res, next) => {
         if (!ride) {
             return next(new ApiError(400, "No ride requests found"));
         }
-        return res.json(new ApiResponse(200, "Ride request deleted successfully", ride[0]));
+        return res.json(new ApiResponse(200, "Ride request rejected successfully", ride[0]));
     } catch (error) {
         next(error);
     }

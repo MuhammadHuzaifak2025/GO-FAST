@@ -79,7 +79,7 @@ const TabsLayout = () => {
             )
           }}/>
         <Tabs.Screen
-          name="publish-ride"
+          name="(manage)"
           options={{
             title: 'Publish',
             headerShown: false,

@@ -225,9 +225,34 @@ const complete_ride = asynchandler(async (req, res, next) => {
 const delete_ride = asynchandler(async (req, res, next) => {
     try {
         const { ride_id } = req.params;
+        const user_id = req.user.user_id;
+
         if (!ride_id) {
             return next(new ApiError(400, "Please fill in all fields: ride id"));
         }
+
+        const user_ride = await sequelize.query(
+            `SELECT * FROM carpool_rides WHERE ride_id = ? AND driver = ?`,
+            { type: QueryTypes.SELECT, replacements: [ride_id, user_id] }
+        );  
+
+        if(!user_ride[0]){
+            return next(new ApiError(400, "Ride not found"));
+        }
+        if(user_ride[0].driver !== user_id){
+            return next(new ApiError(400, "You are not authorized to delete this ride"));
+        }
+
+        const ride_passengers = await sequelize.query(
+            `SELECT * FROM ride_passengers WHERE ride_id = ?`,
+            { type: QueryTypes.SELECT, replacements: [ride_id] }
+        );
+
+        if(ride_passengers.length){
+            return next(new ApiError(400, "Ride has passengers. Cannot delete"));
+        }
+
+
         const fetch_ride = await sequelize.query(
             `SELECT * FROM carpool_rides WHERE ride_id = ? `,
             { type: QueryTypes.SELECT, replacements: [ride_id] })
@@ -235,14 +260,21 @@ const delete_ride = asynchandler(async (req, res, next) => {
         if (!fetch_ride[0]) {
             return next(new ApiError(400, "Ride not found"));
         }
+
         if (fetch_ride[0].ride_status === 'completed') {
             return next(new ApiError(400, "Completed Ride cant be deleted"));
         }
+        
         const route_id = await sequelize.query(`Delete from ride_routes where ride_id = ${ride_id}`, { type: QueryTypes.DELETE })
         if (!route_id) {
             return next(new ApiError(400, "Failed to delete ride route"));
         }
 
+        const request = await sequelize.query(`Delete from ride_requests where ride_id = ${ride_id}`, { type: QueryTypes.DELETE })
+        if (!request) {
+            return next(new ApiError(400, "Failed to delete ride request"));
+        }
+        
         const ride = await sequelize.query(
             `DELETE FROM carpool_rides WHERE ride_id = ?`,
             {

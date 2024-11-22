@@ -131,12 +131,18 @@ const FindRide = () => {
 
         console.log(error.response);
 
-        toast.show('Error fetching rides, please try again later', {
-          type: "danger",
-          duration: 4000,
-          offset: 30,
-        animationType: "slide-in",
-      });
+        if(error.response.data.message === "No rides found"){
+          setListEnd(true); 
+        }
+        else{
+
+          toast.show('Error fetching rides, please try again later', {
+            type: "danger",
+            duration: 4000,
+            offset: 30,
+            animationType: "slide-in",
+          });
+        }
 
     }
     finally{

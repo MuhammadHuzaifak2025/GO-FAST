@@ -8,12 +8,14 @@ const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
 
 const GlobalProvider = ({ children }) => {
+
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const router = useRouter();
   const [ride, setRide] = useState(null);
+  const [myRide, setMyRide] = useState(null);
 
   // Axios response interceptor for error handling
   useEffect(() => {
@@ -89,6 +91,8 @@ const GlobalProvider = ({ children }) => {
         isLoading,
         ride,
         setRide,
+        myRide,
+        setMyRide,
       }}
     >
       {children}
