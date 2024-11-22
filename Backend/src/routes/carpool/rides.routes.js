@@ -1,6 +1,6 @@
 import { Router } from "express";
 import AuthenticateToken from "../../middlewares/Authenticate_token.js";
-import { CreateRide, GetRides, delete_ride, complete_ride, fetch_user_ride } from "../../controllers/carpool/ride.controller.js";
+import { CreateRide, GetRides, delete_ride, complete_ride, fetch_user_ride, fetch_ride_passengers, delete_ride_passenger } from "../../controllers/carpool/ride.controller.js";
 
 const RideRouter = Router();
 
@@ -9,5 +9,11 @@ RideRouter.route("/rides/:page?/:limit?").get(AuthenticateToken, GetRides);
 RideRouter.route("/ride/complete").put(AuthenticateToken, complete_ride);
 RideRouter.route("/ride/:ride_id").delete(AuthenticateToken, delete_ride);
 RideRouter.route("/ride/user").get(AuthenticateToken, fetch_user_ride);
+
+
+
+
+RideRouter.route("/ride/user/passenger/:ride_id").get(AuthenticateToken, fetch_ride_passengers);
+RideRouter.route("/ride/user/passenger/:ride_id/:passeger_id").delete(AuthenticateToken, delete_ride_passenger);
 
 export default RideRouter;

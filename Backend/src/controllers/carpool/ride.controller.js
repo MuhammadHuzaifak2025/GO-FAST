@@ -264,7 +264,7 @@ const delete_ride = asynchandler(async (req, res, next) => {
         if (fetch_ride[0].ride_status === 'completed') {
             return next(new ApiError(400, "Completed Ride cant be deleted"));
         }
-        
+
         const route_id = await sequelize.query(`Delete from ride_routes where ride_id = ${ride_id}`, { type: QueryTypes.DELETE })
         if (!route_id) {
             return next(new ApiError(400, "Failed to delete ride route"));
@@ -390,4 +390,80 @@ const fetch_user_ride = asynchandler(async (req, res, next) => {
         next(error);
     }
 });
-export { CreateRide, GetRides, complete_ride, delete_ride, start_ride, fetch_user_ride };
+
+const fetch_ride_passengers = asynchandler(async (req, res, next) => {
+    try {
+
+        const { ride_id } = req.params;
+
+        if (!ride_id) {
+            return next(new ApiError(400, "Please fill in all fields"));
+        }
+
+        const driver = await sequelize.query(
+            `SELECT * FROM carpool_rides WHERE ride_id = ?`,
+            { type: QueryTypes.SELECT, replacements: [ride_id] }
+        );
+
+        if (!driver[0]) {
+            return next(new ApiError(400, "Ride not found"));
+        }
+        if (driver[0].driver !== req.user.user_id) {
+            return next(new ApiError(400, "You cannot view this ride's passengers"));
+        }
+
+        const ride = await sequelize.query(
+            `SELECT * FROM ride_passengers WHERE ride_id = ?`,
+            { type: QueryTypes.SELECT, replacements: [ride_id] }
+        );
+
+        if (ride.length) {
+            
+            return res.status(200).json(new ApiResponse(200, ["Ride passengers retrieved successfully", ride]));
+        } else {
+            throw new ApiError(400, "No passengers found");
+        }
+    } catch (error) {
+        next(error);
+    }
+
+});
+
+const delete_ride_passenger = asynchandler(async (req, res, next) => {
+    try {
+
+        const { ride_id, passenger_id } = req.params;
+
+        if (!ride_id || !passenger_id) {
+            return next(new ApiError(400, "Please fill in all fields"));
+        }
+
+        const driver = await sequelize.query(
+            `SELECT * FROM carpool_rides WHERE ride_id = ?`,
+            { type: QueryTypes.SELECT, replacements: [ride_id] }
+        );
+
+        if (!driver[0]) {
+            return next(new ApiError(400, "Ride not found"));
+        }
+        if (driver[0].driver !== req.user.user_id) {
+            return next(new ApiError(400, "You are not authorized to delete passengers"));
+        }
+
+        const ride = await sequelize.query(
+            `DELETE FROM ride_passengers WHERE ride_id = ? AND passenger_id = ?`,
+            { type: QueryTypes.DELETE, replacements: [ride_id, passenger_id] }
+        );
+
+        if (ride) {
+            return res.status(200).json(new ApiResponse(200, "Ride passenger deleted successfully"));
+        } else {
+            throw new ApiError(400, "Failed to delete passenger");
+        }
+    } catch (error) {
+        next(error);
+    }
+
+}); 
+
+export { CreateRide, GetRides, complete_ride, delete_ride, start_ride, fetch_user_ride, fetch_ride_passengers, delete_ride_passenger };    

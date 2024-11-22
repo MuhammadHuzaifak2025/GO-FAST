@@ -453,17 +453,17 @@ const styles = StyleSheet.create({
   seatIcon: {
     marginHorizontal: 2,
   },
-  subheading : {
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000', // Tomato color for the subheading
-    marginTop: 20,
-    marginBottom: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-  },
+    subheading : {
+      textAlign: 'center',
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#000', // Tomato color for the subheading
+      marginTop: 20,
+      marginBottom: 20,
+      textShadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 3,
+    },
   // dropdownContent: {
   //   marginTop: 10,
   //   padding: 10,
