@@ -61,11 +61,11 @@ const CreateRide = asynchandler(async (req, res, next) => {
             RETURNING ride_id`,
             {
                 replacements: [
-                    vehicle_id, 
+                    vehicle_id,
                     new Date(start_time).toISOString(), // Ensure ISO format for start_time
-                    price, 
-                    seats, 
-                    user_id, 
+                    price,
+                    seats,
+                    user_id,
                     new Date().toISOString(), // Use ISO format for createdAt
                     new Date().toISOString(), // Use ISO format for updatedAt
                     "available",
@@ -146,9 +146,9 @@ const GetRides = asynchandler(async (req, res, next) => {
             { type: QueryTypes.SELECT }
         );
 
-        
+
         const totalPages = Math.ceil(rides_total[0].count / limit);
-    
+
         if (rides.length) {
 
             for (const rides_details of rides) {
@@ -234,12 +234,12 @@ const delete_ride = asynchandler(async (req, res, next) => {
         const user_ride = await sequelize.query(
             `SELECT * FROM carpool_rides WHERE ride_id = ? AND driver = ?`,
             { type: QueryTypes.SELECT, replacements: [ride_id, user_id] }
-        );  
+        );
 
-        if(!user_ride[0]){
+        if (!user_ride[0]) {
             return next(new ApiError(400, "Ride not found"));
         }
-        if(user_ride[0].driver !== user_id){
+        if (user_ride[0].driver !== user_id) {
             return next(new ApiError(400, "You are not authorized to delete this ride"));
         }
 
@@ -248,7 +248,7 @@ const delete_ride = asynchandler(async (req, res, next) => {
             { type: QueryTypes.SELECT, replacements: [ride_id] }
         );
 
-        if(ride_passengers.length){
+        if (ride_passengers.length) {
             return next(new ApiError(400, "Ride has passengers. Cannot delete"));
         }
 
@@ -265,6 +265,7 @@ const delete_ride = asynchandler(async (req, res, next) => {
             return next(new ApiError(400, "Completed Ride cant be deleted"));
         }
 
+
         const route_id = await sequelize.query(`Delete from ride_routes where ride_id = ${ride_id}`, { type: QueryTypes.DELETE })
         if (!route_id) {
             return next(new ApiError(400, "Failed to delete ride route"));
@@ -274,7 +275,7 @@ const delete_ride = asynchandler(async (req, res, next) => {
         if (!request) {
             return next(new ApiError(400, "Failed to delete ride request"));
         }
-        
+
         const ride = await sequelize.query(
             `DELETE FROM carpool_rides WHERE ride_id = ?`,
             {
@@ -390,7 +391,6 @@ const fetch_user_ride = asynchandler(async (req, res, next) => {
         next(error);
     }
 });
-
 const fetch_ride_passengers = asynchandler(async (req, res, next) => {
     try {
 
@@ -466,4 +466,53 @@ const delete_ride_passenger = asynchandler(async (req, res, next) => {
 
 }); 
 
-export { CreateRide, GetRides, complete_ride, delete_ride, start_ride, fetch_user_ride, fetch_ride_passengers, delete_ride_passenger };    
+const fetchongoingride = asynchandler(async (req, res, next) => {
+    try {
+        console.log("Hello");
+        // return;
+        const rides = await sequelize.query(
+            `SELECT * FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id
+            WHERE
+            a.passenger_id = ${req.user.user_id} 
+            ORDER BY a."createdAt" DESC `,
+            { type: QueryTypes.SELECT }
+        );
+        console.log(rides);
+        console.log("Hello");
+        if (rides.length) {
+
+            for (const rides_details of rides) {
+                const vehicle = await sequelize.query(
+                    `SELECT * FROM carpool_vehicles WHERE vehicle_id = ${rides_details.vehicle_id};`,
+                    { type: QueryTypes.SELECT }
+                );
+
+                const ridedoutes = await sequelize.query(
+                    `SELECT * FROM routes a 
+                    INNER JOIN ride_routes AS b ON a.route_id = b.route_id 
+                    WHERE ride_id = ${rides_details.ride_id} 
+                    ORDER BY b.order`,
+                    { type: QueryTypes.SELECT }
+                );
+                console.log("ridedoutes", ridedoutes);
+                rides_details.routes = ridedoutes[0];
+
+                rides_details.vehicle = vehicle[0];
+                rides_details.vehicle_id = undefined;
+
+            }
+
+            return res.status(200).json(
+                new ApiResponse(200, "Rides retrieved successfully",
+                    rides[0],
+                )
+            );
+        } else {
+            throw new ApiError(400, "No rides available");
+        }
+    } catch (error) {
+        next(error)
+    }
+});
+
+export { CreateRide, GetRides, complete_ride, delete_ride, start_ride, fetch_user_ride, fetch_ride_passengers, delete_ride_passenger, fetchongoingride };
