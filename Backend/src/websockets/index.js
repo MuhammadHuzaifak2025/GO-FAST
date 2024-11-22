@@ -4,7 +4,8 @@ import ApiError from "../utils/ErrorHandling.js";
 import app from '../app.js';
 import { createServer } from "http";
 import { Server } from "socket.io";  // Import the socket.io server
-import { processRideRequest } from "../websockets/ride_request.js";
+// import { processRideRequest } from "../websockets/ride_request.js";
+import { is_driver_is_requester, store_driver, store_requesting_passenger } from "./Chat/connectivity.controller.js";
 
 const server = createServer(app);
 
@@ -27,11 +28,13 @@ io.use(async (socket, next) => {
         let decoded;
         try {
             decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log("token", decoded);
         } catch (error) {
             return next(new Error("Unauthorized - Invalid Access Token"));
         }
 
         const userExist = await User.findOne({ user_id: decoded.id });
+        // console.log(userExist);
         if (!userExist) {
             return next(new Error("Unauthorized - User Does Not Exist"));
         }
@@ -45,39 +48,39 @@ io.use(async (socket, next) => {
 
 io.on('connection', (socket) => {
 
-    // Event for when a user requests a ride
-    socket.on('request-ride-chat', (data) => {
-        console.log('Ride request received:', data);
 
-        // Process the ride request here
-        const status = processRideRequest(data);
+    socket.on('request-ride-chat', async (data) => {
+        let user;
+        console.log(socket.user.user_id);
+        console.log("Request ride chat initiated");
 
-        status.then((response) => {
-            console.log('Ride request processed:', response);
-            // Notify the user of the request status
-            socket.emit('ride-request-status', "Connecting the Chat Wait");
+        try {
+            const response = await is_driver_is_requester([data.request_id, socket.user.user_id]);
+            console.log(response);
 
-            // Notify the driver about the new ride request (assuming driverId is in response)
-            if (response.driverId) {
-                io.to(response.driverId).emit('new-ride-request', {
-                    userId: data.user_id,
-                    rideId: data.ride_id,
-                });
+            if (response === "driver") {
+                await store_driver([socket.user.user_id, data.request_id, socket.id]);
+                user = "driver";
+                console.log("Driver is the requester");
+            } else if (response === "passenger") {
+                await store_requesting_passenger([data.request_id, socket.id, socket.user.user_id]);
+                console.log("Passenger is the requester");
+                user = "passenger";
             }
-        }).catch((error) => {
-            socket.emit('ride-request-status', { success: false, message: error.message });
-        });
+
+            socket.emit('ride-request-chat', { message: 'Ride request chat initiated', user });
+        } catch (error) {
+            console.error(error.message); // Log error for debugging
+            socket.emit('error', { message: error.message || 'Error processing ride request' });
+        }
     });
 
-    // Event for chat messages between the ride requester and driver
-    socket.on('chat-message', (data) => {
-        console.log('Chat message received:', data);
 
-        // Save the chat message or handle any backend logic here
+    // Event for chat messages between the ride requester and driver
+    socket.on('send-chat-message', (data) => {
         const chatStatus = saveChatMessage(data.ride_id, data.senderId, data.receiverId, data.message);
 
         chatStatus.then((response) => {
-            // Emit the chat message to the intended receiver
             io.to(data.receiverId).emit('receive-message', {
                 rideId: data.ride_id,
                 senderId: data.senderId,

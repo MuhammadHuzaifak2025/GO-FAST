@@ -67,23 +67,49 @@ const RegistrationHandler = () => {
                 try {
                     await setAuthHeaders(axios);
                     const resp = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semesters`, { withCredentials: true });
-                    // console.log("resp", resp);
+
                     if (resp.status === 200) {
-                        // console.log("Helloalhadlhhlhasdl",resp.data.data.type_semester + " " + resp.data.data.year);
+                        // Semester found, set it as current
                         setCurrentSemester(resp.data.data.type_semester + " " + resp.data.data.year);
-                    } else {
-                        await setAuthHeaders(axios);
-                        const resp2 = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semester`, { "type_semester": "Fall", "year": 2024 }, { withCredentials: true });
+                    } else if (resp.status === 204) {
+                        // No semester found, create a new one
+                        const resp2 = await axios.post(
+                            `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semester`,
+                            { type_semester: "Fall", year: 2024 },
+                            { withCredentials: true }
+                        );
+
                         if (resp2.status === 201) {
                             setCurrentSemester(resp2.data.data.type_semester + " " + resp2.data.data.year);
                         } else {
-
+                            console.error("Failed to create semester");
                         }
                     }
                 } catch (error) {
-                    // console.log(error.response);
+                    // Handle specific error statuses
+                    console.error("Error fetching or creating semester:", error);
+                    if (error.response?.status === 400) {
+                        try {
+                            await setAuthHeaders(axios);
+                            const resp2 = await axios.post(
+                                `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semester`,
+                                { "Type": "Fall", "Year": 2024 },
+                                { withCredentials: true }
+                            );
+
+                            if (resp2.status === 201) {
+                                console.log("Created semester:", resp2.data.data.type_semester + " " + resp2.data.data.year);
+                                setCurrentSemester(resp2.data.data.type_semester + " " + resp2.data.data.year);
+                            } else {
+                                console.error("Failed to create semester");
+                            }
+                        } catch (innerError) {
+                            console.error("Error creating semester in fallback:", innerError.response || innerError.message);
+                        }
+                    }
                 }
-            }
+            };
+
             const fetchRegistrationStatus = async () => {
                 try {
                     // Set authorization headers

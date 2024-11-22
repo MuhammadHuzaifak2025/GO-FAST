@@ -37,17 +37,22 @@ const create_Semester = asynchandler(async (req, res, next) => {
 
 const get_Semesters = asynchandler(async (req, res, next) => {
     try {
-        const semesters = await sequelize.query(`SELECT * FROM semesters order by semester_id desc LIMIT 1`, { type: sequelize.QueryTypes.SELECT });
-        if (semesters) {
+        const semesters = await sequelize.query(
+            `SELECT * FROM semesters ORDER BY semester_id DESC LIMIT 1`, 
+            { type: sequelize.QueryTypes.SELECT }
+        );
+        console.log("hello", semesters);
+
+        if (semesters.length > 0) {
             return res.status(200).json(new ApiResponse(200, semesters[0]));
-        }
-        else {
-            return next(new ApiError("No semesters found"));
+        } else {
+            return res.status(204).json(new ApiResponse(204, "No semesters found"));
         }
     } catch (error) {
-        next(error);
+        next(error); // Pass error to the global error handler
     }
 });
+
 
 const register_Semester_Passenger = asynchandler(async (req, res, next) => {
     try {

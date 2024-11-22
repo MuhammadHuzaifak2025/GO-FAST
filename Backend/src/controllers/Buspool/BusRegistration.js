@@ -24,7 +24,14 @@ const openbusregistration = asynchandler(async (req, res, next) => {
             `SELECT * FROM busregistrations order by registration_id desc limit 1`,
             { replacements: [getuserorganization.organization_id, start_date, due_date], type: QueryTypes.SELECT }
         );
-
+        if (!checkifalreadyregistered) {
+            const [createbusregistration] = await sequelize.query(
+                `INSERT INTO busregistrations (organization, start_date, due_date, "createdAt", "updatedAt", "semester_id") VALUES (?,?,?,?,?,?) Returning *`,
+                { replacements: [getuserorganization.organization_id, start_date, due_date, new Date(), new Date(), getcurrentsemester.semester_id], type: QueryTypes.INSERT }
+            );
+            console.log(createbusregistration, "hello")
+            res.json(new ApiResponse(200, [createbusregistration[0], "Bus Registration Created Successfully"]))
+        }
         if (checkifalreadyregistered.semester_id !== getcurrentsemester.semester_id) {
             console.log("semester", getcurrentsemester, checkifalreadyregistered)
             const [createbusregistration] = await sequelize.query(

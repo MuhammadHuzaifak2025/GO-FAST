@@ -23,11 +23,11 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   ];
-  
+
   let hours = rideDate.getHours();
   let minutes = rideDate.getMinutes();
   const newformat = hours >= 12 ? "PM" : "AM";
-  
+
   hours = hours % 12 || 12;
   hours = hours < 10 ? `0${hours}` : hours;
   minutes = minutes < 10 ? `0${minutes}` : minutes;
@@ -135,15 +135,15 @@ const PublishRide = () => {
 
   const [dropdownHeightList] = useState(new Animated.Value(0));
   const [dropdownHeightForm] = useState(new Animated.Value(0));
-  
+
   const [rides, setRides] = useState([]);
   const [loadingF, setLoadingF] = useState(false);
   const [isEmpty, setIsEmpty] = useState(false);
 
   const toast = useToast();
-  
+
   const fetchRides = async () => {
-    
+
     setIsEmpty(false);
     setLoadingF(true);
     try {
@@ -161,16 +161,16 @@ const PublishRide = () => {
         throw new Error(response);
       }
     } catch (error) {
-      if(error.response.data.message === 'No rides available'){
+      if (error.response.data.message === 'No rides available') {
 
         setIsEmpty(true);
       }
-      else{
+      else {
 
-          toast.show('Error fetching your rides, please try again later', {
-            type: "danger",
-            duration: 4000,
-            offset: 30,
+        toast.show('Error fetching your rides, please try again later', {
+          type: "danger",
+          duration: 4000,
+          offset: 30,
           animationType: "slide-in",
         });
       }
@@ -243,7 +243,7 @@ const PublishRide = () => {
         const newDateTime = new Date(form.dateTime);
         newDateTime.setHours(selectedDate.getHours());
         newDateTime.setMinutes(selectedDate.getMinutes());
-        setForm({ ...form, dateTime: newDateTime.toLocaleString() });
+        setForm({ ...form, dateTime: newDateTime.toISOString() });
       }
     }
   };
@@ -269,7 +269,7 @@ const PublishRide = () => {
     else {
 
       const toValue = isDropdownOpenList ? 0 : 500; // Adjust this value based on your needs
-      
+
       Animated.timing(dropdownHeightList, {
         toValue,
         duration: 300,
@@ -289,7 +289,7 @@ const PublishRide = () => {
 
       toggleDropdown('list');
       // console.log("Hello");
-      
+
       const fetchCarData = async () => {
 
         try {
@@ -314,7 +314,7 @@ const PublishRide = () => {
             offset: 30,
             animationType: "slide-in",
           });
-          
+
           setLoading(false);
         }
       };
@@ -341,7 +341,7 @@ const PublishRide = () => {
 
   }, []);
 
-  
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -444,12 +444,12 @@ const PublishRide = () => {
       </TouchableOpacity>
 
       <Animated.View style={{ height: dropdownHeightList, overflow: 'hidden' }}>
-        {loadingF ? ( <View style={styles.loadingContainer}>
+        {loadingF ? (<View style={styles.loadingContainer}>
 
           <Text style={styles.loadingText}>Loading...</Text>
-          <ActivityIndicator size="large" color="#ff6347" />  
+          <ActivityIndicator size="large" color="#ff6347" />
         </View>
-        ) : (       
+        ) : (
           <FlashList
             estimatedItemSize={191}
             data={rides}
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
   seatIcon: {
     marginHorizontal: 2,
   },
-  subheading : {
+  subheading: {
     textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
