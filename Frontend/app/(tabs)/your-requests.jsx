@@ -9,10 +9,10 @@ import { useToast } from "react-native-toast-notifications";
 import { setAuthHeaders } from '../../utils/expo-store';
 import { useFocusEffect } from '@react-navigation/native';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+
 import { FlashList } from '@shopify/flash-list';
 
-const RequestItem = ({time, car, id, refreshRides, username, req_id }) => {
+const RequestItem = ({time, car, refreshRides, username, req_id }) => {
 
   const toast = useToast();
   
@@ -236,7 +236,7 @@ const YourRequests = () => {
                 refreshRides={fetchRequests}
               />
             )}
-            ListEmptyComponent={() => (<Text style={styles.subheading}>No rides published</Text>)}
+            ListEmptyComponent={() => (<Text style={styles.subheading}>No requests pending</Text>)}
             contentContainerStyle={{ paddingBottom: 20 }}
 
           />
