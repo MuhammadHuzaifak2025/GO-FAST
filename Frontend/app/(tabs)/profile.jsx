@@ -10,6 +10,7 @@ import { resetSecureStore, setAuthHeaders } from '../../utils/expo-store';
 import { router } from 'expo-router';
 
 import CarModal from '../../components/CarModal';
+import RideHistory from '../../components/RideHistory';
 
 const Profile = () => {
   const { user, setUser, isAuthenticated, setIsAuthenticated } = useGlobalContext();
@@ -24,6 +25,7 @@ const Profile = () => {
   const [isLogOut, setIsLogOut] = useState(false);
 
   const [registerCarDisplay, setRegisterCarDisplay] = useState(false);
+  const [Ridehistory, setRideHistory] = useState(false);
 
   const handleswitch = () => {
     router.replace('/BusPool/dashboard');
@@ -69,7 +71,8 @@ const Profile = () => {
 
         <CarModal visible={registerCarDisplay}
           onClose={() => setRegisterCarDisplay(false)} />
-
+        <RideHistory visible={Ridehistory} user_id={user.user_id}
+          onClose={() => { setRideHistory(false) }} />
         <Text style={styles.title}>Profile</Text>
         <View style={styles.userInfo}>
           <Text style={styles.username}>{user?.username}</Text>
@@ -99,7 +102,7 @@ const Profile = () => {
 
         <View style={styles.optionsContainer}>
           <Text style={styles.optionsTitle}>Account Options</Text>
-          <CustomButton textContent="Reset Password" handlePress={() => { }} containerStyles={styles.optionButton} />
+          <CustomButton textContent="Reset Password" handlePress={() => { setRideHistory(true) }} containerStyles={styles.optionButton} />
           <CustomButton textContent="Register Car" handlePress={() => { setRegisterCarDisplay(true) }} containerStyles={styles.optionButton} />
           <CustomButton textContent="Sign Out" handlePress={handleLogOut} isLoading={isLogOut} containerStyles={styles.optionButton} />
           <CustomButton textContent="Switch Modes" handlePress={handleswitch} containerStyles={styles.optionButton} />
