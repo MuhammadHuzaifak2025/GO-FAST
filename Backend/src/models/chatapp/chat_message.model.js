@@ -1,6 +1,7 @@
 import sequelize from "../../database/index.js"
 import { DataTypes, ENUM } from "sequelize";
 import Chat from "./chat.model.js";
+import User from "../user.models.js";
 
 const ChatMessage = sequelize.define('ChatMessage', {
     chat_message_id: {
@@ -18,10 +19,18 @@ const ChatMessage = sequelize.define('ChatMessage', {
     },
     sender: {
         type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: 'user_id'
+        },
         allowNull: false
     },
     receiver: {
         type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: 'user_id'
+        },
         allowNull: false
     },
     message: {
