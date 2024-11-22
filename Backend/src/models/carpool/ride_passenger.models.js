@@ -27,7 +27,7 @@ const ride_passenger = sequelize.define(
     },
     seats_occupied: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false
     }
 
 });

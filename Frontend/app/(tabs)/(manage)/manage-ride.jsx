@@ -19,40 +19,41 @@ import { setAuthHeaders } from '../../../utils/expo-store';
 import { useToast } from 'react-native-toast-notifications';
 import { FlashList } from '@shopify/flash-list';
 
-const PassengerItem = ({username, phone }) => {
+const PassengerItem = ({username, phone, fare, ride_id,passenger_id, seats, refreshPassenger }) => {
 
   const toast = useToast();
   
   const handleDelete = async () => {
     Alert.alert(
-      "Delete Request",
+      "Remove Passenger",
       "You sure?",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Delete",
+          text: "Remove",
           style: "destructive",
           onPress: async () => {
             try {
 
               await setAuthHeaders(axios); // Set authorization headers
-              const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${req_id}`);
+              const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user/passenger/${ride_id}/${passenger_id}`);
+              console.log(response);
 
               if (response.status === 200) {
-                toast.show('Request deleted successfully', {
+                toast.show('Passenger removed from ride', {
                   type: "success",
                   duration: 4000,
                   offset: 30,
                   animationType: "slide-in",
                 });
 
-                if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
+                if (refreshPassenger) refreshPassenger(); // Refresh the rides list if a refresh function is provided
               } else {
                 throw new Error(response);
               }
             } catch (error) {
-              console.log(error.response);
-              toast.show('Failed to delete request. Please try again.', {
+              // console.log(error.response.data);
+              toast.show('Failed to delete passenger. Please try again.', {
                 type: "danger",
                 duration: 4000,
                 offset: 30,
@@ -79,13 +80,13 @@ const PassengerItem = ({username, phone }) => {
 
       <View style={styles.requestDetails}>
         <Text style={styles.username}>Name: {username}</Text>
-        <Text style={styles.seatsRequested}>{seatsRequested} Seats</Text>
-        <Text style={styles.seatsRequested}>Contact No. :{phone}</Text>
+        <Text style={styles.username}>Seats occupied: {seats} </Text>
+        <Text style={styles.username}>Contact No. : {phone}</Text>
+        <Text style={styles.username}>Total Fare: {parseInt(fare,10)*parseInt(seats,10)}</Text>
       </View>
       <View style={styles.actionButtons}>
         
       </View>
-
     </LinearGradient>
   );
 };
@@ -201,9 +202,11 @@ const ManageRides = () => {
 
     const [requests, setRequests] = useState([]);
     const [passengers, setPassengers] = useState([]);
+
     const [loadingR, setLoadingR] = useState(false);
     const [loadingP, setLoadingP] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    // const [refreshingP, setRefreshingP] = useState(false);
 
   const fetchRequests = async () => {
     setLoadingR(true);
@@ -219,8 +222,11 @@ const ManageRides = () => {
       console.log(response);
 
       if (response.status === 200) {
+
         setRequests(response.data.message);
         setLoadingR(false);
+        fetchPassengers();
+
       } else {
         throw new Error(response);
       }
@@ -256,14 +262,14 @@ const ManageRides = () => {
       await setAuthHeaders(axios);
 
       const response = await axios.get(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${myRide}`
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user/passenger/${myRide}`
       );
 
-      console.log(response);
-
+      
       if (response.status === 200) {
-
-        setRequests(response.data.message);
+        
+        console.log("hello123",response);
+        setPassengers(response.data.data[1]);
         setLoadingP(false);
       } else {
 
@@ -272,8 +278,9 @@ const ManageRides = () => {
     } catch (error) {
 
       console.log(error.response);
-      if(error.response.message === "No ride requests found"){
-        setRequests([]);
+      if(error.response.data.message === "No passengers found"){
+
+        setPassengers([]);
       }
       else{
 
@@ -296,7 +303,9 @@ const ManageRides = () => {
     if (!myRide) {
       router.replace('/published-ride');
     } else {
+
       fetchRequests();
+      fetchPassengers();  
     }
   }, []);
 
@@ -343,7 +352,7 @@ const ManageRides = () => {
           />
         )}
 
-        <Text style={styles.headerTitle}>Current Ride Passengers</Text>
+        <Text style={styles.headerTitle}>Ride Passengers</Text>
 
         {loadingP ? (
           <View>
@@ -354,24 +363,27 @@ const ManageRides = () => {
           <FlashList
             estimatedItemSize={100}
             data={passengers}
-            keyExtractor={(item) => item.request_id}
+            keyExtractor={(item) => item.passenger_ride_id}
             renderItem={({ item }) => (
-              <RequestItem
+              <PassengerItem
                   username={item.username}
-                  seatsRequested={item.seats_requested}
-                  req_id={item.request_id}
-                  refreshRides={fetchRequests}
+                  seats={item.seats_occupied}
+                  phone={item.phone}
+                  fare={item.fare}
+                  passenger_id={item.passenger_id}
+                  ride_id={item.ride_id}
+                  refreshPassenger={fetchPassengers}
               />
               )}
-            refreshing={refreshing}
-            onRefresh={() => {
-                setRefreshing(true);
-                fetchRequests();
-                setRefreshing(false);
-                }
-              }
+            // refreshing={refreshingP}
+            // onRefresh={() => {
+            //     setRefreshingP(true);
+            //     fetchRequests();
+            //     setRefreshingP(false);
+            //     }
+            //   }
             contentContainerStyle={styles.listContainer}
-            ListEmptyComponent={() => (<Text style={styles.subheading}>No pending requests for this ride</Text>)}
+            ListEmptyComponent={() => (<Text style={styles.subheading}>No passengers for this ride</Text>)}
           />
         )}
 
@@ -426,7 +438,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   listContainer: {
-    paddingBottom: 20,
+  paddingVertical: 20,
   },
   requestItem: {
     padding: 16,
@@ -435,8 +447,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   requestDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    // justifyContent: 'space-between',
     marginBottom: 12,
   },
   username: {

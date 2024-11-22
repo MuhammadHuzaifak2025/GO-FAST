@@ -107,7 +107,7 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
         <Text style={styles.rideTime}>Start Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]}</Text>
         <Text style={styles.rideTime}>Start Time: {formatTime}</Text>
         <Text style={styles.rideText}>Vehicle: {car.color} {car.make} {car.model}</Text>
-        <Text style={styles.rideText}>Fare: {price} </Text>
+        <Text style={styles.rideText}>Fare Per Seat: {price} </Text>
         <View style={styles.seatsContainer}>
           <Text style={styles.seatText}>Seats Available: </Text>
           {Array.from({ length: seats }).map((_, index) => (
@@ -144,6 +144,7 @@ const PublishRide = () => {
   const [isDropdownOpenList, setIsDropdownOpenList] = useState(false);
   const [isDropdownOpenForm, setIsDropdownOpenForm] = useState(false);
 
+  const [refreshing, setRefreshing] = useState(false);
   const [dropdownHeightList] = useState(new Animated.Value(0));
   const [dropdownHeightForm] = useState(new Animated.Value(0));
 
@@ -163,7 +164,7 @@ const PublishRide = () => {
       // console.log("Hekki", response)
       if (response.status === 200) {
 
-        console.log("hello", response);
+        // console.log("hello", response);
         setRides(response.data.message.rides);
         setLoadingF(false);
       }
@@ -477,6 +478,12 @@ const PublishRide = () => {
             )}
             ListEmptyComponent={() => (<Text style={styles.subheading}>No rides published</Text>)}
             contentContainerStyle={{ paddingBottom: 40 }}
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              fetchRides();
+              setRefreshing(false);
+            }}
           />
         )}
       </Animated.View>

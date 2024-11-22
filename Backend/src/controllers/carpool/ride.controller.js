@@ -350,7 +350,7 @@ const fetch_user_ride = asynchandler(async (req, res, next) => {
         console.log("HEELO", req.user.user_id);
         const rides = await sequelize.query(
             `SELECT * FROM carpool_rides 
-            WHERE ride_status = 'available' AND
+            WHERE ride_status != 'completed' AND
             driver = ${req.user.user_id} 
             ORDER BY "createdAt" DESC `,
             { type: QueryTypes.SELECT }
@@ -412,14 +412,17 @@ const fetch_ride_passengers = asynchandler(async (req, res, next) => {
             return next(new ApiError(400, "You cannot view this ride's passengers"));
         }
 
-        const ride = await sequelize.query(
-            `SELECT * FROM ride_passengers WHERE ride_id = ?`,
+        const ride_details = await sequelize.query(
+            `SELECT a.*,b.username,b.phone,c.fare FROM ride_passengers a
+            JOIN users b ON a.passenger_id = b.user_id
+            JOIN carpool_rides c ON a.ride_id = c.ride_id
+            WHERE a.ride_id = ?`,
             { type: QueryTypes.SELECT, replacements: [ride_id] }
         );
 
-        if (ride.length) {
+        if (ride_details.length) {
 
-            return res.status(200).json(new ApiResponse(200, ["Ride passengers retrieved successfully", ride]));
+            return res.status(200).json(new ApiResponse(200, ["Ride passengers retrieved successfully", ride_details]));
         } else {
             throw new ApiError(400, "No passengers found");
         }
@@ -446,12 +449,25 @@ const delete_ride_passenger = asynchandler(async (req, res, next) => {
         if (!driver[0]) {
             return next(new ApiError(400, "Ride not found"));
         }
-        if (driver[0].driver !== req.user.user_id) {
+        if (driver[0].driver !== req.user.user_id ) {
             return next(new ApiError(400, "You are not authorized to delete passengers"));
         }
+        if (driver[0].ride_status === 'completed') {
+            return next(new ApiError(400, "Completed Ride passenger cant be deleted"));
+        }
+
+        const update_seat = await sequelize.query(
+        `UPDATE carpool_rides SET seat_available = seat_available + (SELECT seats_occupied FROM ride_passengers WHERE ride_id = ? AND passenger_id = ?), ride_status='available' WHERE ride_id = ?`,
+            { type: QueryTypes.UPDATE, replacements: [ride_id, passenger_id, ride_id] }
+        );
 
         const ride = await sequelize.query(
             `DELETE FROM ride_passengers WHERE ride_id = ? AND passenger_id = ?`,
+            { type: QueryTypes.DELETE, replacements: [ride_id, passenger_id] }
+        );
+
+        const delete_request = await sequelize.query(
+            `DELETE FROM ride_requests WHERE ride_id = ? AND requesting_user = ?`,
             { type: QueryTypes.DELETE, replacements: [ride_id, passenger_id] }
         );
 

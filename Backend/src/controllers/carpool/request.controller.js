@@ -47,6 +47,10 @@ const create_request = asynchandler(async (req, res, next) => {
             type: QueryTypes.SELECT
         });
 
+        if (!ride_details[0]) {
+            return next(new ApiError(400, "No ride found"));
+        }
+
         if (ride_details[0].driver === user_id) {
             return next(new ApiError(400, "You can't request your own ride"));
         }
@@ -160,13 +164,16 @@ const fetch_ride_requests_by_ride_id = asynchandler(async (req, res, next) => {
         if (!rideId) {
             return next(new ApiError(400, "Please provide a ride id"));
         }
+
+
         const driver = await sequelize.query(
             `SELECT driver FROM carpool_rides WHERE ride_id = ?`,
             {
                 replacements: [rideId],
                 type: QueryTypes.SELECT,
-            }); 
-        if (!driver) {
+            });
+
+        if (!driver[0]) {
             return next(new ApiError(400, "No ride requests found"));
         }
         if (driver[0].driver !== user_id) {
@@ -221,6 +228,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
             {
                 replacements: [requestId],
                 type: QueryTypes.UPDATE,
+                transaction
             });
         
 
@@ -232,23 +240,23 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
                 transaction
             });
 
-        if (rides_seats[0][0].seats_available < 0) {
-            await transaction.rollback();  
+        console.log(rides_seats[0][0]);
 
+        if (rides_seats[0][0].seat_available < 0) {
+            // console.log("rollback");
             const delete_request = await sequelize.query(`DELETE FROM ride_requests WHERE request_id = ?`, 
             {
                 replacements: [requestId],
                 type: QueryTypes.DELETE,
-                transaction
             }
             );
-            return next(new ApiError(400, "No seats available"));
+            throw new ApiError(400, "No seats available");
         }
 
         
         const ride_passenger = await sequelize.query(
             `INSERT INTO ride_passengers (ride_id, passenger_id, "createdAt", "updatedAt", seats_occupied) 
-                 VALUES (?,?,?,?) RETURNING *`,
+                 VALUES (?,?,?,?,?) RETURNING *`,
                  {
                 replacements: [ride[0][0].ride_id, ride[0][0].requesting_user, new Date(), new Date(), ride_details[0].seats_requested],
                 type: QueryTypes.INSERT,
@@ -265,7 +273,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
         if(rides_seats[0][0].seat_available === 0){
 
             const delete_request = await sequelize.query(`DELETE FROM ride_requests WHERE ride_id = ?`,
-            {
+                {
                 replacements: [ride[0][0].ride_id],
                 type: QueryTypes.DELETE,
             });
@@ -281,7 +289,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
         }
         
     } catch (error) {
-        transaction.rollback();
+        await transaction.rollback();  
         next(error);
     }
 });
