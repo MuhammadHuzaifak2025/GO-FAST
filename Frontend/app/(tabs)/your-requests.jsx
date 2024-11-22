@@ -12,21 +12,21 @@ import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 import { FlashList } from '@shopify/flash-list';
 
-const RequestItem = ({time, car, refreshRides, username, req_id }) => {
+const RequestItem = ({ time, car, refreshRides, username, req_id }) => {
 
   const toast = useToast();
-  
+
   const rideDate = new Date(time);
   const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const month = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   ];
-  
+
   let hours = rideDate.getHours();
   let minutes = rideDate.getMinutes();
   const newformat = hours >= 12 ? "PM" : "AM";
-  
+
   hours = hours % 12 || 12;
   hours = hours < 10 ? `0${hours}` : hours;
   minutes = minutes < 10 ? `0${minutes}` : minutes;
@@ -94,7 +94,94 @@ const RequestItem = ({time, car, refreshRides, username, req_id }) => {
       <Text style={styles.rideTime}>Start Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]}</Text>
       <Text style={styles.rideTime}>Start Time: {formatTime}</Text>
       <Text style={styles.rideText}>Vehicle: {car.color} {car.make} {car.model}</Text>
-      
+
+    </LinearGradient>
+  );
+};
+
+const RequestRideItem = ({ time, car, refreshRides, username, req_id }) => {
+  console.log("MYRIDE", req_id, time, car, refreshRides, username);
+  const toast = useToast();
+
+  const rideDate = new Date(time);
+  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const month = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  let hours = rideDate.getHours();
+  let minutes = rideDate.getMinutes();
+  const newformat = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12 || 12;
+  hours = hours < 10 ? `0${hours}` : hours;
+  minutes = minutes < 10 ? `0${minutes}` : minutes;
+
+  const formatTime = `${hours}:${minutes} ${newformat}`;
+
+  // const handleDelete = async () => {
+  //   Alert.alert(
+  //     "Delete Request",
+  //     "You sure?",
+  //     [
+  //       { text: "Cancel", style: "cancel" },
+  //       {
+  //         text: "Delete",
+  //         style: "destructive",
+  //         onPress: async () => {
+  //           try {
+
+  //             await setAuthHeaders(axios); // Set authorization headers
+  //             const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${req_id}`);
+
+  //             if (response.status === 200) {
+  //               toast.show('Request deleted successfully', {
+  //                 type: "success",
+  //                 duration: 4000,
+  //                 offset: 30,
+  //                 animationType: "slide-in",
+  //               });
+
+  //               if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
+  //             } else {
+  //               throw new Error(response);
+  //             }
+  //           } catch (error) {
+  //             console.log(error.response);
+  //             toast.show('Failed to delete request. Please try again.', {
+  //               type: "danger",
+  //               duration: 4000,
+  //               offset: 30,
+  //               animationType: "slide-in",
+  //             });
+  //           }
+  //         },
+  //       },
+  //     ]
+  //   );
+  // };
+
+  return (
+    <LinearGradient
+      colors={['black', '#ff6347']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.RequestItem}
+    >
+      {/* Delete Icon */}
+      <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
+        <Ionicons name="close" size={24} color="#fff" />
+      </TouchableOpacity>
+
+      <View style={styles.rideHeader}>
+        <FontAwesome name="check" size={24} color="#fff" />
+        <Text style={styles.usernameText}>{username}</Text>
+      </View>
+      <Text style={styles.rideTime}>Start Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]}</Text>
+      <Text style={styles.rideTime}>Start Time: {formatTime}</Text>
+      <Text style={styles.rideText}>Vehicle: {car.color} {car.make} {car.model}</Text>
+
     </LinearGradient>
   );
 };
@@ -106,6 +193,9 @@ const YourRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [rides, setRides] = useState([
+
+  ]);
   const [isDropdownOpenList, setIsDropdownOpenList] = useState(false);
   const [isDropdownOpenForm, setIsDropdownOpenForm] = useState(false);
 
@@ -113,7 +203,7 @@ const YourRequests = () => {
   const [dropdownHeightForm] = useState(new Animated.Value(0));
 
   const toast = useToast();
-  
+
   const fetchRequests = async () => {
 
     setLoading(true);
@@ -133,16 +223,16 @@ const YourRequests = () => {
         throw new Error(response);
       }
     } catch (error) {
-      
-      if(error.response.data.message === 'No pending requests found'){
+
+      if (error.response.data.message === 'No pending requests found') {
 
       }
-      else{
+      else {
 
-          toast.show('Error fetching your requests, please try again later', {
-            type: "danger",
-            duration: 4000,
-            offset: 30,
+        toast.show('Error fetching your requests, please try again later', {
+          type: "danger",
+          duration: 4000,
+          offset: 30,
           animationType: "slide-in",
         });
       }
@@ -151,7 +241,8 @@ const YourRequests = () => {
   };
 
   const toggleDropdown = (check) => {
-
+    console.log(isDropdownOpenForm);
+    console.log(isDropdownOpenList)
     if (check === 'pending') {
 
       const toValue = isDropdownOpenForm ? 0 : height; // Adjust this value based on your needs
@@ -171,7 +262,7 @@ const YourRequests = () => {
     else {
 
       const toValue = isDropdownOpenList ? 0 : 500; // Adjust this value based on your needs
-      
+
       Animated.timing(dropdownHeightList, {
         toValue,
         duration: 300,
@@ -186,10 +277,26 @@ const YourRequests = () => {
     }
   };
 
+  const fetchongoing = async () => {
+    try {
+      await setAuthHeaders(axios);
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/ongoing`);
+      if (response.status = 200) {
+        setRides(response.data.message);
+        console.log("Helladhasl",response.data.message)
+
+      }
+    } catch (error) {
+      console.log("Hello2")
+      console.error(error.response);
+    }
+  }
+
   useFocusEffect(
     React.useCallback(() => {
-     
+
       fetchRequests();
+      fetchongoing();
 
       return () => {
       };
@@ -197,7 +304,7 @@ const YourRequests = () => {
   );
 
 
-  
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -216,27 +323,27 @@ const YourRequests = () => {
       </TouchableOpacity>
 
       <Animated.View style={{ height: dropdownHeightForm, overflow: 'hidden' }}>
-          <FlashList
-            estimatedItemSize={179}
-            data={requests}
-            keyExtractor={(item) => item.ride_id}
-            renderItem={({ item }) => (
-              <RequestItem
-                // from={item.routes[0].route_name}
-                // to={item.routes[1].route_name}
-                username={item.username}
-                time={item.start_time}
-                price={item.fare}
-                seats={item.seat_available}
-                car = {{color: item.color, make: item.make, model: item.model}}
-                req_id = {item.request_id}
-                refreshRides={fetchRequests}
-              />
-            )}
-            ListEmptyComponent={() => (<Text style={styles.subheading}>No requests pending</Text>)}
-            contentContainerStyle={{ paddingBottom: 20 }}
+        <FlashList
+          estimatedItemSize={179}
+          data={requests}
+          keyExtractor={(item) => item.ride_id}
+          renderItem={({ item }) => (
+            <RequestItem
+              // from={item.routes[0].route_name}
+              // to={item.routes[1].route_name}
+              username={item.username}
+              time={item.start_time}
+              price={item.fare}
+              seats={item.seat_available}
+              car={{ color: item.color, make: item.make, model: item.model }}
+              req_id={item.request_id}
+              refreshRides={fetchRequests}
+            />
+          )}
+          ListEmptyComponent={() => (<Text style={styles.subheading}>No requests pending</Text>)}
+          contentContainerStyle={{ paddingBottom: 20 }}
 
-          />
+        />
       </Animated.View>
 
       <TouchableOpacity style={styles.toggleButton} onPress={() => toggleDropdown('list')}>
@@ -245,32 +352,32 @@ const YourRequests = () => {
       </TouchableOpacity>
 
       <Animated.View style={{ height: dropdownHeightList, overflow: 'hidden' }}>
-        {/* {loadingF ? ( <View style={styles.loadingContainer}>
+        {loading ? (<View style={styles.loadingContainer}>
 
           <Text style={styles.loadingText}>Loading...</Text>
-          <ActivityIndicator size="large" color="#ff6347" />  
+          <ActivityIndicator size="large" color="#ff6347" />
         </View>
-        ) : (       
-          // <FlashList
-          //   estimatedItemSize={191}
-          //   data={rides}
-          //   keyExtractor={(item) => item.ride_id}
-          //   renderItem={({ item }) => (
-          //     <RequestItem
-          //       id={item.ride_id}
-          //       from={item.routes[0].route_name}
-          //       to={item.routes[1].route_name}
-          //       time={item.start_time}
-          //       price={item.fare}
-          //       seats={item.seat_available}
-          //       car={item.vehicle}
-          //       refreshRides={fetchRequests}
-          //     />
-          //   )}
-          //   ListEmptyComponent={() => (<Text style={styles.subheading}>No pending requ</Text>)}
-          //   contentContainerStyle={{ paddingBottom: 40 }}
-          // />
-        )} */}
+        ) : (
+          <FlashList
+            estimatedItemSize={191}
+            data={rides}
+            keyExtractor={(item) => item.ride_id}
+            renderItem={({ item }) => (
+              <RequestRideItem
+                id={item.ride_id}
+                from={item.routes[0].route_name}
+                to={item.routes[1].route_name}
+                time={item.start_time}
+                price={item.fare || 0}
+                seats={item.seat_available}
+                car={item.vehicle}
+                refreshRides={fetchongoing}
+              />
+            )}
+            ListEmptyComponent={() => (<Text style={styles.subheading}>No pending requ</Text>)}
+            contentContainerStyle={{ paddingBottom: 40 }}
+          />
+        )}
       </Animated.View>
     </SafeAreaView>
   );
@@ -453,7 +560,7 @@ const styles = StyleSheet.create({
   seatIcon: {
     marginHorizontal: 2,
   },
-  subheading : {
+  subheading: {
     textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
