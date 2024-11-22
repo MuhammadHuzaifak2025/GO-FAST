@@ -250,7 +250,10 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
                 type: QueryTypes.DELETE,
             }
             );
-            throw new ApiError(400, "No seats available");
+            await transaction.rollback();
+            
+            return next(new ApiError(400, "No seats available"));
+
         }
 
         
@@ -289,7 +292,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
         }
         
     } catch (error) {
-        await transaction.rollback();  
+
         next(error);
     }
 });
