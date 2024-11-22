@@ -418,7 +418,7 @@ const fetch_ride_passengers = asynchandler(async (req, res, next) => {
         );
 
         if (ride.length) {
-            
+
             return res.status(200).json(new ApiResponse(200, ["Ride passengers retrieved successfully", ride]));
         } else {
             throw new ApiError(400, "No passengers found");
@@ -464,7 +464,7 @@ const delete_ride_passenger = asynchandler(async (req, res, next) => {
         next(error);
     }
 
-}); 
+});
 
 const fetchongoingride = asynchandler(async (req, res, next) => {
     try {
@@ -503,8 +503,8 @@ const fetchongoingride = asynchandler(async (req, res, next) => {
             }
 
             return res.status(200).json(
-                new ApiResponse(200, "Rides retrieved successfully",
-                    rides[0],
+                new ApiResponse(200,
+                    rides,
                 )
             );
         } else {

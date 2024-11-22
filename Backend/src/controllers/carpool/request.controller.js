@@ -247,10 +247,10 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
 
         
         const ride_passenger = await sequelize.query(
-            `INSERT INTO ride_passengers (ride_id, passenger_id, "createdAt", "updatedAt") 
+            `INSERT INTO ride_passengers (ride_id, passenger_id, "createdAt", "updatedAt", seats_occupied) 
                  VALUES (?,?,?,?) RETURNING *`,
                  {
-                replacements: [ride[0][0].ride_id, ride[0][0].requesting_user, new Date(), new Date()],
+                replacements: [ride[0][0].ride_id, ride[0][0].requesting_user, new Date(), new Date(), ride_details[0].seats_requested],
                 type: QueryTypes.INSERT,
                 transaction
             });

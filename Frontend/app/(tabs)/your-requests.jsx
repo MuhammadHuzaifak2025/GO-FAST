@@ -120,47 +120,47 @@ const RequestRideItem = ({ time, car, refreshRides, username, req_id }) => {
 
   const formatTime = `${hours}:${minutes} ${newformat}`;
 
-  // const handleDelete = async () => {
-  //   Alert.alert(
-  //     "Delete Request",
-  //     "You sure?",
-  //     [
-  //       { text: "Cancel", style: "cancel" },
-  //       {
-  //         text: "Delete",
-  //         style: "destructive",
-  //         onPress: async () => {
-  //           try {
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete Request",
+      "You sure?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
 
-  //             await setAuthHeaders(axios); // Set authorization headers
-  //             const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${req_id}`);
+              await setAuthHeaders(axios); // Set authorization headers
+              const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${req_id}`);
 
-  //             if (response.status === 200) {
-  //               toast.show('Request deleted successfully', {
-  //                 type: "success",
-  //                 duration: 4000,
-  //                 offset: 30,
-  //                 animationType: "slide-in",
-  //               });
+              if (response.status === 200) {
+                toast.show('Request deleted successfully', {
+                  type: "success",
+                  duration: 4000,
+                  offset: 30,
+                  animationType: "slide-in",
+                });
 
-  //               if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
-  //             } else {
-  //               throw new Error(response);
-  //             }
-  //           } catch (error) {
-  //             console.log(error.response);
-  //             toast.show('Failed to delete request. Please try again.', {
-  //               type: "danger",
-  //               duration: 4000,
-  //               offset: 30,
-  //               animationType: "slide-in",
-  //             });
-  //           }
-  //         },
-  //       },
-  //     ]
-  //   );
-  // };
+                if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
+              } else {
+                throw new Error(response);
+              }
+            } catch (error) {
+              console.log(error.response);
+              toast.show('Failed to delete request. Please try again.', {
+                type: "danger",
+                duration: 4000,
+                offset: 30,
+                animationType: "slide-in",
+              });
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <LinearGradient
@@ -282,8 +282,8 @@ const YourRequests = () => {
       await setAuthHeaders(axios);
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/ongoing`);
       if (response.status = 200) {
-        setRides(response.data.message);
-        console.log("Helladhasl",response.data.message)
+        setRides(response.data.data);
+        console.log("Helladhasl", response.data.message)
 
       }
     } catch (error) {
@@ -361,12 +361,12 @@ const YourRequests = () => {
           <FlashList
             estimatedItemSize={191}
             data={rides}
-            keyExtractor={(item) => item.ride_id}
+            keyExtractor={(item) => item.passenger_ride_id}
             renderItem={({ item }) => (
               <RequestRideItem
                 id={item.ride_id}
-                from={item.routes[0].route_name}
-                to={item.routes[1].route_name}
+                // from={item.routes[0].route_name}
+                // to={item.routes[1].route_name}
                 time={item.start_time}
                 price={item.fare || 0}
                 seats={item.seat_available}
@@ -560,17 +560,17 @@ const styles = StyleSheet.create({
   seatIcon: {
     marginHorizontal: 2,
   },
-    subheading: {
-      textAlign: 'center',
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: '#000', // Tomato color for the subheading
-      marginTop: 20,
-      marginBottom: 20,
-      textShadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-      textShadowOffset: { width: 1, height: 1 },
-      textShadowRadius: 3,
-    },
+  subheading: {
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000', // Tomato color for the subheading
+    marginTop: 20,
+    marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
   // dropdownContent: {
   //   marginTop: 10,
   //   padding: 10,
