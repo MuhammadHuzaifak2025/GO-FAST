@@ -531,4 +531,50 @@ const fetchongoingride = asynchandler(async (req, res, next) => {
     }
 });
 
-export { CreateRide, GetRides, complete_ride, delete_ride, start_ride, fetch_user_ride, fetch_ride_passengers, delete_ride_passenger, fetchongoingride };
+
+const ride_history = asynchandler(async (req, res, next) => {
+    const user_id = req.user.user_id;
+
+    const ride = await sequelize.query(
+        `SELECT * FROM carpool_rides WHERE driver = ?`,
+        { type: QueryTypes.SELECT, replacements: [user_id] }
+    );
+
+
+    const ride_passenger = await sequelize.query(
+        `SELECT * FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id WHERE passenger_id = ?`,
+        { type: QueryTypes.SELECT, replacements: [user_id] }
+    );
+
+    for (const ride_details of ride) {
+        const ride_routes = await sequelize.query(
+            `SELECT * FROM routes a 
+            INNER JOIN ride_routes AS b ON a.route_id = b.route_id 
+            WHERE ride_id = ${ride_details.ride_id} 
+            ORDER BY b.order`,
+            { type: QueryTypes.SELECT }
+        );
+
+        ride_details.routes = ride_routes;
+    }
+
+    for (const ride_details of ride_passenger) {
+        const ride_routes = await sequelize.query(
+            `SELECT * FROM routes a 
+            INNER JOIN ride_routes AS b ON a.route_id = b.route_id 
+            WHERE ride_id = ${ride_details.ride_id} 
+            ORDER BY b.order`,
+            { type: QueryTypes.SELECT }
+        );
+
+        ride_details.routes = ride_routes;
+    }
+
+    if (ride.length || ride_passenger.length) {
+        return res.status(200).json(new ApiResponse(200, ["Ride history retrieved successfully", { ride, ride_passenger }]));
+    } else {
+        throw new ApiError(400, "No ride history found");
+    }
+});
+
+export { CreateRide, GetRides, complete_ride, delete_ride, start_ride, fetch_user_ride, fetch_ride_passengers, delete_ride_passenger, fetchongoingride, ride_history };

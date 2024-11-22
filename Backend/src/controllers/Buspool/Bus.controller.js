@@ -204,6 +204,9 @@ const delete_bus = asynchandler(async (req, res, next) => {
         const { bus_id } = req.params;
         const setbuorgnill = await sequelize.query(`
             UPDATE buses SET bus_organization = null WHERE bus_id = ${bus_id}`, { type: QueryTypes.UPDATE });
+        const delete_busroutes = await sequelize.query(`
+            DELETE FROM busroutes WHERE bus_id = ${bus_id}`, { type: QueryTypes.DELETE });
+
         const [bus] = await sequelize.query(`
             DELETE FROM buses WHERE bus_id = ${bus_id} RETURNING *`, { type: QueryTypes.DELETE });
         if (!bus) {

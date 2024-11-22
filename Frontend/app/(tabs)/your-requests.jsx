@@ -120,47 +120,47 @@ const RequestRideItem = ({ time, car, refreshRides, username, req_id }) => {
 
   const formatTime = `${hours}:${minutes} ${newformat}`;
 
-  const handleDelete = async () => {
-    Alert.alert(
-      "Delete Request",
-      "You sure?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
+  // const handleDelete = async () => {
+  //   Alert.alert(
+  //     "Delete Request",
+  //     "You sure?",
+  //     [
+  //       { text: "Cancel", style: "cancel" },
+  //       {
+  //         text: "Delete",
+  //         style: "destructive",
+  //         onPress: async () => {
+  //           try {
 
-              await setAuthHeaders(axios); // Set authorization headers
-              const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${req_id}`);
+  //             await setAuthHeaders(axios); // Set authorization headers
+  //             const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${req_id}`);
 
-              if (response.status === 200) {
-                toast.show('Request deleted successfully', {
-                  type: "success",
-                  duration: 4000,
-                  offset: 30,
-                  animationType: "slide-in",
-                });
+  //             if (response.status === 200) {
+  //               toast.show('Request deleted successfully', {
+  //                 type: "success",
+  //                 duration: 4000,
+  //                 offset: 30,
+  //                 animationType: "slide-in",
+  //               });
 
-                if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
-              } else {
-                throw new Error(response);
-              }
-            } catch (error) {
-              console.log(error.response);
-              toast.show('Failed to delete request. Please try again.', {
-                type: "danger",
-                duration: 4000,
-                offset: 30,
-                animationType: "slide-in",
-              });
-            }
-          },
-        },
-      ]
-    );
-  };
+  //               if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
+  //             } else {
+  //               throw new Error(response);
+  //             }
+  //           } catch (error) {
+  //             console.log(error.response);
+  //             toast.show('Failed to delete request. Please try again.', {
+  //               type: "danger",
+  //               duration: 4000,
+  //               offset: 30,
+  //               animationType: "slide-in",
+  //             });
+  //           }
+  //         },
+  //       },
+  //     ]
+  //   );
+  // };
 
   return (
     <LinearGradient
@@ -170,9 +170,9 @@ const RequestRideItem = ({ time, car, refreshRides, username, req_id }) => {
       style={styles.RequestItem}
     >
       {/* Delete Icon */}
-      <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
+      {/* <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
         <Ionicons name="close" size={24} color="#fff" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <View style={styles.rideHeader}>
         <FontAwesome name="check" size={24} color="#fff" />

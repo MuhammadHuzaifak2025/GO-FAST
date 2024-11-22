@@ -17,9 +17,9 @@ const delete_ride_passenger = asynchandler(async (req, res, next) => {
             throw new ApiError(404, "Ride not found");
         }
         const ride_passenger = await sequelize.query(
-            `select * from ride_requests where ride_id = ? and requesting_user = ?`,
+            `select * from ride_passengers where passenger_ride_id = ?`,
             {
-                replacements: [ride_id, passenger_id],
+                replacements: [passenger_id],
                 type: QueryTypes.SELECT,
             });
         if (!ride_passenger[0]) {
