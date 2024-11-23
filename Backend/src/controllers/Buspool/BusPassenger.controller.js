@@ -38,7 +38,7 @@ const create_Semester = asynchandler(async (req, res, next) => {
 const get_Semesters = asynchandler(async (req, res, next) => {
     try {
         const semesters = await sequelize.query(
-            `SELECT * FROM semesters ORDER BY semester_id DESC LIMIT 1`, 
+            `SELECT * FROM semesters ORDER BY semester_id DESC LIMIT 1`,
             { type: sequelize.QueryTypes.SELECT }
         );
         console.log("hello", semesters);
@@ -58,16 +58,23 @@ const register_Semester_Passenger = asynchandler(async (req, res, next) => {
     try {
         const { semester_id, passenger_id, pickup, dropoff, bus_id } = req.body;
         if (!semester_id || !passenger_id || !pickup || !dropoff || !bus_id) {
-            return next(new ApiError("Please provide all required fields"));
+            return next(new ApiError(400,"Please provide all required fields"));
         }
         const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers  WHERE semester_id = '
             ${semester_id}' AND passenger_id = '${passenger_id}'`, { type: sequelize.QueryTypes.SELECT });
         if (getPassenger) {
-            return next(new ApiError("Passenger already registered for this semester"));
+            return next(new ApiError(400,"Passenger already registered for this semester"));
         }
         const [getBus] = await sequelize.query(`SELECT * FROM buses WHERE bus_id = '${bus_id}'`, { type: sequelize.QueryTypes.SELECT });
+        console.log(getBus);
+        if (!getBus) {
+            return next(new ApiError(400,"Bus not found"));
+        }
         if (getBus.seats <= 0) {
-            return next(new ApiError("Bus is full"));
+            return next(new ApiError(400,"Bus is full"));
+        }
+        if (getBus.seats <= 0) {
+            return next(new ApiError(400,"Bus is full"));
         }
         const passenger = await sequelize.query(
             `INSERT INTO semester_passengers 

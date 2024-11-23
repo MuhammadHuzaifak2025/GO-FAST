@@ -83,7 +83,7 @@ export default function App() {
 
   return (
     <LinearGradient
-      colors={['#4c669f', '#3b5998', '#192f6a']}
+      colors={['#ffff', '#ffff', '#ffff']}
       style={styles.container}
     >
       {isCameraActive ? (
@@ -165,14 +165,14 @@ const styles = StyleSheet.create({
     right: 20,
   },
   button: {
-    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 30,
     padding: 10,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    // backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 10,
     marginHorizontal: 20,
     paddingHorizontal: 10,
@@ -193,19 +193,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButton: {
-    // backgroundColor: '#2196F3',
+    backgroundColor: '#2196F3',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 10,
     marginBottom: 20,
   },
   startButtonText: {
-    // color: '#ffffff',
+    color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 18,
   },
   stopButton: {
-    // backgroundColor: '#FF5722',
+    backgroundColor: '#FF5722',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
@@ -213,12 +213,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   buttonText: {
-    // color: '#ffffff',
+    color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 16,
   },
   permissionButton: {
-    // backgroundColor: '#2196F3',
+    backgroundColor: '#2196F3',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,

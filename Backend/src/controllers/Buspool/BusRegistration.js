@@ -162,7 +162,10 @@ const get_openreg_busses_with_routes = asynchandler(async (req, res, next) => {
         const semester = await sequelize.query(`SELECT * FROM semesters order by
         semester_id desc limit 1`,
             { type: QueryTypes.SELECT });
-        console.log(semester)
+        // console.log(semester)
+        if (!semester[0]) {
+            return next(new ApiError(400, "No Semester Found"));
+        }
         const getallregistration = await sequelize.query(
             `SELECT * FROM busregistrations where due_date > ? and semester_id = ?`,
             { replacements: [new Date(), semester[0].semester_id], type: QueryTypes.SELECT }
@@ -170,8 +173,8 @@ const get_openreg_busses_with_routes = asynchandler(async (req, res, next) => {
         if (!getallregistration) {
             return next(new ApiError(400, "No Bus Registration Found"));
         }
-        console.log("getallregistration", getallregistration)
         for (const i in getallregistration) {
+            getallregistration[i].semester = semester[0]
             const bus = await sequelize.query(
                 `SELECT * FROM buses where bus_organization = ?`,
                 { replacements: [getallregistration[i].organization], type: QueryTypes.SELECT }
@@ -183,7 +186,7 @@ const get_openreg_busses_with_routes = asynchandler(async (req, res, next) => {
             getallregistration[i].bus = bus;
             for (const j in bus) {
                 const getbusroutes = await sequelize.query(
-                    `SELECT * FROM busroutes where bus_id = ?`,
+                    `SELECT * FROM busroutes a inner join routes b on a.route_id = b.route_id where bus_id = ?`,
                     { replacements: [bus[j].bus_id], type: QueryTypes.SELECT }
                 );
                 bus[j].routes = getbusroutes;
@@ -194,4 +197,34 @@ const get_openreg_busses_with_routes = asynchandler(async (req, res, next) => {
         next(error);
     }
 });
-export { openbusregistration, get_openreg_busses_with_routes, getbusregistration, showstudentregistration, updateduedate, get_student_registrations };
+
+const get_busPassenger_ifregistered = asynchandler(async (req, res, next) => {
+    try {
+        const passenger_id = req.user.user_id;
+        const [semester_id] = await sequelize.query(`SELECT * FROM semesters order by semester_id desc limit 1`,
+            { type: QueryTypes.SELECT });
+        console.log(semester_id)
+        if (!semester_id) {
+            return next(new ApiError(400, "No Semester Found"));
+        }
+        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers a inner join buses b on a.bus_id = b.bus_id WHERE semester_id = '
+            ${semester_id.semester_id}' AND passenger_id = '${passenger_id}'`, { type: sequelize.QueryTypes.SELECT });
+        if (getPassenger) {
+            console.log(getPassenger)
+            const pickup = await sequelize.query(`SELECT * FROM routes where route_id = '${getPassenger.pickup}'`,
+                { type: QueryTypes.SELECT });
+            getPassenger.pickup = pickup;
+            const dropoff = await sequelize.query(`SELECT * FROM routes where route_id = '${getPassenger.dropoff}'`,
+                { type: QueryTypes.SELECT });
+            getPassenger.dropoff = dropoff;
+            return res.status(200).json(new ApiResponse(200, getPassenger));
+        }
+
+        return next(new ApiError(400, "No Passenger Found"));
+
+    } catch (error) {
+        next(error);
+    }
+}
+);
+export { openbusregistration, get_busPassenger_ifregistered, get_openreg_busses_with_routes, getbusregistration, showstudentregistration, updateduedate, get_student_registrations };

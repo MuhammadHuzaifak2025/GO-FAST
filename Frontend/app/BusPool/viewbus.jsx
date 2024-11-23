@@ -1,52 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin } from 'lucide-react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { MapPin, Bus, Trash2 } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     FlatList,
     StyleSheet,
     Alert,
     Modal,
     ScrollView,
-    TouchableWithoutFeedback, 
-    Keyboard,
+    TouchableWithoutFeedback,
+    Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { setAuthHeaders } from '../../utils/expo-store';
 
+const { width } = Dimensions.get('window');
 
 const ViewBus = () => {
     const [buses, setBuses] = useState([]);
     const [selectedBus, setSelectedBus] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
-    useEffect(() => {
-        fetchBuses();
-    }, []);
+
+
+
+
+
+    const deleteBus = async (busId) => {
+        try {
+            await setAuthHeaders(axios);
+            await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/${busId}`);
+            fetchBuses();
+            Alert.alert('Success', 'Bus deleted successfully');
+        } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'Failed to delete bus');
+        }
+    };
+
     const fetchBuses = async () => {
         try {
-           await setAuthHeaders(axios);
-            const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/routes/all`, {
+            await setAuthHeaders(axios);
+            const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/routes/all/`, {
                 withCredentials: true,
             });
             setBuses(response.data.message);
         } catch (error) {
+            console.error(error);
             Alert.alert('Error', 'Failed to fetch buses');
         }
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchBuses();
+        }, [])
+    );
     const openModal = (bus) => {
         setSelectedBus(bus);
         setModalVisible(true);
     };
+
     const renderBusItem = ({ item }) => (
         <TouchableOpacity style={styles.busItem} onPress={() => openModal(item)}>
-            <Text style={styles.busNumber}>Bus Number: {item.bus.bus_number}</Text>
-            <Text>Seats: {item.bus.seats}</Text>
-            <Text>Single Ride Fair: {item.bus.single_ride_fair}</Text>
+            <View style={styles.busHeader}>
+                <View style={styles.busIconContainer}>
+                    <Bus color="#007AFF" size={24} />
+                </View>
+                <Text style={styles.busNumber}>Bus {item.bus.bus_number}</Text>
+            </View>
+            <View style={styles.busDetails}>
+                <Text style={styles.busInfo}>Seats: {item.bus.seats}</Text>
+                <Text style={styles.busInfo}>Fare: ${item.bus.single_ride_fair}</Text>
+            </View>
+            <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => deleteBus(item.bus.bus_id)}
+            >
+                <Trash2 color="#FF3B30" size={20} />
+            </TouchableOpacity>
         </TouchableOpacity>
     );
+
     const renderRouteItem = ({ item }) => (
         <View style={styles.routeItem}>
             <View style={styles.iconContainer}>
@@ -57,10 +94,17 @@ const ViewBus = () => {
             </ScrollView>
         </View>
     );
+
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.sectionTitle}>Existing Buses</Text>
-            <FlatList data={buses} renderItem={renderBusItem} keyExtractor={(item) => item.bus.bus_id.toString()} style={styles.busList} />
+            <Text style={styles.sectionTitle}>Bus Routes</Text>
+            <FlatList
+                data={buses}
+                renderItem={renderBusItem}
+                keyExtractor={(item) => item.bus.bus_id.toString()}
+                style={styles.busList}
+                contentContainerStyle={styles.busListContent}
+            />
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -72,7 +116,7 @@ const ViewBus = () => {
                         <TouchableWithoutFeedback onPress={() => { }}>
                             <View style={styles.modalView}>
                                 <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                                    <Text style={styles.closeButtonText}>X</Text>
+                                    <Text style={styles.closeButtonText}>×</Text>
                                 </TouchableOpacity>
                                 <Text style={styles.modalTitle}>Bus Routes</Text>
                                 {selectedBus && (
@@ -80,6 +124,7 @@ const ViewBus = () => {
                                         data={selectedBus.routes}
                                         renderItem={renderRouteItem}
                                         keyExtractor={(item, index) => index.toString()}
+                                        contentContainerStyle={styles.routeList}
                                     />
                                 )}
                             </View>
@@ -87,62 +132,69 @@ const ViewBus = () => {
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
-
         </SafeAreaView>
-    )
-}
-
-export default ViewBus;
+    );
+};
 
 const styles = StyleSheet.create({
-    closeButton: {
-        position: 'absolute',
-        right: 20,
-        top: 10,
-        zIndex: 1,
-    },
-    closeButtonText: {
-        fontSize: 25,
-        color: '#007AFF',
-        fontWeight: 'bold',
-    },
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#f5f5f5',
-    },
-
-    formContainer: {
-        backgroundColor: 'white',
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 20,
+        backgroundColor: '#F2F2F7',
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 28,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 20,
+        color: '#1C1C1E',
     },
-
-    button: {
-        backgroundColor: '#007AFF',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-
     busList: {
         flex: 1,
     },
+    busListContent: {
+        paddingBottom: 20,
+    },
     busItem: {
         backgroundColor: 'white',
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 10,
+        borderRadius: 12,
+        marginBottom: 16,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    busHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    busIconContainer: {
+        backgroundColor: '#E5F1FF',
+        borderRadius: 8,
+        padding: 8,
+        marginRight: 12,
     },
     busNumber: {
+        textAlign: 'center',
+        fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 5,
+        color: '#1C1C1E',
+    },
+    busDetails: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
+    busInfo: {
+        fontSize: 14,
+        color: '#3A3A3C',
+    },
+    deleteButton: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
     },
     centeredView: {
         flex: 1,
@@ -150,57 +202,60 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
-    iconContainer: {
-        marginRight: 10,
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 10,
-
-    },
-    closebutton: {
-        // position: 'absolute',
-        top: 10,
-        // textAlign: 'right',
-    },
     modalView: {
-        margin: 20,
         backgroundColor: 'white',
         borderRadius: 20,
-        padding: 20,
-        alignItems: 'flex-start', // Align items to the left
+        padding: 24,
+        alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        width: '90%',
+        width: width * 0.9,
         maxHeight: '80%',
+    },
+    closeButton: {
+        position: 'absolute',
+        right: 20,
+        top: 20,
+    },
+    closeButtonText: {
+        fontSize: 28,
+        color: '#8E8E93',
+        fontWeight: 'bold',
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        color: '#1C1C1E',
+    },
+    routeList: {
+        width: '100%',
     },
     routeItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#F2F2F7',
         padding: 12,
         borderRadius: 12,
         marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3,
-        borderColor: '#e0e0e0',
-        borderWidth: 1,
-        width: '94%', // Ensure the item takes the full width
+        width: '100%',
+    },
+    iconContainer: {
+        marginRight: 12,
     },
     routeScroll: {
-        flexGrow: 1, // Ensure the horizontal scroll container expands
+        flexGrow: 1,
     },
     routeName: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#333',
-        flexShrink: 1, // Prevent the text from overflowing
+        color: '#3A3A3C',
+        flexShrink: 1,
     },
-})
+});
+
+export default ViewBus;
+
