@@ -1,21 +1,47 @@
+import React, { useState, useEffect } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Audio } from 'expo-av';
+import { 
+  StyleSheet, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  View, 
+  Animated, 
+  Easing,
+  Dimensions
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
+
 export default function App() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [studentId, setStudentId] = useState('');
-  const [isCameraActive, setIsCameraActive] = useState(false); // State to control camera visibility
+  const [isCameraActive, setIsCameraActive] = useState(false);
   const [sound, setSound] = useState();
+  const [animation] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(animation, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
   if (!permission) {
-    // Camera permissions are still loading.
     return <View />;
   }
+
   async function playSound() {
     console.log('Loading Sound');
-    const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/store-scanner-beep-90395.mp3')
-    );
+    const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/store-scanner-beep-90395.mp3'));
     setSound(sound);
 
     console.log('Playing Sound');
@@ -26,7 +52,9 @@ export default function App() {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="Grant Permission" />
+        <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -36,38 +64,53 @@ export default function App() {
   }
 
   function handleVerifyStudent() {
-    // Placeholder function for verifying the student
     if (studentId.trim()) {
       alert(`Verifying student with ID: ${studentId}`);
     } else {
       alert('Please enter a valid Student ID.');
     }
   }
+
   const fetchResult = (result) => {
     playSound();
-
     setIsCameraActive(false);
   }
+
+  const scanLineAnimation = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 300],
+  });
+
   return (
-    <View style={styles.container}>
-      {isCameraActive && (
-        <View style={styles.startContainer}>
+    <LinearGradient
+      colors={['#4c669f', '#3b5998', '#192f6a']}
+      style={styles.container}
+    >
+      {isCameraActive ? (
+        <View style={styles.cameraContainer}>
           <CameraView style={styles.camera} facing={facing} onBarcodeScanned={fetchResult}>
+            <Animated.View 
+              style={[
+                styles.scanLine, 
+                { 
+                  transform: [{ translateY: scanLineAnimation }] 
+                }
+              ]} 
+            />
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-                <Text style={styles.text}>Flip Camera</Text>
+                <Ionicons name="camera-reverse" size={24} color="white" />
               </TouchableOpacity>
             </View>
           </CameraView>
-          <Button
-            title="Stop QR"
-            onPress={() => setIsCameraActive(false)}
-            color="#d9534f"
+          <TouchableOpacity
             style={styles.stopButton}
-          />
+            onPress={() => setIsCameraActive(false)}
+          >
+            <Text style={styles.buttonText}>Stop Scanning</Text>
+          </TouchableOpacity>
         </View>
-      )}
-      {!isCameraActive && (
+      ) : (
         <View style={styles.startContainer}>
           <TouchableOpacity
             style={styles.startButton}
@@ -82,14 +125,15 @@ export default function App() {
         <TextInput
           style={styles.input}
           placeholder="Enter Student ID"
+          placeholderTextColor="#a0a0a0"
           value={studentId}
           onChangeText={setStudentId}
         />
-        <TouchableOpacity style={styles.scanButton} onPress={handleVerifyStudent}>
-          <Text style={styles.scanButtonText}>Scan QR / Verify</Text>
+        <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyStudent}>
+          <Text style={styles.buttonText}>Verify</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -97,87 +141,98 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   message: {
     textAlign: 'center',
-    paddingBottom: 10,
+    color: '#ffffff',
+    fontSize: 16,
+    marginBottom: 20,
   },
   cameraContainer: {
-    height: 300, // Limit the camera height
-    alignSelf: 'center',
-    width: '90%',
-    borderRadius: 8,
+    width: width * 0.8,
+    aspectRatio: 1,
+    borderRadius: 20,
     overflow: 'hidden',
-    // marginVertical: 16,
-    borderColor: '#007bff',
-    borderWidth: 2,
-    marginBottom: 500,
+    marginBottom: 20,
   },
   camera: {
-    height: 300,
-    width: 300,
+    flex: 1,
   },
   buttonContainer: {
     position: 'absolute',
-    bottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
+    bottom: 20,
+    right: 20,
   },
   button: {
+    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 30,
     padding: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 4,
-  },
-  text: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f0f0f0',
+    // backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    paddingHorizontal: 10,
   },
   input: {
     flex: 1,
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    marginRight: 8,
-  },
-  scanButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 4,
-  },
-  scanButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    height: 50,
+    color: '#ffffff',
     fontSize: 16,
   },
+  verifyButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
   startContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
   },
   startButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 4,
+    // backgroundColor: '#2196F3',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginBottom: 20,
   },
   startButtonText: {
-    color: '#fff',
+    // color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 18,
   },
   stopButton: {
-    paddingTop: 16,
-    marginTop: 16,
+    // backgroundColor: '#FF5722',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+    alignSelf: 'center',
+  },
+  buttonText: {
+    // color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  permissionButton: {
+    // backgroundColor: '#2196F3',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  permissionButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  scanLine: {
+    height: 2,
+    width: '100%',
+    // backgroundColor: '#00ff00',
   },
 });
+
