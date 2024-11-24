@@ -147,7 +147,7 @@ const updateduedate = asynchandler(async (req, res, next) => {
     try {
         const { due_date, registration_id } = req.body;
         const [updatedate] = await sequelize.query(
-            `UPDATE busregistration SET due_date =? WHERE registration_id =? Returning *`,
+            `UPDATE busregistrations SET due_date =? WHERE registration_id =? Returning *`,
             { replacements: [due_date, registration_id], type: QueryTypes.UPDATE }
         );
         res.json(new ApiResponse(200, [updatedate[0], "Due Date Updated Successfully"]));

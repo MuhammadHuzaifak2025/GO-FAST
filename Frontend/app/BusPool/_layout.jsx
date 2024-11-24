@@ -77,13 +77,26 @@ const BusLayout = () => {
               <TabIcon
                 icon="bus"
                 color={color}
-                name="BusSubscription"
+                name="Semester"
                 focused={focused}
               />
             ),
           }}
         />
-
+        <Tabs.Screen
+          name="singleride"
+          options={{
+            title: 'singleride',
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                icon="bus"
+                color={color}
+                name="Single Ride"
+                focused={focused}
+              />
+            ),
+          }}
+        />
         <Tabs.Screen
           name="profile"
           options={{
@@ -98,6 +111,7 @@ const BusLayout = () => {
             ),
           }}
         />
+
 
       </Tabs>
     </>
