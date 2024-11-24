@@ -351,6 +351,10 @@ const forgetpassword = asynchandler(async (req, res, next) => {
       return next(new ApiError(400, "User does not exist at this Email"));
     }
 
+    if(userexsist.is_verified === false){
+      return next(new ApiError(400, "User is not verified"));
+    }
+
 
     const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
 
@@ -381,7 +385,6 @@ const forgetpassword = asynchandler(async (req, res, next) => {
       {
         otp: await bcrypt.hash(plainKey, saltRounds),
         forgetpassword: true,
-        is_verified: userexsist.is_verified ? false : true
         // password: await bcrypt.hash(plainKey, saltRounds),
       },
       { where: { email: email } }
@@ -411,7 +414,8 @@ const resetpassword = asynchandler(async (req, res, next) => {
     if (!userexsist) {
       return next(new ApiError(400, "User does not exist"));
     }
-    console.log(userexsist);
+
+    // console.log(userexsist);
     const isKeyCorrect = await bcrypt.compare(key, userexsist.otp);
     if (!isKeyCorrect) {
       return next(new ApiError(403, "Incorrect Key"));

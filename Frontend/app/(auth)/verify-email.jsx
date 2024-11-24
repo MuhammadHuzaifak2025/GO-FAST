@@ -1,132 +1,174 @@
-import { View, Text, Modal } from 'react-native';
-import React, {useRef, useState} from 'react';
+import { View, Text, Modal, TouchableOpacity } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
 import OTPTextInput from 'react-native-otp-textinput';
 import { StyleSheet } from 'react-native';
-import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { useToast } from "react-native-toast-notifications";
-import { link, router } from 'expo-router';
+import { router } from 'expo-router';
 
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
 import AnimatedSpinner from '../../components/loader/AnimatedSpinner';
 
 const VerifyEmail = () => {
+  const toast = useToast();
+  const otpInput = useRef(null);
 
-    const toast = useToast();
-    const otpInput = useRef(null)
+  const { user } = useGlobalContext();
 
-    const {user} = useGlobalContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [spinnerState, setSpinnerState] = useState();
+  const [timer, setTimer] = useState(0);
+  const [canResend, setCanResend] = useState(false);
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [spinnerState, setSpinnerState] = useState();
-
-    const submit = async () => {
-
-        setIsSubmitting(true);
-        setModalVisible(true);
-        setSpinnerState('spinning');
-        
-        try{
-          let verification = '';
-          verification = otpInput.current.state.otpText.join('');
-          
-          if(verification.length !== 6){
-
-            toast.show('Please enter valid OTP', {
-                type: "danger",
-                duration: 4000,
-                offset: 30,
-                animationType: "slide-in",
-              });
-            setIsSubmitting(false);
-            setModalVisible(false);
-            return;
-
-          }  
-
-          const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/verifyuser`, {email : user.email, key : verification}, {withCredentials: true});
-
-          if(resp.status === 200){
-
-            setSpinnerState('success');
-
-            toast.show("Successfully Verified account, Please Login", {
-                type: "success",
-                duration: 6000,
-                offset: 30,
-                animationType: "slide-in",
-              });
-
-              setTimeout(() => {setModalVisible(false);
-                                setSpinnerState('');
-                                router.replace('/sign-in');
-              }, 1000);
-            
-          }
-          else {
-            throw new Error(resp);
-          }
-        } catch (error){
-          
-          otpInput.current.clear();
-          setSpinnerState('failure');
-          
-          toast.show(error.response.data.message, {
-            type: "danger",
-            duration: 6000,
-            offset: 30,
-            animationType: "slide-in",
-          });
-
-        }
-        finally {
-
-          setIsSubmitting(false);
-          setTimeout(() => {setModalVisible(false);
-          }, 1000);
-        }
-
+  useEffect(() => {
+    let interval;
+    if (!canResend && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      setCanResend(true);
     }
+    return () => clearInterval(interval);
+  }, [timer, canResend]);
 
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.container}>
+  const submit = async () => {
+    setIsSubmitting(true);
+    setModalVisible(true);
+    setSpinnerState('spinning');
 
-          {/* Modal for Animated Spinner */}
-          <Modal visible={modalVisible} transparent animationType="fade">
-            <View style={styles.modalContainer}>
-              <AnimatedSpinner
-                size={100}
-                strokeWidth={6}
-                spinnerColor="#3498db"
-                successColor="#2ecc71"
-                failureColor="#e74c3c"
-                state={spinnerState}
-                />
-            </View>
-          </Modal>
+    try {
+      let verification = otpInput.current.state.otpText.join('');
+      if (verification.length !== 6) {
+        toast.show('Please enter valid OTP', {
+          type: "danger",
+          duration: 4000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+        setIsSubmitting(false);
+        setModalVisible(false);
+        return;
+      }
 
-          <Text style={styles.title}>Verify Your Email</Text>
+      const resp = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/verifyuser`, { email: user.email, key: verification }, { withCredentials: true });
 
-          <OTPTextInput
-          ref= {otpInput}
+      if (resp.status === 200) {
+        setSpinnerState('success');
+        toast.show("Successfully Verified account, Please Login", {
+          type: "success",
+          duration: 6000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+
+        setTimeout(() => {
+          setModalVisible(false);
+          setSpinnerState('');
+          router.replace('/sign-in');
+        }, 1000);
+
+      } else {
+        throw new Error(resp);
+      }
+    } catch (error) {
+      otpInput.current.clear();
+      setSpinnerState('failure');
+
+      toast.show(error.response?.data?.message || 'An error occurred', {
+        type: "danger",
+        duration: 6000,
+        offset: 30,
+        animationType: "slide-in",
+      });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => {
+        setModalVisible(false);
+      }, 1000);
+    }
+  };
+
+  const resendOTP = async () => {
+    setCanResend(false);
+    setTimer(60);
+
+    try {
+      const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resend-otp`, { 'username': user.username }, { withCredentials: true });
+
+      if (resp.status === 200) {
+
+        toast.show("OTP resent to your email", {
+          type: "success",
+          duration: 6000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+      } else {
+
+        throw new Error(resp);
+      }
+    } catch (error) {
+
+      console.log(error.response);
+
+      toast.show(error.response?.data?.message || 'Failed to resend OTP', {
+        type: "danger",
+        duration: 6000,
+        offset: 30,
+        animationType: "slide-in",
+      });
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.innerContainer}>
+
+        {/* Modal for Animated Spinner */}
+        <Modal visible={modalVisible} transparent animationType="fade">
+          <View style={styles.modalContainer}>
+            <AnimatedSpinner
+              size={100}
+              strokeWidth={6}
+              spinnerColor="#3498db"
+              successColor="#2ecc71"
+              failureColor="#e74c3c"
+              state={spinnerState}
+            />
+          </View>
+        </Modal>
+
+        <Text style={styles.title}>Verify Your Email</Text>
+
+        <OTPTextInput
+          ref={otpInput}
           inputCount={6}
           containerStyle={styles.otpContainer}
           textInputStyle={styles.otpInput}
-          />
+        />
 
+        <CustomButton
+          textContent="Submit"
+          handlePress={submit}
+          containerStyles={{ marginTop: 20 }}
+          isLoading={isSubmitting}
+        />
 
-          <CustomButton
-              textContent= "Submit"
-              handlePress= {submit}
-              containerStyles={{marginTop: 7}}
-              isLoading={isSubmitting}/>
-    
-        </View>
-      </SafeAreaView>
+        <TouchableOpacity
+          onPress={canResend ? resendOTP : null}
+          disabled={!canResend}
+        >
+          <Text style={[styles.resendText, !canResend && styles.disabledText]}>
+            {canResend ? "Resend OTP" : `Resend OTP in ${timer}s`}
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -135,35 +177,52 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    height: '100%'
+    paddingHorizontal: 20,
+    backgroundColor: '#f9f9f9',
+  },
+  innerContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
+    fontWeight: 'bold',
+    color: '#333',
     textAlign: 'center',
   },
   otpContainer: {
-    width: '100vw',
-    justifyContent: 'space-between',
+    // flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '100%',
+    marginBottom: 20,
   },
   otpInput: {
-    width: 40,
-    height: 45,
+    flex: 1,
+    width: 50,
+    height: 50,
     borderWidth: 1,
     borderColor: '#03DAC6',
-    borderRadius: 5,
+    borderRadius: 8,
     textAlign: 'center',
     fontSize: 18,
+    backgroundColor: '#fff',
   },
   modalContainer: {
-    backgroundColor: "white",
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    height: '100%',  
-    width: '100%',
+  },
+  resendText: {
+    color: 'blue',
+    marginTop: 15,
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
+  disabledText: {
+    color: 'gray',
   },
 });
 

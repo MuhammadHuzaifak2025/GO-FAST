@@ -24,6 +24,7 @@ const SignUp = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();
+  const [confirm, setConfirm] = useState('');
 
   const submit = async () => {
 
@@ -39,6 +40,16 @@ const SignUp = () => {
             });
             return;
           }
+          if(form.password !== confirm){
+            toast.show('Passwords do not match', {
+              type: "danger",
+              duration: 4000,
+              offset: 30,
+              animationType: "slide-in",
+            });
+            return;
+          }
+
             const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`, form, {withCredentials: true} );
             
             if(response.status === 201){
@@ -124,6 +135,16 @@ const SignUp = () => {
             keyboardType="password"
             value={form.password}
             handleChangeText = {(e) => setForm({...form, password: e})}
+            secureTextEntry={true}
+            otherStyles={{marginBottom: 20}}
+            isCapital={false}
+          />
+          <FormField
+            title="Confirm Password"
+            placeholder="Re-Enter your password"
+            keyboardType="password"
+            value={confirm}
+            handleChangeText = {(e) => setConfirm(e)}
             secureTextEntry={true}
             otherStyles={{marginBottom: 20}}
             isCapital={false}

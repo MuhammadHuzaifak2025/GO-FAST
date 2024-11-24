@@ -19,7 +19,8 @@ const VerifyEmail = () => {
     const {user} = useGlobalContext();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [form, setForm] = useState({password: ''});  
+    const [form, setForm] = useState({password: ''});
+    const [confirm, setConfirm] = useState('');  
 
     const handleResetPass = async () => {
         setIsSubmitting(true);
@@ -56,9 +57,6 @@ const VerifyEmail = () => {
           });
 
         }
-
-
-
         setIsSubmitting(false);
     }
 
@@ -79,6 +77,15 @@ const VerifyEmail = () => {
           placeholder="Enter your new password"
           value={form.password}
           handleChangeText={(e) => setForm({ ...form, password: e })}
+          secureTextEntry={true}
+          otherStyles={{ marginBottom: 20 }}
+          isCapital={false}
+        />
+        <FormField
+          title="Confirm New Password"
+          placeholder="Re-Enter your new password"
+          value={confirm}
+          handleChangeText={(e) => setConfirm(e)}
           secureTextEntry={true}
           otherStyles={{ marginBottom: 20 }}
           isCapital={false}
@@ -111,6 +118,7 @@ const styles = StyleSheet.create({
   otpContainer: {
     width: '100vw',
     justifyContent: 'space-between',
+    marginBottom: 40,
   },
   otpInput: {
     width: 40,
