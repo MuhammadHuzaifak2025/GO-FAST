@@ -260,13 +260,10 @@ const busRegistration = () => {
                 <Text style={styles2.infoText}>Bus Number: {data.bus_number}</Text>
               </View>
               <View style={styles2.infoRow}>
-                <Text style={styles2.infoText}>Bus ID: {data.bus_id}</Text>
+                <Text style={styles2.infoText}>Seats Left: {data.seats}</Text>
               </View>
               <View style={styles2.infoRow}>
-                <Text style={styles2.infoText}>Seats: {data.seats}</Text>
-              </View>
-              <View style={styles2.infoRow}>
-                <Text style={styles2.infoText}>Organization: {data.bus_organization}</Text>
+                <Text style={styles2.infoText}>Driver Details: Muhammad Ali - +92123456789</Text>
               </View>
             </View>
 
@@ -274,11 +271,11 @@ const busRegistration = () => {
               <Text style={styles2.sectionTitle}>Route Information</Text>
               <View style={styles2.infoRow}>
                 <MapPin color="#4CAF50" size={24} />
-                <Text style={styles2.infoText}>Pickup: {data.pickup[0].route_name} (ID: {data.pickup[0].route_id})</Text>
+                <Text style={styles2.infoText}>Pickup: {data.pickup[0].route_name}</Text>
               </View>
               <View style={styles2.infoRow}>
                 <MapPin color="#F44336" size={24} />
-                <Text style={styles2.infoText}>Dropoff: {data.dropoff[0].route_name} (ID: {data.dropoff[0].route_id})</Text>
+                <Text style={styles2.infoText}>Dropoff: {data.dropoff[0].route_name}</Text>
               </View>
             </View>
 
@@ -286,10 +283,10 @@ const busRegistration = () => {
               <Text style={styles2.sectionTitle}>Payment Details</Text>
               <View style={styles2.infoRow}>
                 <DollarSign color="#4CAF50" size={24} />
-                <Text style={styles2.infoText}>Amount: ${data.amount}</Text>
+                <Text style={styles2.infoText}>45000 Rs</Text>
               </View>
               <View style={styles2.infoRow}>
-                <Text style={styles2.infoText}>Single Ride Fare: ${data.single_ride_fair}</Text>
+                <Text style={styles2.infoText}>Single Ride Fare: {data.single_ride_fair} Rs</Text>
               </View>
               <View style={styles2.infoRow}>
                 <Text style={styles2.infoText}>Payment Status: {data.is_paid ? 'Paid' : 'Unpaid'}</Text>
@@ -298,10 +295,10 @@ const busRegistration = () => {
 
             <View style={styles2.section}>
               <Text style={styles2.sectionTitle}>Additional Information</Text>
-              <View style={styles2.infoRow}>
+              {/* <View style={styles2.infoRow}>
                 <Calendar color="#1A237E" size={24} />
-                <Text style={styles2.infoText}>Semester ID: {data.semester_id}</Text>
-              </View>
+                <Text style={styles2.infoText}>Semester ID: {data.s}</Text>
+              </View> */}
               <View style={styles2.infoRow}>
                 <Text style={styles2.infoText}>Passenger ID: {data.passenger_id}</Text>
               </View>

@@ -26,20 +26,6 @@ const ViewBus = () => {
 
 
 
-
-
-    const deleteBus = async (busId) => {
-        try {
-            await setAuthHeaders(axios);
-            await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/bus/${busId}`);
-            fetchBuses();
-            Alert.alert('Success', 'Bus deleted successfully');
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to delete bus');
-        }
-    };
-
     const fetchBuses = async () => {
         try {
             await setAuthHeaders(axios);
@@ -75,12 +61,7 @@ const ViewBus = () => {
                 <Text style={styles.busInfo}>Seats: {item.bus.seats}</Text>
                 <Text style={styles.busInfo}>Fare: ${item.bus.single_ride_fair}</Text>
             </View>
-            <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => deleteBus(item.bus.bus_id)}
-            >
-                <Trash2 color="#FF3B30" size={20} />
-            </TouchableOpacity>
+
         </TouchableOpacity>
     );
 

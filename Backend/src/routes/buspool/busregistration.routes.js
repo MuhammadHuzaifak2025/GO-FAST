@@ -6,7 +6,8 @@ import {
     showstudentregistration,
     get_student_registrations,
     get_openreg_busses_with_routes,
-    get_busPassenger_ifregistered
+    get_busPassenger_ifregistered,
+    updateduedate
 }
     from "../../controllers/Buspool/BusRegistration.js";
 
@@ -18,5 +19,6 @@ BusRegistrationRouter.route("/busregistration/show").get(AuthenticateToken, show
 BusRegistrationRouter.route("/busregistration/student").get(AuthenticateToken, get_student_registrations);
 BusRegistrationRouter.route("/busregistration/open").get(AuthenticateToken, get_openreg_busses_with_routes);
 BusRegistrationRouter.route("/busregistration/passenger").get(AuthenticateToken, get_busPassenger_ifregistered);
+BusRegistrationRouter.route("/busregistration/updateduedate").put(AuthenticateToken, updateduedate);
 
 export default BusRegistrationRouter;

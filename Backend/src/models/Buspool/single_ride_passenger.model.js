@@ -1,6 +1,7 @@
 import sequelize from "../../database/index.js";
 import { DataTypes } from "sequelize";
 import Bus from "./Bus.model.js";
+import User from "../user.models.js";
 
 const SingleRidePassenger = sequelize.define(
     "singleridepassenger", {
@@ -8,6 +9,14 @@ const SingleRidePassenger = sequelize.define(
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
+    },
+    passenger_id: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: User,
+            key: "user_id"
+        },
+        allowNull: false
     },
     bus_id: {
         type: DataTypes.INTEGER,
