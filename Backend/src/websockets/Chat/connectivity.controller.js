@@ -56,7 +56,7 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
 
 const search_for_driver = async (data) => {
     try {
-        
+
 
     } catch (error) {
 
@@ -133,5 +133,6 @@ const is_driver_is_requester = async (data) => {
         throw new Error(error.message || "Error processing ride request");
     }
 };
+
 
 export { store_driver, store_requesting_passenger, is_driver_is_requester, searchForPassenger };

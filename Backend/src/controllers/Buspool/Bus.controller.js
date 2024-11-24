@@ -202,6 +202,12 @@ const delete_bus = asynchandler(async (req, res, next) => {
             throw new ApiError(403, "You are not authorized to perform this action");
         }
         const { bus_id } = req.params;
+        const getregistration = await sequelize.query(`SELECT * FROM busregistrations 
+            inner join buses on busregistrations.organization = buses.bus_organization
+            WHERE bus_id = ${bus_id}`, { type: QueryTypes.SELECT });
+        if (getregistration[0]) {
+            throw new ApiError(400, "Bus is open for registration");
+        }
         const setbuorgnill = await sequelize.query(`
             UPDATE buses SET bus_organization = null WHERE bus_id = ${bus_id}`, { type: QueryTypes.UPDATE });
         const delete_busroutes = await sequelize.query(`

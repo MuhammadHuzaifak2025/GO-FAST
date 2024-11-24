@@ -55,7 +55,7 @@ const RegistrationHandler = () => {
                 // throw new Error(resp);
             }
         } catch (error) {
-            // console.log(error.response);
+            console.log(error.response);
         }
     }
 
@@ -135,7 +135,7 @@ const RegistrationHandler = () => {
                         // console.log(resp);
                     }
                 } catch (error) {
-                    // console.log("Muhammad", error.response)
+                    console.log("Muhammad", error.response)
                     setIsRegistrationOpen(false);
                 }
                 finally {
@@ -189,6 +189,8 @@ const RegistrationHandler = () => {
                     throw new Error(resp);
                 }
             } catch (error) {
+                console.log(error.response.message)
+                toast.show(error.response.message, { type: "error", duration: 6000, offset: 30 });
                 // console.log("Hello")
                 // console.log(error.response);
             };

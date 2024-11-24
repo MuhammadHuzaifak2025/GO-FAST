@@ -56,6 +56,7 @@ import Trasport_Manager from "./routes/Transport_manager.routes.js";
 import BusRouter from "./routes/buspool/bus.routes.js";
 import PassengerRouter from "./routes/buspool/Passemger.routes.js";
 import BusRegistrationRouter from "./routes/buspool/busregistration.routes.js";
+import SingleRidePassengerRouter from "./routes/buspool/singleridepassenger.routes.js";
 
 
 app.use(cookieparser());
@@ -68,6 +69,8 @@ app.use('/gofast/api', Trasport_Manager);
 app.use('/gofast/api', BusRouter);
 app.use('/gofast/api', PassengerRouter);
 app.use('/gofast/api', BusRegistrationRouter);
+app.use('/gofast/api', SingleRidePassengerRouter);
+
 
 app.use(ErrorHandlerMiddleWare);
 

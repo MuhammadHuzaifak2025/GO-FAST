@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { setAuthHeaders } from '../../utils/expo-store';
+import { Toast } from 'react-native-toast-notifications';
 
 const { width } = Dimensions.get('window');
 
@@ -35,8 +36,8 @@ const EnhancedBusRoutes = () => {
             fetchBuses();
             Alert.alert('Success', 'Bus deleted successfully');
         } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to delete bus');
+            // console.error(error.response.data.message);
+            Toast.show(error.response.data.message, { type: 'danger' });
         }
     };
 
@@ -48,8 +49,7 @@ const EnhancedBusRoutes = () => {
             });
             setBuses(response.data.message);
         } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to fetch buses');
+            Toast.show(error.response.data.message, { type: 'danger' });
         }
     };
 

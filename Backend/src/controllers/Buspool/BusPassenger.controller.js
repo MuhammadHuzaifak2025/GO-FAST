@@ -150,7 +150,7 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
         const [getorganization] = await sequelize.query(`SELECT * FROM transport_organizations WHERE owner = '${req.user.user_id}'`,
             { type: sequelize.QueryTypes.SELECT });
         if (!req.user.admin && !getorganization) {
-            return next(new ApiError("Unauthorized"));
+            return next(new ApiError(400 ,"Unauthorized"));
         }
 
 
@@ -163,7 +163,7 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
             , type: sequelize.QueryTypes.SELECT
         });
         if (!getPassenger) {
-            return next(new ApiError("Passenger not found"));
+            return next(new ApiError(400 ,"Passenger not found"));
         }
         const transaction = await sequelize.transaction();
         const pay = await sequelize.query(
@@ -181,17 +181,18 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
             const checkseats = await sequelize.query(`SELECT * FROM buses WHERE bus_id =
                 (SELECT bus_id FROM semester_passengers WHERE semester_passenger_id = '${semester_passenger_id}')`, { type: sequelize.QueryTypes.SELECT });
             if (!checkseats) {
-                return next(new ApiError("Error checking bus seats"));
+                return next(new ApiError(400 ,"Error checking bus seats"));
             }
             if (checkseats[0].seats <= 0) {
                 transaction.rollback();
-                return next(new ApiError("Bus is full"));
+                return next(new ApiError(400 ,"Bus is full"));
             }
             else {
+                transaction.commit();
                 const updateseats = await sequelize.query(`UPDATE buses SET seats = seats + 1 WHERE bus_id =
                 (SELECT bus_id FROM semester_passengers WHERE semester_passenger_id = '${semester_passenger_id}') returning *`, { type: sequelize.QueryTypes.UPDATE });
                 if (!updateseats) {
-                    return next(new ApiError("Error updating bus seats"));
+                    return next(new ApiError(400 ,"Error updating bus seats"));
                 }
                 return res.status(200).json(new ApiResponse(200, "Payment successful"));
             }

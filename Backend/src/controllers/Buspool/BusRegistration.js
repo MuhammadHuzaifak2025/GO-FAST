@@ -119,7 +119,7 @@ const get_student_registrations = asynchandler(async (req, res, next) => {
         const getallregistration = await sequelize.query(
             `SELECT distinct a.* FROM semester_passengers a inner join buses b on a.bus_id = b.bus_id
              inner join busregistrations c on b.bus_organization = c.organization
-             where b.bus_organization = ? and a."createdAt" < c.due_date`,
+             where b.bus_organization = ? `,
 
             { replacements: [getuserorganization.organization_id,], type: QueryTypes.SELECT }
         );

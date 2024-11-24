@@ -1,3 +1,4 @@
+import { QueryTypes } from "sequelize";
 import sequelize from "../../database/index.js";
 import asynchandler from "../../utils/AsyncHandler.js";
 import ApiError from "../../utils/ErrorHandling.js";
@@ -8,7 +9,7 @@ const RequestforSingleRide = asynchandler(async (req, res, next) => { // Create 
     try {
         const { bus_id, pickup, dropoff } = req.body;
         const passenger_id = req.user.user_id;
-        const semester_id = await sequelize.query(`SELECT * FROM semesters order by semester_id desc limit 1`,
+        const [semester_id] = await sequelize.query(`SELECT * FROM semesters order by semester_id desc limit 1`,
             { type: QueryTypes.SELECT });
         if (!semester_id) {
             return next(new ApiError(400, "No Semester Found"));
@@ -79,9 +80,10 @@ const showSingleRidePassenger_toAdmin = asynchandler(async (req, res, next) => {
 
             organization.busses = busses;
             for (const bus of busses) {
-                const [busroutes] = await sequelize.query(`select * from routes a inner join busroutes on a.bus_id = b.bus_id where b.bus_id = ?`,
+                const busroutes = await sequelize.query(`select * from routes a inner join busroutes on a.bus_id = b.bus_id where b.bus_id = ?`,
                     { replacements: [bus.bus_id], type: QueryTypes.SELECT });
                 bus.routes = busroutes;
+                console.log(busroutes[0]);
             }
 
         }
@@ -156,20 +158,24 @@ const showSingleRideBusses_toUser = asynchandler(async (req, res, next) => { // 
             return next(new ApiError(400, "No Semester Found"));
         }
 
-        const [transport_organizations] = await sequelize.query(`select * from transport_organizations a inner join bus_registrations b
-            on a.organization_id = b.organization_id inner join semesters c on b.semester_id = c.semester_id where c.semester_id = ?`,
-            { replacements: [semester_id], type: QueryTypes.SELECT });
-        if (!transport_organizations) {
+        const transport_organizations = await sequelize.query(`select * from transport_organizations a 
+            inner join busregistrations b
+            on a.organization_id = b.organization inner join semesters c on b.semester_id = c.semester_id where c.semester_id = ?`,
+            { replacements: [semester_id.semester_id], type: QueryTypes.SELECT });
+
+        if (!transport_organizations[0]) {
             return next(new ApiError(400, "No Transport Organization Found"));
         }
+        transport_organizations[0].due_date = new Date();
+        // console.log(transport_organizations);
         for (const organization of transport_organizations) {
-            const [busses] = await sequelize.query(`select * from buses where bus_organization = ? and seats > 0`,
+            const busses = await sequelize.query(`select * from buses where bus_organization = ? and seats > 0`,
                 { replacements: [organization.organization_id], type: QueryTypes.SELECT });
-
             organization.busses = busses;
             for (const bus of busses) {
-                const [busroutes] = await sequelize.query(`select * from routes a inner join busroutes on a.bus_id = b.bus_id where b.bus_id = ?`,
+                const busroutes = await sequelize.query(`select * from routes a inner join busroutes b on a.route_id = b.route_id `,
                     { replacements: [bus.bus_id], type: QueryTypes.SELECT });
+                console.log("busses", busroutes);
                 bus.routes = busroutes;
             }
 
