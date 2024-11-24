@@ -227,4 +227,7 @@ const get_busPassenger_ifregistered = asynchandler(async (req, res, next) => {
     }
 }
 );
+
+
+
 export { openbusregistration, get_busPassenger_ifregistered, get_openreg_busses_with_routes, getbusregistration, showstudentregistration, updateduedate, get_student_registrations };
