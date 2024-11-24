@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   SafeAreaView,
   Alert,
   ActivityIndicator,
-  ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useGlobalContext } from '../../../context/GlobalProvider';
@@ -19,14 +18,16 @@ import { setAuthHeaders } from '../../../utils/expo-store';
 import { useToast } from 'react-native-toast-notifications';
 import { FlashList } from '@shopify/flash-list';
 
-const PassengerItem = ({username, phone, fare, ride_id,passenger_id, seats, refreshPassenger }) => {
+const PassengerItem = ({ username, phone, fare, ride_id, passenger_id, seats, refreshPassenger }) => {
+
 
   const toast = useToast();
+  const { width } = useWindowDimensions();
   
   const handleDelete = async () => {
     Alert.alert(
       "Remove Passenger",
-      "You sure?",
+      "Are you sure you want to remove this passenger?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -34,10 +35,8 @@ const PassengerItem = ({username, phone, fare, ride_id,passenger_id, seats, refr
           style: "destructive",
           onPress: async () => {
             try {
-
-              await setAuthHeaders(axios); // Set authorization headers
+              await setAuthHeaders(axios);
               const response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user/passenger/${ride_id}/${passenger_id}`);
-              console.log(response);
 
               if (response.status === 200) {
                 toast.show('Passenger removed from ride', {
@@ -46,13 +45,11 @@ const PassengerItem = ({username, phone, fare, ride_id,passenger_id, seats, refr
                   offset: 30,
                   animationType: "slide-in",
                 });
-
-                if (refreshPassenger) refreshPassenger(); // Refresh the rides list if a refresh function is provided
+                if (refreshPassenger) refreshPassenger();
               } else {
                 throw new Error(response);
               }
             } catch (error) {
-              // console.log(error.response.data);
               toast.show('Failed to delete passenger. Please try again.', {
                 type: "danger",
                 duration: 4000,
@@ -68,44 +65,33 @@ const PassengerItem = ({username, phone, fare, ride_id,passenger_id, seats, refr
 
   return (
     <LinearGradient
-      colors={['#ff7f7f', '#ffa07a']} // Light red to salmon
+      colors={['#ff7f7f', '#ffa07a']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.requestItem}
+      style={[styles.itemContainer, { width: width - 32 }]}
     >
-      
       <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
         <Ionicons name="close" size={24} color="#fff" />
       </TouchableOpacity>
-
-      <View style={styles.requestDetails}>
-        <Text style={styles.username}>Name: {username}</Text>
-        <Text style={styles.username}>Seats occupied: {seats} </Text>
-        <Text style={styles.username}>Contact No. : {phone}</Text>
-        <Text style={styles.username}>Total Fare: {parseInt(fare,10)*parseInt(seats,10)}</Text>
-      </View>
-      <View style={styles.actionButtons}>
-        
+      <View style={styles.itemDetails}>
+        <Text style={styles.itemText}>Name: {username}</Text>
+        <Text style={styles.itemText}>Seats occupied: {seats}</Text>
+        <Text style={styles.itemText}>Contact No.: {phone}</Text>
+        <Text style={styles.itemText}>Total Fare: ${parseInt(fare, 10) * parseInt(seats, 10)}</Text>
       </View>
     </LinearGradient>
   );
 };
 
-const RequestItem = ({
-  username,
-  seatsRequested,
-  req_id,
-  refreshRides,
-}) => {
+const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
+
   const toast = useToast();
+  const { width } = useWindowDimensions();
+  const { myRide, setMyRide } = useGlobalContext();
 
   const handleRequestAction = async (action) => {
-    const confirmText =
-      action === 'accept' ? 'Accept this request?' : 'Reject this request?';
-    const successMessage =
-      action === 'accept'
-        ? 'Request accepted successfully.'
-        : 'Request rejected successfully.';
+    const confirmText = action === 'accept' ? 'Accept this request?' : 'Reject this request?';
+    const successMessage = action === 'accept' ? 'Request accepted successfully.' : 'Request rejected successfully.';
 
     Alert.alert(
       `${action === 'accept' ? 'Accept' : 'Reject'} Request`,
@@ -115,42 +101,47 @@ const RequestItem = ({
         {
           text: action.charAt(0).toUpperCase() + action.slice(1),
           style: action === 'accept' ? 'default' : 'destructive',
-
           onPress: async () => {
-
             try {
               await setAuthHeaders(axios);
-                
               let response;
+              if (action === 'accept') {
 
-              if(action === 'accept'){
+                if(myRide.seat_available < seatsRequested) {
+                  toast.show('Not enough seats available to accept this request.', {
+                    type: 'danger',
+                    duration: 4000,
+                    offset: 30,
+                    animationType: 'slide-in',
+                  });
+                  return;
+                }
 
-                response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/accept`, {'requestId': req_id});
-              }
-              else{
+                response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/accept`, { 'requestId': req_id });
 
+              } else {
                 response = await axios.delete(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/reject/${req_id}`);
               }
-
               if (response.status === 200) {
-
+                
+                if(action === 'accept') {
+                  setMyRide({ ...myRide, seats_available: myRide.seat_available - seatsRequested });
+                }
+          
                 toast.show(successMessage, {
                   type: 'success',
                   duration: 4000,
                   offset: 30,
                   animationType: 'slide-in',
                 });
-
+                
                 if (refreshRides) refreshRides();
-
               } else {
 
                 throw new Error(response);
               }
-
             } catch (error) {
-
-              console.log(error.response.data);
+              console.log(error.response?.data);
               toast.show('Failed to process request. Please try again.', {
                 type: 'danger',
                 duration: 4000,
@@ -166,15 +157,14 @@ const RequestItem = ({
 
   return (
     <LinearGradient
-        colors={['#ff7f7f', '#ffa07a']} // Light red to salmon
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.requestItem}
+      colors={['#ff7f7f', '#ffa07a']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.itemContainer, { width: width - 32 }]}
     >
-
-      <View style={styles.requestDetails}>
-        <Text style={styles.username}>{username}</Text>
-        <Text style={styles.seatsRequested}>{seatsRequested} Seats</Text>
+      <View style={styles.itemDetails}>
+        <Text style={styles.itemText}>{username}</Text>
+        <Text style={styles.itemText}>{seatsRequested} Seats</Text>
       </View>
       <View style={styles.actionButtons}>
         <TouchableOpacity
@@ -197,135 +187,124 @@ const RequestItem = ({
 };
 
 const ManageRides = () => {
-    const toast = useToast();
-    const { myRide } = useGlobalContext();
+  const toast = useToast();
+  const { myRide } = useGlobalContext();
+  const [requests, setRequests] = useState([]);
+  const [passengers, setPassengers] = useState([]);
+  const [loadingR, setLoadingR] = useState(false);
+  const [loadingP, setLoadingP] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-    const [requests, setRequests] = useState([]);
-    const [passengers, setPassengers] = useState([]);
+  const fetchRequests = useCallback(async () => {
 
-    const [loadingR, setLoadingR] = useState(false);
-    const [loadingP, setLoadingP] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
-    // const [refreshingP, setRefreshingP] = useState(false);
-
-  const fetchRequests = async () => {
     setLoadingR(true);
-
     try {
-
       await setAuthHeaders(axios);
-
-      const response = await axios.get(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${myRide}`
-      );
-
-      console.log(response);
-
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/request/${myRide.ride_id}`);
       if (response.status === 200) {
 
         setRequests(response.data.message);
-        setLoadingR(false);
-        fetchPassengers();
-
       } else {
         throw new Error(response);
       }
     } catch (error) {
 
       console.log(error.response);
-      if(error.response.message === "No ride requests found"){
+      if (error.response?.data?.message === "No ride requests found") {
         setRequests([]);
+      } else {
+
+        toast.show('Error fetching your requests, please try again later.', {
+          type: 'danger',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in',
+        });
       }
-      else{
+    } finally {
 
-          toast.show('Error fetching your requests, please try again later.', {
-              type: 'danger',
-              duration: 4000,
-              offset: 30,
-              animationType: 'slide-in',
-            });
-        }
-
+      setLoadingR(false);
     }
-    finally{
+  }, [myRide, toast]);
 
-        setLoadingR(false);
-    }
-  };
-
-  const fetchPassengers = async () => {
+  const fetchPassengers = useCallback(async () => {
 
     setLoadingP(true);
-
     try {
 
       await setAuthHeaders(axios);
-
-      const response = await axios.get(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user/passenger/${myRide}`
-      );
-
-      
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/user/passenger/${myRide.ride_id}`);
       if (response.status === 200) {
-        
-        console.log("hello123",response);
+
         setPassengers(response.data.data[1]);
-        setLoadingP(false);
       } else {
 
         throw new Error(response);
       }
     } catch (error) {
-
       console.log(error.response);
-      if(error.response.data.message === "No passengers found"){
+      if (error.response?.data?.message === "No passengers found") {
 
         setPassengers([]);
+      } else {
+
+        toast.show(error.response?.data?.message, {
+
+          type: 'danger',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in',
+        });
       }
-      else{
+    } finally {
 
-          toast.show(error.response.data.message, {
-              type: 'danger',
-              duration: 4000,
-              offset: 30,
-              animationType: 'slide-in',
-            });
-        }
-
+      setLoadingP(false);
     }
-    finally{
-
-        setLoadingP(false);
-    }
-  };
+  }, [myRide, toast]);
 
   useEffect(() => {
+
     if (!myRide) {
+
       router.replace('/published-ride');
     } else {
 
       fetchRequests();
       fetchPassengers();  
     }
-  }, []);
+  }, [myRide, fetchRequests, fetchPassengers]);
+
+  useEffect(() => {
+
+  }, [myRide.seats_available]);
+
+  const handleRefresh = useCallback(() => {
+
+    setRefreshing(true);
+    fetchRequests().then(() => fetchPassengers()).finally(() => setRefreshing(false));
+  }, [fetchRequests, fetchPassengers]);
 
   return (
-    <SafeAreaView>
-      <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={['#ff6347', '#ff7f50']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <TouchableOpacity onPress={() => router.replace('/publish-ride')} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={28} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Manage Ride</Text>
+        <View style={styles.placeholder} />
+      </LinearGradient>
 
-        <View style={styles.header}>
-          <View style={styles.back}>
-            <TouchableOpacity onPress={() => router.replace('/publish-ride')}>
-              <Ionicons name="arrow-back" size={28} color="#EC5F5F" />
-            </TouchableOpacity>
-          </View>
-        <Text style={[styles.headerTitle, {paddingRight: 20}]}>Pending Requests</Text>
-        </View>
-
+      <View style={styles.content}>
+        <Text style={styles.sectionTitle}>Pending Requests</Text>
         {loadingR ? (
-          <View>
-              <ActivityIndicator size="large" color="#e74c3c" />
-              <Text style={styles.loadingText}>Loading requests...</Text>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#ff6347" />
+            <Text style={styles.loadingText}>Loading requests...</Text>
           </View>
         ) : (
           <FlashList
@@ -334,30 +313,23 @@ const ManageRides = () => {
             keyExtractor={(item) => item.request_id}
             renderItem={({ item }) => (
               <RequestItem
-                  username={item.username}
-                  seatsRequested={item.seats_requested}
-                  req_id={item.request_id}
-                  refreshRides={fetchRequests}
+                username={item.username}
+                seatsRequested={item.seats_requested}
+                req_id={item.request_id}
+                refreshRides={fetchPassengers}
               />
-              )}
+            )}
+            onRefresh={handleRefresh}
             refreshing={refreshing}
-            onRefresh={() => {
-                setRefreshing(true);
-                fetchRequests();
-                setRefreshing(false);
-                }
-              }
-            contentContainerStyle={styles.listContainer}
-            ListEmptyComponent={() => (<Text style={styles.subheading}>No pending requests for this ride</Text>)}
+            ListEmptyComponent={() => (<Text style={styles.emptyText}>No pending requests for this ride</Text>)}
           />
         )}
 
-        <Text style={styles.headerTitle}>Ride Passengers</Text>
-
+        <Text style={styles.sectionTitle}>Ride Passengers</Text>
         {loadingP ? (
-          <View>
-              <ActivityIndicator size="large" color="#e74c3c" />
-              <Text style={styles.loadingText}>Loading Passengers...</Text>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#ff6347" />
+            <Text style={styles.loadingText}>Loading Passengers...</Text>
           </View>
         ) : (
           <FlashList
@@ -366,99 +338,86 @@ const ManageRides = () => {
             keyExtractor={(item) => item.passenger_ride_id}
             renderItem={({ item }) => (
               <PassengerItem
-                  username={item.username}
-                  seats={item.seats_occupied}
-                  phone={item.phone}
-                  fare={item.fare}
-                  passenger_id={item.passenger_id}
-                  ride_id={item.ride_id}
-                  refreshPassenger={fetchPassengers}
+                username={item.username}
+                seats={item.seats_occupied}
+                phone={item.phone}
+                fare={item.fare}
+                passenger_id={item.passenger_id}
+                ride_id={item.ride_id}
+                refreshPassenger={fetchPassengers}
               />
-              )}
-            // refreshing={refreshingP}
-            // onRefresh={() => {
-            //     setRefreshingP(true);
-            //     fetchRequests();
-            //     setRefreshingP(false);
-            //     }
-            //   }
-            contentContainerStyle={styles.listContainer}
-            ListEmptyComponent={() => (<Text style={styles.subheading}>No passengers for this ride</Text>)}
+            )}
+            ListEmptyComponent={() => (<Text style={styles.emptyText}>No passengers for this ride</Text>)}
           />
         )}
-
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    height: '100%',
-  },
-  subheading : {
-    textAlign: 'center',
-    fontSize: 18,
-    // fontWeight: 'bold',
-    color: '#000', // Tomato color for the subheading
-    marginTop: 20,
-    marginBottom: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
+    flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
   },
-  back:{
+  backButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
   },
   headerTitle: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#ff6347', // Changed title color to tomato
+    color: '#fff',
     textAlign: 'center',
-    marginVertical: 5,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)', // Subtle shadow for depth
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
+  },
+  placeholder: {
+    width: 44,
+  },
+  content: {
     flex: 1,
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingText: {
-    textAlign: 'center',
-    marginTop: 20,
+    marginTop: 10,
     fontSize: 16,
     color: '#666',
   },
-  listContainer: {
-  paddingVertical: 20,
-  },
-  requestItem: {
+  itemContainer: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
     elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  requestDetails: {
-    flexDirection: 'column',
-    // justifyContent: 'space-between',
+  itemDetails: {
     marginBottom: 12,
   },
-  username: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  seatsRequested: {
+  itemText: {
     fontSize: 16,
     color: '#fff',
+    marginBottom: 4,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -467,6 +426,7 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 10,
     borderRadius: 8,
     flex: 0.48,
@@ -492,6 +452,13 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 5,
   },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 20,
+  },
 });
 
 export default ManageRides;
+

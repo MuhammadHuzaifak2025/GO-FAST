@@ -62,12 +62,9 @@ const RideItem = ({ from, to, time, username, seats, ride_item }) => {
           <Text style={styles.rideText}>From: {from}</Text>
           <Text style={styles.rideText}>To: {to}</Text>
         </View>
-        <View style={styles.sameLine}>
-          <Text style={styles.rideTime}>
-            {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]} • {formatTime}
-          </Text>
-          
-        </View>
+        <Text style={styles.rideTime}>
+          {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]} • {formatTime}
+        </Text>
       </LinearGradient>
     </TouchableOpacity>
   );

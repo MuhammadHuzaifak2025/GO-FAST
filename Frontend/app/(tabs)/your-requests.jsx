@@ -122,7 +122,10 @@ const RequestRideItem = ({ time, car, refreshRides, username, req_id }) => {
         <Text style={styles.usernameText}>{username}</Text>
       </View>
       <Text style={styles.rideTime}>{weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]} • {formatTime}</Text>
-      <Text style={styles.rideText}>{car.color} {car.make} {car.model}</Text>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', marginRight: 20}}>
+        <Text style={styles.rideText}>{car.color} {car.make} {car.model}</Text>
+        <Text style={styles.rideText}>Registration#: {car.registration_number}</Text>
+      </View>
     </LinearGradient>
   );
 };

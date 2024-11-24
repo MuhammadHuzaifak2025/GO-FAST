@@ -13,7 +13,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 
-const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
+const RideItem = ({ from, to, time, price, seats, car, id, refreshRides, ride }) => {
 
   const toast = useToast();
 
@@ -83,15 +83,15 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={()=>{
-        setMyRide(id);
+        setMyRide(ride);
         router.push('/manage-ride');           
       }}
     >
       <LinearGradient
-        colors={['black', '#ff6347']}
+        colors={['#1e1e1e', '#3d3d3d']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.rideItem}
+        style={[styles.rideItem]}
         >
         {/* Delete Icon */}
         <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
@@ -99,23 +99,28 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides }) => {
         </TouchableOpacity>
 
         <View style={styles.rideHeader}>
-          <FontAwesome name="car" size={24} color="#fff" />
-          <Text style={styles.usernameText}>Ride#{id}</Text>
+          <FontAwesome name="car" size={24} color="#ff6347" />
+          {/* <Text style={styles.usernameText}>Ride#{id}</Text> */}
+          <Text style={styles.usernameText}>{car.color} {car.make} {car.model}</Text>
         </View>
-        <Text style={styles.rideText}>Starting Location: {from}</Text>
-        <Text style={styles.rideText}>Destination: {to}</Text>
-        <Text style={styles.rideTime}>Start Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]}</Text>
-        <Text style={styles.rideTime}>Start Time: {formatTime}</Text>
-        <Text style={styles.rideText}>Vehicle: {car.color} {car.make} {car.model}</Text>
-        <Text style={styles.rideText}>Fare Per Seat: {price} </Text>
+        <View style={styles.sameLine}>
+          <Text style={styles.rideText}>From: {from}</Text>
+          <Text style={styles.rideText}>To: {to}</Text>
+        </View>
+
+        <Text style={styles.rideTime}>
+          {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]} • {formatTime}
+        </Text>
+        
+        <Text style={styles.rideText}>Fare: {price} </Text>
         <View style={styles.seatsContainer}>
-          <Text style={styles.seatText}>Seats Available: </Text>
+          <Text style={styles.seatText}>Seats Remaining: </Text>
           {Array.from({ length: seats }).map((_, index) => (
             <MaterialIcons
             key={index}
               name="event-seat"
               size={20}
-              color="#fff"
+              color="#ff6347"
               style={styles.seatIcon}
               />
             ))}
@@ -157,6 +162,7 @@ const PublishRide = () => {
 
 
     setLoadingF(true);
+
     try {
 
       await setAuthHeaders(axios);
@@ -189,6 +195,7 @@ const PublishRide = () => {
   };
 
   const handlePublish = async () => {
+
     if (!form.startingPoint || !form.destination || !form.selectedCar || !form.availableSeats || !form.dateTime || !form.price) {
       toast.show('Please fill all required fields', {
         type: "danger",
@@ -211,6 +218,7 @@ const PublishRide = () => {
       });
 
       if (resp.status === 201) {
+
         toast.show('Ride published successfully', {
           type: "success",
           duration: 4000,
@@ -218,7 +226,7 @@ const PublishRide = () => {
           animationType: "slide-in",
         });
 
-        // setForm({ startingPoint: { route_name: '' }, destination: { route_name: '' }, availableSeats: '', selectedCar: '', dateTime: '', price: '' });
+        setForm({ startingPoint: { route_name: '' }, destination: { route_name: '' }, availableSeats: '', selectedCar: '', dateTime: '', price: '' });
         fetchRides();
       }
       else {
@@ -473,6 +481,7 @@ const PublishRide = () => {
                 price={item.fare}
                 seats={item.seat_available}
                 car={item.vehicle}
+                ride={item}
                 refreshRides={fetchRides}
               />
             )}
@@ -496,6 +505,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#ffffff', // Changed background to white
+  },
+  sameLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flex: 1,
+    marginRight: 10,
   },
   title: {
     fontSize: 32,
@@ -613,21 +628,21 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   rideItem: {
-    marginVertical: 10,
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 12,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginBottom: 10,
   },
   deleteIcon: {
     position: 'absolute',
     top: 10,
     right: 10,
     zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 15,
     padding: 5,
   },
@@ -640,6 +655,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     marginLeft: 10,
+    fontWeight: 'bold',
   },
   rideText: {
     color: '#fff',
@@ -647,9 +663,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   rideTime: {
-    color: '#fff',
+    color: '#ff6347',
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 10,
+    fontWeight: 'bold',
   },
   seatsContainer: {
     flexDirection: 'row',
@@ -658,8 +675,8 @@ const styles = StyleSheet.create({
   },
   seatText: {
     color: '#fff',
-    fontSize: 16,
-    marginRight: 10,
+    fontSize: 14,
+    marginRight: 5,
   },
   seatIcon: {
     marginHorizontal: 2,

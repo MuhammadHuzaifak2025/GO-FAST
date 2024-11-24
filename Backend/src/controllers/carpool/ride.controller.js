@@ -487,7 +487,7 @@ const fetchongoingride = asynchandler(async (req, res, next) => {
 
         // return;
         const rides = await sequelize.query(
-            `SELECT * FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id
+            `SELECT a.*,b.*,c.username FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id JOIN users c ON b.driver = c.user_id
             WHERE
             a.passenger_id = ${req.user.user_id} 
             ORDER BY a."createdAt" DESC `,
@@ -502,14 +502,7 @@ const fetchongoingride = asynchandler(async (req, res, next) => {
                     { type: QueryTypes.SELECT }
                 );
 
-                const ridedoutes = await sequelize.query(
-                    `SELECT * FROM routes a 
-                    INNER JOIN ride_routes AS b ON a.route_id = b.route_id 
-                    WHERE ride_id = ${rides_details.ride_id} 
-                    ORDER BY b.order`,
-                    { type: QueryTypes.SELECT }
-                );
-                console.log("ridedoutes", ridedoutes);
+                // console.log("ridedoutes", ridedoutes);
                 rides_details.routes = ridedoutes[0];
 
                 rides_details.vehicle = vehicle[0];
