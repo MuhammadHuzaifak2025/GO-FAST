@@ -7,14 +7,14 @@ import ApiResponse from "../../utils/ResponseHandling.js";
 
 const RequestforSingleRide = asynchandler(async (req, res, next) => { // Create a new request for a single ride
     try {
-        const { bus_id, pickup, dropoff } = req.body;
+        const { bus_id, ride_date } = req.body;
         const passenger_id = req.user.user_id;
         const [semester_id] = await sequelize.query(`SELECT * FROM semesters order by semester_id desc limit 1`,
             { type: QueryTypes.SELECT });
         if (!semester_id) {
             return next(new ApiError(400, "No Semester Found"));
         }
-        if (!bus_id || !pickup || !dropoff) {
+        if (!bus_id || !ride_date) {
             return next(new ApiError(400, "Please provide all fields"));
         }
         const [getBus] = await sequelize.query(`SELECT * FROM buses where bus_id = ?`,
@@ -31,21 +31,11 @@ const RequestforSingleRide = asynchandler(async (req, res, next) => { // Create 
         if (getPassenger) {
             return next(new ApiError(400, "Passenger already registered for this semester"));
         }
-        const [getRoute] = await sequelize.query(`SELECT * FROM routes where route_id = ?`,
-            { replacements: [pickup], type: QueryTypes.SELECT });
-        if (!getRoute) {
-            return next(new ApiError(400, "Pickup Route not found"));
-        }
-        const [getDropoff] = await sequelize.query(`SELECT * FROM routes where route_id = ?`,
-            { replacements: [dropoff], type: QueryTypes.SELECT });
-        if (!getDropoff) {
-            return next(new ApiError(400, "Dropoff Route not found"));
-        }
 
         const [createPassenger] = await sequelize.query(`INSERT INTO singleridepassengers
-        ( passenger_id, bus_id, is_paid, "createdAt", "updatedAt")
+        (bus_id, is_paid, ride_date, "createdAt", "updatedAt")
         VALUES (?,?,?,?,?) Returning *`,
-            { replacements: [passenger_id, bus_id, false, new Date(), new Date()], type: QueryTypes.INSERT });
+            { replacements: [bus_id, false, ride_date, new Date(), new Date()], type: QueryTypes.INSERT });
         const [updateBus] = await sequelize.query(`UPDATE buses SET seats = seats - 1 where bus_id = ? Returning *`,
             { replacements: [bus_id], type: QueryTypes.UPDATE });
         if (createPassenger && updateBus) {

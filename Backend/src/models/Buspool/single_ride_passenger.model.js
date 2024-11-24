@@ -17,12 +17,8 @@ const SingleRidePassenger = sequelize.define(
         },
         allowNull: false
     },
-    Date: {
+    ride_date: {
         type: DataTypes.DATE,
-        allowNull: false
-    },
-    location: {
-        type: DataTypes.STRING,
         allowNull: false
     },
     is_paid: {
