@@ -5,7 +5,7 @@ import app from '../app.js';
 import { createServer } from "http";
 import { Server } from "socket.io";  // Import the socket.io server
 // import { processRideRequest } from "../websockets/ride_request.js";
-import { is_driver_is_requester, searchForPassenger, store_driver, store_requesting_passenger } from "./Chat/connectivity.controller.js";
+import { is_driver_is_requester, remove_socket_id, search_for_driver, searchForPassenger, store_driver, store_requesting_passenger } from "./Chat/connectivity.controller.js";
 
 const server = createServer(app);
 
@@ -26,13 +26,13 @@ io.use(async (socket, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("Decoded token:", decoded);
+        // console.log("Decoded token:", decoded);
         const userExist = await User.findOne({ where: { user_id: decoded.user_id } });
 
         if (!userExist) {
             return next(new Error("Unauthorized - User Does Not Exist"));
         }
-        console.log("User authenticated:", userExist);
+        // console.log("User authenticated:", userExist);
         socket.user = userExist;
         socket.join(socket.id);
         next();
@@ -42,7 +42,7 @@ io.use(async (socket, next) => {
 });
 
 io.on('connection', (socket) => {
-    console.log("User connected:", socket.user.user_id);
+    // console.log("User connected:", socket.user.user_id);
 
     socket.on('request-ride-chat', async (data) => {
         let userType;
@@ -64,10 +64,12 @@ io.on('connection', (socket) => {
                 user: userType,
             });
             if (userType === "driver") {
+                console.log("Driver", socket.id);
                 await searchForPassenger(socket, data.request_id);
             }
             if (userType === "passenger") {
-                await searchForDriver(socket, data.request_id);
+                console.log("Passenger", socket.id);
+                await search_for_driver(socket, data.request_id);
             }
         } catch (error) {
             console.error(error.message);
@@ -77,12 +79,11 @@ io.on('connection', (socket) => {
 
     socket.on('send-chat-message', async (data) => {
         try {
-            await saveChatMessage(data.ride_id, data.senderId, data.receiverId, data.message);
-
-            // Emit message to the receiver's room
-            io.to(data.receiverId).emit('receive-message', {
-                rideId: data.ride_id,
-                senderId: data.senderId,
+            console.log(socket.reciever);
+            if (socket.reciever === undefined) {
+                return socket.emit('chat-error', { message: 'Recipient not online' });
+            }
+            await socket.to(socket.reciever).emit('receive-message', {
                 message: data.message,
                 timestamp: new Date(),
             });
@@ -93,6 +94,7 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
+        remove_socket_id(socket, socket.id);
     });
 });
 

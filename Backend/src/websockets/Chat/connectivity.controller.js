@@ -1,3 +1,4 @@
+import { Socket } from "socket.io";
 import sequelize from "../../database/index.js";
 import { QueryTypes } from "sequelize";
 
@@ -54,12 +55,31 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
     }
 };
 
-const search_for_driver = async (data) => {
+const search_for_driver = async (socket, request_id,) => {
     try {
-
+        const driver = await sequelize.query(
+            `SELECT * FROM ride_requests a 
+             INNER JOIN carpool_rides b ON a.ride_id = b.ride_id 
+             WHERE request_id = ? AND a.requesting_user = ?`,
+            {
+                replacements: [request_id, socket.user.user_id],
+                type: QueryTypes.SELECT,
+            }
+        );
+        if (driver[0]) {
+            if (driver[0].owner_socket_id) {
+                socket.reciever = driver[0].owner_socket_id;
+                socket.to(socket.reciever).emit('ride-request-chat', {
+                    message: 'Passenger is ready to chat',
+                });
+            }
+        }
 
     } catch (error) {
-
+        console.error("Error in search_for_driver:", error.message); // Log for debugging
+        socket.emit('error', {
+            message: error.message || 'Error processing ride request',
+        });
     }
 }
 
@@ -134,5 +154,44 @@ const is_driver_is_requester = async (data) => {
     }
 };
 
+const send_Message = async (data) => {
+};
 
-export { store_driver, store_requesting_passenger, is_driver_is_requester, searchForPassenger };
+const remove_socket_id = async (socket, socket_id) => {
+    try {
+        const [Owner_ride_request] = await sequelize.query(
+            `SELECT * FROM ride_requests WHERE owner_socket_id = ?`,
+            {
+                replacements: [socket_id],
+                type: QueryTypes.SELECT,
+            }
+        );
+        if (Owner_ride_request) {
+            console.log("Owner Disconneted");
+            socket.to(socket.reciever).emit('socket-disconnected', {
+                message: "Owner is Disconneted",
+                // timestamp: new Date(),
+            })
+        }
+        const [Requesting_user_ride_request] = await sequelize.query(
+            `SELECT * FROM ride_requests WHERE requesting_user_socket_id = ?`,
+            {
+                replacements: [socket_id],
+                type: QueryTypes.SELECT,
+            }
+        );
+        if (Requesting_user_ride_request) {
+            console.log("Requesting User Disconneted");
+            socket.to(socket.reciever).emit('socket-disconnected', {
+                message: "Passenger is Disconneted",
+            })
+        }
+    } catch (error) {
+        console.error("Error in remove_socket_id:", error.message); // Log for debugging
+        socket.emit('error', {
+            message: error.message || 'Error processing ride request',
+        });
+    }
+}
+
+export { store_driver, remove_socket_id, search_for_driver, store_requesting_passenger, is_driver_is_requester, searchForPassenger };
