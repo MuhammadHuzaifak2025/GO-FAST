@@ -168,8 +168,8 @@ const remove_socket_id = async (socket, socket_id) => {
         );
         if (Owner_ride_request) {
             console.log("Owner Disconneted");
-            socket.to(socket_id).emit('socket-disconnected', {
-                message: "I am Disconnected",
+            socket.to(socket.reciever).emit('socket-disconnected', {
+                message: "Owner is Disconneted",
                 // timestamp: new Date(),
             })
         }
@@ -182,8 +182,8 @@ const remove_socket_id = async (socket, socket_id) => {
         );
         if (Requesting_user_ride_request) {
             console.log("Requesting User Disconneted");
-            socket.to(socket_id).emit('socket-disconnected', {
-                message: "I am Disconnected",
+            socket.to(socket.reciever).emit('socket-disconnected', {
+                message: "Passenger is Disconneted",
             })
         }
     } catch (error) {
