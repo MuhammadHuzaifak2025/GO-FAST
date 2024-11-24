@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity, Animated, ScrollView, ActivityIndicator  } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Animated, ScrollView, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome , Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import FormField from '../../../components/FormField';
-import CustomButton from '../../../components/CustomButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FlashList } from "@shopify/flash-list";
 import { Picker } from '@react-native-picker/picker';
@@ -15,15 +14,12 @@ import { router } from 'expo-router';
 import { useGlobalContext } from '../../../context/GlobalProvider';
 
 const RideItem = ({ from, to, time, username, seats, ride_item }) => {
-
   const { setRide } = useGlobalContext();
+  const { width } = useWindowDimensions();
 
   const rideDate = new Date(time);
   const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const month = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-  ];
+  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   
   let hours = rideDate.getHours();
   let minutes = rideDate.getMinutes();
@@ -35,48 +31,49 @@ const RideItem = ({ from, to, time, username, seats, ride_item }) => {
 
   const formatTime = `${hours}:${minutes} ${newformat}`;
 
-
   return (
-
     <TouchableOpacity
-    activeOpacity={0.8}
-    onPress={()=>{
-      setRide(ride_item);
-      router.push('/ride-details');           
-    }}
+      activeOpacity={0.8}
+      onPress={() => {
+        setRide(ride_item);
+        router.push('/ride-details');           
+      }}
+      style={[styles.rideItemContainer, { width: width - 40 }]}
     >
-    
-    <LinearGradient
-    colors={['black', '#ff6347']}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={styles.rideItem}
-    >
-    <View style={styles.rideHeader}>
-    <FontAwesome name="car" size={24} color="#fff" />
-    <Text style={styles.usernameText}>{username}</Text>
-    </View>
-    <Text style={styles.rideText}>From: {from}</Text>
-    <Text style={styles.rideText}>To: {to}</Text>
-    <Text style={styles.rideTime}>Date: {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]} </Text>
-    <Text style={styles.rideTime}>Time: {formatTime}</Text>
-    
-      <View style={styles.seatsContainer}>
-        <Text style={styles.seatText}>Seats Available: </Text>
-        {Array.from({ length: seats }).map((_, index) => (
-          <MaterialIcons key={index} name="event-seat" size={20} color="#fff" style={styles.seatIcon} />
-        ))}
-      </View>
-    </LinearGradient>
-
-  </TouchableOpacity>
-
+      <LinearGradient
+        colors={['#1e1e1e', '#3d3d3d']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.rideItem]}
+      >
+        <View style={styles.rideHeader}>
+          <FontAwesome name="car" size={24} color="#ff6347" />
+          <View style={styles.sameLine}>
+            <Text style={styles.usernameText}>{username}</Text>
+            <View style={styles.seatsContainer}>
+                {/* <Text style={styles.seatText}>Seats Available: </Text> */}
+                {Array.from({ length: seats }).map((_, index) => (
+                  <MaterialIcons key={index} name="event-seat" size={20} color="#ff6347" style={styles.seatIcon} />
+                ))}
+            </View>
+          </View>
+        </View>
+        <View style={styles.sameLine}>
+          <Text style={styles.rideText}>From: {from}</Text>
+          <Text style={styles.rideText}>To: {to}</Text>
+        </View>
+        <View style={styles.sameLine}>
+          <Text style={styles.rideTime}>
+            {weekday[rideDate.getDay()]}, {rideDate.getDate()} {month[rideDate.getMonth()]} • {formatTime}
+          </Text>
+          
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
   );
-
 };
 
 const FindRide = () => {
-
   const [filteredRides, setFilteredRides] = useState([]);
   const [preference, setPreference] = useState({ seats: '', dateTime: '', pickup: '', dropoff: '' });
   const [showFilter, setShowFilter] = useState(false);
@@ -93,124 +90,104 @@ const FindRide = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const toast = useToast(); 
+  const { height, width } = useWindowDimensions();
 
   const fetchRides = async () => {
-
-    if(pageCount === 1)
-      setIsLoading(true);
-    else
-      setMoreLoading(true);
+    if (pageCount === 1) setIsLoading(true);
+    else setMoreLoading(true);
 
     try {
-      
       await setAuthHeaders(axios);
-      
-      // console.log(pageCount,"fetch");
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/rides/${pageCount}/5`);
       
       if (response.status === 200) {
-        console.log("page ",pageCount,response.data);
+
         setPageLimit(response.data.message.totalPages);
 
-        if(pageCount === 1){  
+        if (pageCount === 1) { 
+
           setRides(response.data.message.rides);
           setFilteredRides(response.data.message.rides);
-        }
-        else{
+        } else {
 
-          const newRides = response.data.message.rides || []; // Fallback to empty array
+          const newRides = response.data.message.rides || [];
           setRides((prevRides) => [...prevRides, ...newRides]);
           setFilteredRides((prevFilteredRides) => [...prevFilteredRides, ...newRides]);
         }
+      } else {
 
-      }
-      else {
         throw new Error(response);
       }
     } catch (error) {
 
-        console.log(error.response);
+      console.log(error.response);
+      if (error.response.data.message === "No rides available") {
+        setListEnd(true); 
+      } else {
 
-        if(error.response.data.message === "No rides found"){
-          setListEnd(true); 
-        }
-        else{
+        toast.show('Error fetching rides, please try again later', {
+          type: "danger",
+          duration: 4000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+      }
+    } finally {
 
-          toast.show('Error fetching rides, please try again later', {
-            type: "danger",
-            duration: 4000,
-            offset: 30,
-            animationType: "slide-in",
-          });
-        }
-
-    }
-    finally{
-      if(pageCount === 1)
+      if (pageCount === 1)
         setIsLoading(false);
-      else
-        setMoreLoading(false);
+      else setMoreLoading(false);
     }
-
   };
 
-  // Function to animate dropdown
   const toggleFilter = () => {
-    if (showFilter) {
-      Animated.timing(animationValue, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      Animated.timing(animationValue, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    }
+    Animated.timing(animationValue, {
+      toValue: showFilter ? 0 : 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
     setShowFilter(!showFilter);
   };
 
   const animatedHeight = animationValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 200], // Adjusted to fit date picker
+    outputRange: [0, height * 0.4],
   });
 
-  // Function to filter rides based on preferences
   const filterRides = () => {
+
     const filtered = rides.filter(ride => {
-      
+
       const rideSeats = ride.seat_available;
       const requestedSeats = parseInt(preference.seats, 10);
 
       return (
-        (!requestedSeats || rideSeats >= requestedSeats ) &&
+        (!requestedSeats || rideSeats >= requestedSeats) &&
         (!preference.dateTime || ride.start_time === preference.dateTime) && 
-        (!preference.pickup || ride.routes[0].route_name === preference.pickup) && 
-        (!preference.dropoff || ride.routes[1].route_name === preference.dropoff)
+        (!preference.pickup || ride.routes[0].route_name.toLowerCase().includes(preference.pickup.toLowerCase())) && 
+        (!preference.dropoff || ride.routes[1].route_name.toLowerCase().includes(preference.dropoff.toLowerCase()))
       );
     });
-    if(filtered.length === 0){
-      setListEnd(true);
-    }
-
+    setListEnd(filtered.length === 0);
     setFilteredRides(filtered);
   };
 
   const openDateTimePicker = () => {
+
     setIsDate(true);
     setShowDatePicker(true);
   };
 
   const onDateChange = (e, selectedDate) => {
+
     setShowDatePicker(false);
     if (selectedDate) {
+
       if (isDate) {
 
         setPreference({ ...preference, dateTime: selectedDate });
         setIsDate(false);
-        setShowDatePicker(true); // Open time picker next
+        setShowDatePicker(true);
       } else {
 
         const newDateTime = new Date(preference.dateTime);
@@ -222,73 +199,61 @@ const FindRide = () => {
   };
 
   const fetchMoreRides = () => {
-    // console.log(listEnd,moreLoading,isLoading);
 
-    if(!listEnd && !moreLoading && !isLoading){
-      // console.log('more',pageCount);
-      setPageCount((p) => p+1);
+    if (!listEnd && !moreLoading && !isLoading) {
+
+      setPageCount((p) => p + 1);
     }
   };
 
-  // useFocusEffect()
   useEffect(() => {
-    
-    if(preference.seats || preference.dateTime || preference.pickup || preference.dropoff)
+
+    if (preference.seats || preference.dateTime || preference.pickup || preference.dropoff)
       filterRides();
-    
   }, [preference]);
 
   useEffect(() => {
-    // console.log('use',pageCount, pageLimit);
-    
-    if(pageCount <= pageLimit){
+    if (pageCount <= pageLimit) {
+
       fetchRides();
     }
-
   }, [pageCount]);
 
   return (
+    
     <SafeAreaView style={styles.container}>
-
-      {/* <RideModal visible={rideModalDisplay} 
-                 onClose={() => setRideModalDisplay(false)} /> */}
-
       <View style={styles.header}>
         <Text style={styles.title}>Available Rides</Text>
         <TouchableOpacity onPress={toggleFilter} style={styles.filterIcon}>
-          <FontAwesome name="filter" size={24} color="black" />
+          <FontAwesome name={showFilter ? "times" : "filter"} size={24} color="#ff6347" />
         </TouchableOpacity>
       </View>
 
-      {/* Animated Filter Form */}
-      <Animated.View style={[styles.filterContainer, { height: animatedHeight, overflow: 'hidden' }]}>
+      <Animated.View style={[styles.filterContainer, { height: animatedHeight }]}>
         <ScrollView>
-
           <View style={styles.picker}>
             <Picker
-                selectedValue={preference.seats}
-                onValueChange={(e) => setPreference({ ...preference, seats: e })}
-                mode="dropdown"
-                >
-                <Picker.Item label="Select Seats" value= "0" />
-                <Picker.Item label="1" value="1" />
-                <Picker.Item label="2" value="2" />
-                <Picker.Item label="3" value="3" />
-                <Picker.Item label="4" value="4" />
-                <Picker.Item label="5" value="5" /> 
-                <Picker.Item label="6" value="6" /> 
+              selectedValue={preference.seats}
+              onValueChange={(e) => setPreference({ ...preference, seats: e })}
+              mode="dropdown"
+            >
+              <Picker.Item label="Select Seats" value="0" />
+              {[1, 2, 3, 4, 5, 6].map(num => (
+                <Picker.Item key={num} label={num.toString()} value={num.toString()} />
+              ))}
             </Picker>
           </View>
 
-
           <TouchableOpacity onPress={openDateTimePicker} style={styles.dateTimeField}>
-          <Ionicons name = "calendar" size={24} color="black" />
+            <Ionicons name="calendar" size={24} color="#ff6347" />
             <Text style={styles.dateTimeText}>
               {preference.dateTime ? preference.dateTime.toLocaleString() : 'Select Date and Time'}
             </Text>
-            <TouchableOpacity onPress={() => setPreference({...preference, dateTime : ''})} style={styles.cross}>
-              <Ionicons name = "close" size={24} color="black" />
-            </TouchableOpacity>
+            {preference.dateTime && (
+              <TouchableOpacity onPress={() => setPreference({...preference, dateTime: ''})} style={styles.cross}>
+                <Ionicons name="close" size={24} color="#ff6347" />
+              </TouchableOpacity>
+            )}
           </TouchableOpacity>
 
           {showDatePicker && (
@@ -306,68 +271,55 @@ const FindRide = () => {
             placeholder="Preferred Pickup Location"
             value={preference.pickup}
             handleChangeText={(e) => setPreference({ ...preference, pickup: e })}
-            otherStyles={{marginVertical: 10}}
+            otherStyles={styles.formField}
           />
           <FormField
             placeholder="Preferred Dropoff Location"
             value={preference.dropoff}
             handleChangeText={(e) => setPreference({ ...preference, dropoff: e })}
-            otherStyles={{marginBottom: 10}}
+            otherStyles={styles.formField}
           />
-          {/* <CustomButton
-            textContent="Filter Rides"
-            handlePress={filterRides}
-
-          /> */}
-
         </ScrollView>
       </Animated.View>
 
-      {isLoading ? ( <View style={styles.loadingContainer}>
-
-        <Text style={styles.loadingText}>Loading...</Text>
-        <ActivityIndicator size="large" color="#ff6347" />  
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#ff6347" />
+          <Text style={styles.loadingText}>Loading rides...</Text>
         </View>
-        ) : (
-      <FlashList
-        estimatedItemSize={192}
-        data={filteredRides}
-        keyExtractor={(item) => item.ride_id}
-        renderItem={({ item }) => { 
-
-          // if (!item || !item.routes) 
-          //   return null;
-          return (
+      ) : (
+        <FlashList
+          estimatedItemSize={192}
+          data={filteredRides}
+          keyExtractor={(item) => item.ride_id}
+          renderItem={({ item }) => (
             <RideItem 
-            from={item.routes[0]?.route_name || 'Unknown'}
-            to={item.routes[1]?.route_name || 'Unknown'}
-            time={item.start_time || 'Unknown time'}
-            ride_item={item}
-            seats={item.seat_available || 0}
-            username={item.username || 'Unknown User'}
+              from={item.routes[0]?.route_name || 'Unknown'}
+              to={item.routes[1]?.route_name || 'Unknown'}
+              time={item.start_time || 'Unknown time'}
+              ride_item={item}
+              seats={item.seat_available || 0}
+              username={item.username || 'Unknown User'}
             />
-          ) 
-        }}
-        onEndReached={ fetchMoreRides }    
-        onEndReachedThreshold={0.1}
-        ListEmptyComponent={() => (
-                                    <Text style={styles.subheading}>No rides available, Please try again later</Text>                                   
-                                  )}                
-        ListFooterComponent={()=> ( <View>
-          
-          {moreLoading && <ActivityIndicator size="large" color="#ff6347" />}
-        </View>
+          )}
+          onEndReached={fetchMoreRides}    
+          onEndReachedThreshold={0.1}
+          ListEmptyComponent={() => (
+            <Text style={styles.subheading}>No rides available. Please try again later.</Text>                                   
+          )}                
+          ListFooterComponent={() => (
+            moreLoading && <ActivityIndicator size="large" color="#ff6347" style={styles.moreLoading} />
           )}
           refreshing={refreshing}
           onRefresh={() => {
-          setRefreshing(true);
-          setListEnd(false);
-          setPageCount(1);
-          setPreference({ seats: '', dateTime: '', pickup: '', dropoff: '' });
-          setRefreshing(false);
-        }}
-        removeClippedSubviews={false}
-      />
+            setRefreshing(true);
+            setListEnd(false);
+            setPageCount(1);
+            setPreference({ seats: '', dateTime: '', pickup: '', dropoff: '' });
+            setRefreshing(false);
+          }}
+          removeClippedSubviews={false}
+        />
       )}
     </SafeAreaView>
   );
@@ -376,27 +328,31 @@ const FindRide = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff', // White background
+    backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    // backgroundColor: '#fff',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#e0e0e0',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#ff6347', // Changed title color to tomato
-    textAlign: 'center',
-    marginVertical: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)', // Subtle shadow for depth
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
+    color: '#333',
   },
   filterIcon: {
     padding: 10,
+  },
+  sameLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flex: 1,
   },
   filterContainer: {
     marginHorizontal: 20,
@@ -411,15 +367,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  rideItemContainer: {
+    flex: 1,
+    marginVertical: 10,
+    alignSelf: 'center',
+  },
   rideItem: {
     padding: 20,
-    marginVertical: 10,
-    marginHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#ff6347', // Tomato background for ride items
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   rideHeader: {
@@ -440,87 +399,72 @@ const styles = StyleSheet.create({
   },
   rideTime: {
     fontSize: 14,
-    color: '#f8f8f8',
-    marginTop: 5,
-    fontStyle: 'italic',
+    color: '#ff6347',
+    // marginTop: 10,
+    fontWeight: 'bold',
   },
   dateTimeField: {
-    padding: 10,
-    borderColor: '#ff6347', // Tomato border for date/time field
-    borderWidth: 1,
-    borderRadius: 8,
-    marginTop: 5,
     flexDirection: 'row',
-    alignItems: 'center', // Center items vertically
-    height: 50,
-    backgroundColor: '#fff', // White background for date/time field
+    alignItems: 'center',
+    padding: 10,
+    borderColor: '#e0e0e0',
+    borderWidth: 
+1,
+    borderRadius: 8,
+    marginVertical: 10,
+    backgroundColor: '#fff',
   },
   dateTimeText: {
     fontSize: 16,
-    color: 'black',
-    flex: 1, // Allow text to take available space
+    color: '#333',
+    flex: 1,
+    marginLeft: 10,
   },
   seatsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    // marginTop: 10,
   },
   seatIcon: {
-    marginRight: 4,
+    // marginRight: 4,
   },
   cross: {
-    position: 'absolute',
-    right: 15,
-    top: 10,
+    padding: 5,
   },
   picker: {
-    backgroundColor: '#ffffff', // Picker background is white
-    color: '#333', // Darker text for better readability
-    borderRadius: 10,
-    marginVertical: 5,
-    paddingHorizontal: 0,
-    height: 50, // Increased height for better touch target
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    borderColor: '#ff6347', // Border color set to tomato
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderRadius: 8,
+    marginVertical: 10,
+    backgroundColor: '#fff',
   },
   seatText: {
     color: '#fff',
     fontSize: 14,
+    // marginRight: 5,
   },
-  subheading : {
+  subheading: {
     textAlign: 'center',
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#000', // Tomato color for the subheading
+    color: '#333',
     marginTop: 20,
-    marginBottom: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
   },
-  publishButton: {
-    backgroundColor: '#ff6347', // Button background set to tomato
-    paddingVertical: 15,
-    borderRadius: 10,
-    // marginTop: 20,
-    elevation: 3, // Adding elevation for shadow effect
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    width: '50%',
-    alignSelf: 'center',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  publishButtonText: {
-    color: '#ffffff', // Button text color set to white
+  loadingText: {
+    marginTop: 10,
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: '#333',
+  },
+  moreLoading: {
+    marginVertical: 20,
+  },
+  formField: {
+    marginVertical: 10,
   },
 });
 

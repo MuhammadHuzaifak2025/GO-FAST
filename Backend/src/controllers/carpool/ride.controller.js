@@ -484,7 +484,7 @@ const delete_ride_passenger = asynchandler(async (req, res, next) => {
 
 const fetchongoingride = asynchandler(async (req, res, next) => {
     try {
-        console.log("Hello");
+
         // return;
         const rides = await sequelize.query(
             `SELECT * FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id
@@ -493,8 +493,7 @@ const fetchongoingride = asynchandler(async (req, res, next) => {
             ORDER BY a."createdAt" DESC `,
             { type: QueryTypes.SELECT }
         );
-        console.log(rides);
-        console.log("Hello");
+
         if (rides.length) {
 
             for (const rides_details of rides) {

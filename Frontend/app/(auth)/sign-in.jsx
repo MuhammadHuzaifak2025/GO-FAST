@@ -60,7 +60,7 @@ const SignIn = () => {
         });
 
         await saveTokensFromCookies(response);
-        console.log(response)
+
         router.dismissAll();
         if (response.data.data.admin === true) {
           // router.replace('/admin');
@@ -70,31 +70,28 @@ const SignIn = () => {
         else
           router.replace('/find-ride');
       }
-      // else if(response.status === 201){
+      else if(response.status === 201){
 
-      //   toast.show("Please verify your account", {
-      //     type: "warning",
-      //     duration: 5000,
-      //     offset: 30,
-      //     animationType: "slide-in",
-      //   });
+        setSpinnerState('success');
+        setUser(response.data.data);
 
-      // const responseVerify = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/resend-otp`, { username: form.username }, { withCredentials: true });
-      // if(responseVerify.status === 200) {
+        toast.show("Please verify your account", {
+          type: "warning",
+          duration: 5000,
+          offset: 30,
+          animationType: "slide-in",
+        });
 
-      //   setUser(responseVerify.data.data);
-      //   router.replace('/verify-email');
-      // }
-      // else{
-      //   throw new Error(responseVerify);
-      // }
-      // }  
+       
+        router.replace('/verify-email');
+      } 
       else {
         throw new Error(response);
       }
     } catch (error) {
 
       setSpinnerState('failure');
+      console.log(error.response.data);
 
       toast.show(error.response.data.message, {
         type: "danger",

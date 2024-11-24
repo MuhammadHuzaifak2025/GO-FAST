@@ -85,7 +85,7 @@ const ForgotPassword = () => {
         <CustomButton
           textContent="Reset Password"
           handlePress={submit}
-          containerStyles={{ marginTop: 15, marginBottom: 7 }}
+          containerStyles={{ marginVertical: 40 }}
           isLoading={isSubmitting} />
 
       </View>
