@@ -10,6 +10,7 @@ import {
     updateduedate
 }
     from "../../controllers/Buspool/BusRegistration.js";
+import { show_card } from "../../controllers/Buspool/BusPassenger.controller.js";
 
 const BusRegistrationRouter = Router();
 
@@ -20,5 +21,6 @@ BusRegistrationRouter.route("/busregistration/student").get(AuthenticateToken, g
 BusRegistrationRouter.route("/busregistration/open").get(AuthenticateToken, get_openreg_busses_with_routes);
 BusRegistrationRouter.route("/busregistration/passenger").get(AuthenticateToken, get_busPassenger_ifregistered);
 BusRegistrationRouter.route("/busregistration/updateduedate").put(AuthenticateToken, updateduedate);
+BusRegistrationRouter.route("/busregistration/card").get(AuthenticateToken, show_card);
 
 export default BusRegistrationRouter;

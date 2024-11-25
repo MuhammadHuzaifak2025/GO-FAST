@@ -150,7 +150,7 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
         const [getorganization] = await sequelize.query(`SELECT * FROM transport_organizations WHERE owner = '${req.user.user_id}'`,
             { type: sequelize.QueryTypes.SELECT });
         if (!req.user.admin && !getorganization) {
-            return next(new ApiError(400 ,"Unauthorized"));
+            return next(new ApiError(400, "Unauthorized"));
         }
 
 
@@ -163,7 +163,7 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
             , type: sequelize.QueryTypes.SELECT
         });
         if (!getPassenger) {
-            return next(new ApiError(400 ,"Passenger not found"));
+            return next(new ApiError(400, "Passenger not found"));
         }
         const transaction = await sequelize.transaction();
         const pay = await sequelize.query(
@@ -181,18 +181,18 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
             const checkseats = await sequelize.query(`SELECT * FROM buses WHERE bus_id =
                 (SELECT bus_id FROM semester_passengers WHERE semester_passenger_id = '${semester_passenger_id}')`, { type: sequelize.QueryTypes.SELECT });
             if (!checkseats) {
-                return next(new ApiError(400 ,"Error checking bus seats"));
+                return next(new ApiError(400, "Error checking bus seats"));
             }
             if (checkseats[0].seats <= 0) {
                 transaction.rollback();
-                return next(new ApiError(400 ,"Bus is full"));
+                return next(new ApiError(400, "Bus is full"));
             }
             else {
                 transaction.commit();
                 const updateseats = await sequelize.query(`UPDATE buses SET seats = seats + 1 WHERE bus_id =
                 (SELECT bus_id FROM semester_passengers WHERE semester_passenger_id = '${semester_passenger_id}') returning *`, { type: sequelize.QueryTypes.UPDATE });
                 if (!updateseats) {
-                    return next(new ApiError(400 ,"Error updating bus seats"));
+                    return next(new ApiError(400, "Error updating bus seats"));
                 }
                 return res.status(200).json(new ApiResponse(200, "Payment successful"));
             }
@@ -236,6 +236,25 @@ const confirm_Payment = asynchandler(async (req, res, next) => {
     }
 });
 
-
-
-export { create_Semester, confirm_Payment, get_Semesters, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };
+const show_card = asynchandler(async (req, res, next) => {
+    try {
+        const passenger_id = req.user.user_id;
+        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers WHERE
+             passenger_id = '${passenger_id}'`, { type: sequelize.QueryTypes.SELECT });
+        if (!getPassenger) {
+            const [single_ride_passenger] = await sequelize.query(`SELECT * FROM singleridepassengers WHERE
+                passenger_id = '${passenger_id}' and ride_date - ? <= 1 `, { replacements: [new Date()], type: sequelize.QueryTypes.SELECT });
+            if (!single_ride_passenger) {
+                return next(new ApiError(400, "No details found"));
+            }
+            else {
+                return res.status(200).json(new ApiResponse(200, single_ride_passenger));
+            }
+        }
+        console.log(getPassenger);
+        return res.status(200).json(new ApiResponse(200, getPassenger));
+    } catch (error) {
+        next(error);
+    }
+});
+export { create_Semester, confirm_Payment, get_Semesters, show_card, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };
