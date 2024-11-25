@@ -1,8 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Animated, Text, TouchableOpacity, StyleSheet, View, Image, Dimensions, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
+import axios from 'axios';
+import { setAuthHeaders } from '../../utils/expo-store';
+import { useGlobalContext } from '../../context/GlobalProvider';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
 const CARD_HEIGHT = CARD_WIDTH * 0.8;
@@ -10,7 +13,20 @@ const CARD_HEIGHT = CARD_WIDTH * 0.8;
 const ProfileCard = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
-
+  const [card_details, setCardDetails] = useState({});
+  const { user } = useGlobalContext();
+  const fetchcarddetails = async () => {
+    try {
+      await setAuthHeaders(axios);
+      const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration/card`, {
+        withCredentials: true,
+      });
+      setCardDetails(response.data.data);
+      console.log(response.data.data);
+    } catch (error) {
+      console.error(error.response);
+    }
+  };
   const flipCard = () => {
     const toValue = isFlipped ? 0 : 180;
 
@@ -43,20 +59,29 @@ const ProfileCard = () => {
 
   const profileData = {
     userPic: 'https://via.placeholder.com/150',
-    name: 'John Doe',
-    phone: '+1 123 456 7890',
-    userId: 'USER12345',
-    email: 'john.doe@example.com',
-    validity: 'Valid until: 31 Dec 2024',
+    name: user?.username,
+    phone: user?.phone,
+    userId: user?.user_id,
+    email: user?.email,
+    validity: '',
   };
+  useFocusEffect(
+    useCallback(() => {
+      fetchcarddetails();
 
+    }, [])
+  );
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity
         onPress={flipCard}
         activeOpacity={0.8}
         accessible={true}
-        accessibilityLabel="Flip profile card"
+        accessibilityLabel="Flip transportation card"
       >
         <View style={styles.cardWrapper}>
           <Animated.View style={[
@@ -68,36 +93,43 @@ const ProfileCard = () => {
               { opacity: frontOpacity, transform: [{ rotateY: frontInterpolate }] }
             ]}>
               <LinearGradient
-                colors={['#1a237e', '#283593', '#3949ab']}
+                colors={card_details?.single_ride === true
+                  ? ['#1b5e20', '#2e7d32', '#388e3c']
+                  : ['#0d47a1', '#1565c0', '#1976d2']
+                }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.gradient}
               >
-                <View style={styles.profileContainer}>
-                  <View style={styles.imageContainer}>
-                    <Image source={{ uri: profileData.userPic }} style={styles.userPic} />
-                  </View>
-                  <View style={styles.dataContainer}>
-                    <Text style={styles.name}>{profileData.name}</Text>
-                    <View style={styles.detailsWrapper}>
-                      <View style={styles.detailItem}>
-                        <MaterialCommunityIcons name="phone" style={styles.icon} />
-                        <Text style={styles.detailText}>{profileData.phone}</Text>
-                      </View>
-                      <View style={styles.detailItem}>
-                        <MaterialCommunityIcons name="email" style={styles.icon} />
-                        <Text style={styles.detailText}>{profileData.email}</Text>
-                      </View>
-                      <View style={styles.detailItem}>
-                        <MaterialCommunityIcons name="account" style={styles.icon} />
-                        <Text style={styles.detailText}>{profileData.userId}</Text>
-                      </View>
+                <View style={styles.cardContent}>
+                  <View >
+                    <View style={styles.header}>
+                      <Text style={[styles.headerText, { textDecorationLine: 'underline' }]}>{card_details?.organization_name} Transport </Text>
+
+                      <MaterialCommunityIcons name="bus" size={24} color="#fff" />
                     </View>
-                    <View style={styles.validityContainer}>
-                      <MaterialCommunityIcons name="calendar-check" style={styles.validityIcon} />
-                      <Text style={styles.validity}>{profileData.validity}</Text>
-                    </View>
+                    <Text style={styles.SubHeader}>Student: {user?.username} </Text>
                   </View>
+                  <View style={styles.detailsContainer}>
+                    <View style={styles.detailItem}>
+                      <MaterialCommunityIcons name="seat-passenger" size={20} color="#fff" />
+                      <Text style={styles.detailText}>Bus Id: {card_details?.bus_id}</Text>
+                    </View>
+                    <View style={styles.detailItem}>
+                      {/* <Text style={styles.headerText}>Transportation Card</Text> */}
+                      <MaterialCommunityIcons name="identifier" size={20} color="#fff" />
+                      <Text style={styles.detailText}>Bus Number:{card_details?.bus_number}</Text>
+                    </View>
+                    {card_details?.single_ride ? <View style={styles.detailItem}>
+                      <MaterialCommunityIcons name="calendar" size={20} color="#fff" />
+                      <Text style={styles.detailText}>Created: {formatDate(new Date(card_details?.ride_date))}</Text>
+                    </View> :
+                      <View style={styles.detailItem}>
+                        <MaterialCommunityIcons name="calendar" size={20} color="#fff" />
+                        <Text style={styles.detailText}>Validated for : {card_details?.type_semester + ' ' + card_details.year}</Text>
+                      </View>}
+                  </View>
+                  <Text style={styles.slideText}>Slide to see QR code</Text>
                 </View>
               </LinearGradient>
             </Animated.View>
@@ -106,36 +138,25 @@ const ProfileCard = () => {
               styles.cardBack,
               { opacity: backOpacity, transform: [{ rotateY: backInterpolate }] }
             ]}>
-              {/* <LinearGradient
-                colors={['#e8eaf6', '#c5cae9', '#9fa8da']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.gradient}
-              > */}
               <View style={styles.backContent}>
                 <MaterialCommunityIcons name="qrcode" size={200} color="#3949ab" />
                 <Text style={styles.backText}>Scan for more details</Text>
               </View>
-              {/* </LinearGradient> */}
             </Animated.View>
           </Animated.View>
         </View>
       </TouchableOpacity>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 };
-
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     marginTop: 70,
     alignItems: 'center',
-    // backgroundColor: '#f5f5f5',
   },
   cardWrapper: {
     borderRadius: 20,
     overflow: 'hidden',
-    // shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -146,7 +167,6 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
   },
   card: {
-    // padding: 20,
     width: '100%',
     height: '100%',
     position: 'absolute',
@@ -156,62 +176,45 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  profileContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: '100%',
-  },
-  imageContainer: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  userPic: {
-    width: CARD_HEIGHT * 0.5,
-    height: CARD_HEIGHT * 0.5,
-    borderRadius: CARD_HEIGHT * 0.25,
-    borderWidth: 3,
-    borderColor: '#fff',
-  },
-  dataContainer: {
+  cardContent: {
     flex: 1,
-    // marginLeft: 20,
+    justifyContent: 'space-between',
   },
-  name: {
-
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerText: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 10,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
   },
-  detailsWrapper: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 10,
-    marginLeft: 10,
-    padding: 5,
+  SubHeader: {
+    marginBottom: 20,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  detailsContainer: {
+    flex: 1,
+    justifyContent: 'center',
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 10,
   },
   detailText: {
-    paddingHorizontal: 5,
-    fontSize: 14,
-    color: '#fff',
-  },
-  validityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  validity: {
     fontSize: 16,
     color: '#fff',
+    marginLeft: 10,
+  },
+  slideText: {
+    fontSize: 14,
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 10,
   },
   cardBack: {
     backgroundColor: '#FFFFFF',
@@ -226,16 +229,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3949ab',
     marginTop: 10,
-  },
-  icon: {
-    fontSize: 16,
-    color: '#fff',
-    marginRight: 8,
-  },
-  validityIcon: {
-    fontSize: 14,
-    color: '#fff',
-    marginRight: 5,
   },
 });
 

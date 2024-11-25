@@ -241,13 +241,16 @@ const show_card = asynchandler(async (req, res, next) => {
         const passenger_id = req.user.user_id;
         const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers a
             inner join buses b on a.bus_id = b.bus_id
+            inner join transport_organizations c on b.bus_organization = c.organization_id
+            inner join semesters d on a.semester_id = d.semester_id
              WHERE
              passenger_id = '${passenger_id}' and is_paid = true`, { type: sequelize.QueryTypes.SELECT });
         if (!getPassenger) {
             const [single_ride_passenger] = await sequelize.query(`
-                SELECT * 
+                SELECT a*, b*,c* 
                 FROM singleridepassengers a
                 inner join buses b on a.bus_id = b.bus_id
+                inner join transport_organizations c on b.bus_organization = c.organization_id
                 WHERE single_ride_passenger_id = :passenger_id 
                 AND ride_date >= NOW() - INTERVAL '1 day' and is_paid = true
               `, {
@@ -259,11 +262,15 @@ const show_card = asynchandler(async (req, res, next) => {
                 return next(new ApiError(400, "No details found"));
             }
             else {
+                single_ride_passenger.semester_ride = false;
+                single_ride_passenger.single_ride = true;
             
                 return res.status(200).json(new ApiResponse(200, single_ride_passenger));
             }
         }
         console.log(getPassenger);
+        getPassenger.semester_ride = true;
+        getPassenger.single_ride = false;
         return res.status(200).json(new ApiResponse(200, getPassenger));
     } catch (error) {
         next(error);
