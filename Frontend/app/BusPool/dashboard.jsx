@@ -8,7 +8,7 @@ import { setAuthHeaders } from '../../utils/expo-store';
 import { useGlobalContext } from '../../context/GlobalProvider';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = CARD_WIDTH * 0.8;
+const CARD_HEIGHT = CARD_WIDTH * 0.9;
 import QRCode from 'react-native-qrcode-svg';
 
 const ProfileCard = () => {
@@ -154,7 +154,8 @@ const ProfileCard = () => {
             ]}>
               <View style={styles.backContent}>
                 <QRCode
-                  value="HelloQR"
+                  value={card_details?.qr}
+                  size={250}
                 />
                 <Text style={styles.backText}>Scan for more details</Text>
               </View>
@@ -238,6 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backContent: {
+    padding: 20,
     alignItems: 'center',
   },
   backText: {

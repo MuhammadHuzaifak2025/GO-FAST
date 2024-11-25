@@ -238,30 +238,21 @@ const confirm_Payment = asynchandler(async (req, res, next) => {
 });
 
 // const crypto = require("crypto");
-import crypto from "crypto";
-const ENCRYPTION_KEY = crypto.randomBytes(32); // Store this securely (e.g., environment variable)
-const IV_LENGTH = 16;
+import CryptoJS from "crypto-js";
+const ENCRYPTION_KEY = "12345678901234567890123456789012";
+const IV = "1234567890123456";
 
 function encrypt(text) {
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv);
-    let encrypted = cipher.update(text);
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return `${iv.toString("hex")}:${encrypted.toString("hex")}`;
+    const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY), {
+        iv: CryptoJS.enc.Utf8.parse(IV),
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+    });
+    return encrypted.toString();
 }
 
 // Decrypt function
-function decrypt(text) {
-    const [iv, encryptedText] = text.split(":");
-    const decipher = crypto.createDecipheriv(
-        "aes-256-cbc",
-        Buffer.from(ENCRYPTION_KEY),
-        Buffer.from(iv, "hex")
-    );
-    let decrypted = decipher.update(Buffer.from(encryptedText, "hex"));
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString();
-}
+
 
 const show_card = asynchandler(async (req, res, next) => {
     try {
@@ -278,7 +269,7 @@ const show_card = asynchandler(async (req, res, next) => {
         let data;
         if (!getPassenger) {
             const [single_ride_passenger] = await sequelize.query(`
-                SELECT a.*, b.*,c.* 
+                SELECT a.*, b.*, c.* 
                 FROM singleridepassengers a
                 INNER JOIN buses b ON a.bus_id = b.bus_id
                 INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id
@@ -292,12 +283,14 @@ const show_card = asynchandler(async (req, res, next) => {
             if (!single_ride_passenger) {
                 return next(new ApiError(400, "No details found"));
             }
-            else {
-                single_ride_passenger.semester_ride = false;
-                single_ride_passenger.single_ride = true;
 
-                return res.status(200).json(new ApiResponse(200, single_ride_passenger));
-            }
+            single_ride_passenger.semester_ride = false;
+            single_ride_passenger.single_ride = true;
+            data = single_ride_passenger;
+        } else {
+            getPassenger.semester_ride = true;
+            getPassenger.single_ride = false;
+            data = getPassenger;
         }
 
         // Include necessary details for validation
