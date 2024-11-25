@@ -239,12 +239,15 @@ const confirm_Payment = asynchandler(async (req, res, next) => {
 const show_card = asynchandler(async (req, res, next) => {
     try {
         const passenger_id = req.user.user_id;
-        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers WHERE
+        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers a
+            inner join buses b on a.bus_id = b.bus_id
+             WHERE
              passenger_id = '${passenger_id}' and is_paid = true`, { type: sequelize.QueryTypes.SELECT });
         if (!getPassenger) {
             const [single_ride_passenger] = await sequelize.query(`
                 SELECT * 
-                FROM singleridepassengers 
+                FROM singleridepassengers a
+                inner join buses b on a.bus_id = b.bus_id
                 WHERE single_ride_passenger_id = :passenger_id 
                 AND ride_date >= NOW() - INTERVAL '1 day' and is_paid = true
               `, {
@@ -256,6 +259,7 @@ const show_card = asynchandler(async (req, res, next) => {
                 return next(new ApiError(400, "No details found"));
             }
             else {
+            
                 return res.status(200).json(new ApiResponse(200, single_ride_passenger));
             }
         }
@@ -265,4 +269,6 @@ const show_card = asynchandler(async (req, res, next) => {
         next(error);
     }
 });
+
+
 export { create_Semester, confirm_Payment, get_Semesters, show_card, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };
