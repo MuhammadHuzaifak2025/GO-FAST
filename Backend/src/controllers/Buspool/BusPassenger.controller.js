@@ -2,7 +2,8 @@ import sequelize from "../../database/index.js";
 import asynchandler from "../../utils/AsyncHandler.js";
 import ApiError from "../../utils/ErrorHandling.js";
 import ApiResponse from "../../utils/ResponseHandling.js";
-
+import bcrypt from "bcrypt";
+const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 const create_Semester = asynchandler(async (req, res, next) => {
     try {
         const { Year, Type } = req.body;
@@ -236,46 +237,87 @@ const confirm_Payment = asynchandler(async (req, res, next) => {
     }
 });
 
+// const crypto = require("crypto");
+import crypto from "crypto";
+const ENCRYPTION_KEY = crypto.randomBytes(32); // Store this securely (e.g., environment variable)
+const IV_LENGTH = 16;
+
+function encrypt(text) {
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv);
+    let encrypted = cipher.update(text);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return `${iv.toString("hex")}:${encrypted.toString("hex")}`;
+}
+
+// Decrypt function
+function decrypt(text) {
+    const [iv, encryptedText] = text.split(":");
+    const decipher = crypto.createDecipheriv(
+        "aes-256-cbc",
+        Buffer.from(ENCRYPTION_KEY),
+        Buffer.from(iv, "hex")
+    );
+    let decrypted = decipher.update(Buffer.from(encryptedText, "hex"));
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+}
+
 const show_card = asynchandler(async (req, res, next) => {
     try {
         const passenger_id = req.user.user_id;
         const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers a
-            inner join buses b on a.bus_id = b.bus_id
-            inner join transport_organizations c on b.bus_organization = c.organization_id
-            inner join semesters d on a.semester_id = d.semester_id
-             WHERE
-             passenger_id = '${passenger_id}' and is_paid = true`, { type: sequelize.QueryTypes.SELECT });
+            INNER JOIN buses b ON a.bus_id = b.bus_id
+            INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id
+            INNER JOIN semesters d ON a.semester_id = d.semester_id
+            WHERE passenger_id = :passenger_id AND is_paid = true`, {
+            replacements: { passenger_id },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        let data;
         if (!getPassenger) {
             const [single_ride_passenger] = await sequelize.query(`
-                SELECT a*, b*,c* 
+                SELECT a.*, b.*, c.* 
                 FROM singleridepassengers a
-                inner join buses b on a.bus_id = b.bus_id
-                inner join transport_organizations c on b.bus_organization = c.organization_id
+                INNER JOIN buses b ON a.bus_id = b.bus_id
+                INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id
                 WHERE single_ride_passenger_id = :passenger_id 
-                AND ride_date >= NOW() - INTERVAL '1 day' and is_paid = true
+                AND ride_date >= NOW() - INTERVAL '1 day' AND is_paid = true
               `, {
-                replacements: { passenger_id: passenger_id },
+                replacements: { passenger_id },
                 type: sequelize.QueryTypes.SELECT
-              });
+            });
 
             if (!single_ride_passenger) {
                 return next(new ApiError(400, "No details found"));
             }
-            else {
-                single_ride_passenger.semester_ride = false;
-                single_ride_passenger.single_ride = true;
-            
-                return res.status(200).json(new ApiResponse(200, single_ride_passenger));
-            }
+
+            single_ride_passenger.semester_ride = false;
+            single_ride_passenger.single_ride = true;
+            data = single_ride_passenger;
+        } else {
+            getPassenger.semester_ride = true;
+            getPassenger.single_ride = false;
+            data = getPassenger;
         }
-        console.log(getPassenger);
-        getPassenger.semester_ride = true;
-        getPassenger.single_ride = false;
-        return res.status(200).json(new ApiResponse(200, getPassenger));
+
+        // Include necessary details for validation
+        const qrPayload = JSON.stringify({
+            passenger_id: data.passenger_id,
+            ride_date: data.ride_date || data.createdAt, // Include the ride or creation date
+            timestamp: new Date().toISOString(), // Add a generation timestamp
+        });
+
+        // Encrypt the QR payload
+        data.qr = encrypt(qrPayload);
+
+        return res.status(200).json(new ApiResponse(200, data));
     } catch (error) {
         next(error);
     }
 });
+
 
 
 export { create_Semester, confirm_Payment, get_Semesters, show_card, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };

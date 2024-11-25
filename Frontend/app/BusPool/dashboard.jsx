@@ -9,21 +9,29 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
 const CARD_HEIGHT = CARD_WIDTH * 0.8;
+import QRCode from 'react-native-qrcode-svg';
 
 const ProfileCard = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const flipAnimation = useRef(new Animated.Value(0)).current;
   const [card_details, setCardDetails] = useState({});
   const { user } = useGlobalContext();
+  const [loading, setLoading] = useState(false);
+  const [noregistered, setNoRegistered] = useState(false);
   const fetchcarddetails = async () => {
+    setLoading(true);
     try {
       await setAuthHeaders(axios);
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration/card`, {
         withCredentials: true,
       });
       setCardDetails(response.data.data);
+      setNoRegistered(true);
       console.log(response.data.data);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
+      setNoRegistered(false);
       console.error(error.response);
     }
   };
@@ -75,6 +83,12 @@ const ProfileCard = () => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
+  if (loading) {
+    return <Text>Loading...</Text>
+  }
+  if (!noregistered) {
+    return <Text>No registered card</Text>
+  }
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity
@@ -139,7 +153,9 @@ const ProfileCard = () => {
               { opacity: backOpacity, transform: [{ rotateY: backInterpolate }] }
             ]}>
               <View style={styles.backContent}>
-                <MaterialCommunityIcons name="qrcode" size={200} color="#3949ab" />
+                <QRCode
+                  value="HelloQR"
+                />
                 <Text style={styles.backText}>Scan for more details</Text>
               </View>
             </Animated.View>
