@@ -222,7 +222,7 @@ const busRegistration = () => {
                 {selectedBus && (
 
                   <ScrollView showsVerticalScrollIndicator={false}>
-                    {renderInfoItem(<User color="#4CAF50" size={24} />, "Student Name", user.username, "#4CAF50")}
+                    {renderInfoItem(<User color="#4CAF50" size={24} />, "Student Name", user?.username, "#4CAF50")}
                     {/* {renderInfoItem(<CreditCard color="#2196F3" size={24} />, "Student ID", user.user_id, "#2196F3")} */}
 
                     {renderInfoItem(<Calendar color="#FF9800" size={24} />, "Semester Details", (selectedBus.semester.type_semester + ' ' + selectedBus.semester.year), "#FF9800")}
@@ -300,7 +300,7 @@ const busRegistration = () => {
                 <Text style={styles2.infoText}>Semester ID: {data.s}</Text>
               </View> */}
               <View style={styles2.infoRow}>
-                <Text style={styles2.infoText}>Passenger ID: {data.passenger_id}</Text>
+                <Text style={styles2.infoText}>Passenger Name: {user?.username}</Text>
               </View>
               {/* <View style={styles2.infoRow}>
                 <Text style={styles2.infoText}>Semester Passenger ID: {data.semester_passenger_id}</Text>

@@ -75,6 +75,8 @@ const busRegistration = () => {
                 setRegisteredinsem(true);
             }
             else if (response.data.data) {
+                console.log(response.data.data);
+                setData(response.data.data);
                 setAlreadyRegistered(true);
             }
             setLoading(true);
@@ -87,8 +89,10 @@ const busRegistration = () => {
     useFocusEffect(
         useCallback(() => {
             fetchuserstatus();
-            if (registeredinsem) {
+            console.log(registeredinsem)
+            if (!registeredinsem) {
                 if (!alreadyRegistered) {
+                    console.log('fetching buses');
                     fetchBuses();
                 }
             }
@@ -213,6 +217,7 @@ const busRegistration = () => {
                                 </View>
                                 <View style={styles.dueDateContainer}>
                                     <Clock color="#FF9800" size={16} />
+                                    <Text style={styles.dueDateText}>Validaty only One Day</Text>
                                     {/* <Text style={styles.dueDateText}>Due: {getDaysLeft(item.due_date)} Days Left</Text> */}
                                 </View>
                             </TouchableOpacity>
@@ -234,7 +239,7 @@ const busRegistration = () => {
                                 {selectedBus && (
 
                                     <ScrollView showsVerticalScrollIndicator={false}>
-                                        {renderInfoItem(<User color="#4CAF50" size={24} />, "Student Name", user.username, "#4CAF50")}
+                                        {renderInfoItem(<User color="#4CAF50" size={24} />, "Student Name", user?.username, "#4CAF50")}
                                         {/* {renderInfoItem(<CreditCard color="#2196F3" size={24} />, "Student ID", user.user_id, "#2196F3")} */}
 
                                         {renderInfoItem(<Calendar color="#FF9800" size={24} />, "Semester Details", (selectedBus.semester.type_semester + ' ' + selectedBus.semester.year), "#FF9800")}
@@ -243,7 +248,7 @@ const busRegistration = () => {
                                         {/* <Text style={styles.label}>Select Ride Date</Text> */}
                                         <TouchableOpacity
                                             style={styles.datePicker}
-                                            onPress={() => setRidedate(true)}
+                                            onPress={() => { setRidedate(true); setStartDate(null) }}
                                         >
                                             <Text style={styles.label}>
                                                 {startDate ? ("Ride Date: " + startDate.toLocaleDateString()) : "Select Ride Date"}
@@ -251,12 +256,18 @@ const busRegistration = () => {
                                         </TouchableOpacity>
                                         {ridedate && (
                                             <DateTimePicker
+
                                                 value={new Date()}
-                                                minimumDate={startDate || new Date()}
+                                                minimumDate={new Date()}
                                                 mode="date"
                                                 display="default"
                                                 onChange={(event, selectedDate) => {
                                                     setRidedate(false);
+                                                    if (selectedDate.getDay() === 6 || selectedDate.getDay() === 0) {
+                                                        toast.show('Ride Date should be on Weekdays', { type: "danger", duration: 6000, offset: 30 });
+                                                        return;
+                                                    }
+                                                    console.log(selectedDate.getDay())
                                                     if (selectedDate) setStartDate(selectedDate);
                                                 }}
                                             />
@@ -293,14 +304,18 @@ const busRegistration = () => {
                                 <Text style={styles2.infoText}>Bus ID: {data.bus_id}</Text>
                             </View>
                             <View style={styles2.infoRow}>
-                                <Text style={styles2.infoText}>Seats: {data.seats}</Text>
+                                <Text style={styles2.infoText}>Seats Booked: {1}</Text>
                             </View>
                             <View style={styles2.infoRow}>
-                                <Text style={styles2.infoText}>Organization: {data.bus_organization}</Text>
+                                <Text style={styles2.infoText}>Organization: {data.organization_name}</Text>
                             </View>
+                            {!data.is_paid ?
+                                <View style={styles2.infoRow}>
+                                    <Text style={styles2.infoText}>Bank Account Details: {data.bank_account_no}</Text>
+                                </View> : null}
                         </View>
 
-                        <View style={styles2.section}>
+                        {/* <View style={styles2.section}>
                             <Text style={styles2.sectionTitle}>Route Information</Text>
                             <View style={styles2.infoRow}>
                                 <MapPin color="#4CAF50" size={24} />
@@ -310,17 +325,17 @@ const busRegistration = () => {
                                 <MapPin color="#F44336" size={24} />
                                 <Text style={styles2.infoText}>Dropoff: {data.dropoff[0].route_name} (ID: {data.dropoff[0].route_id})</Text>
                             </View>
-                        </View>
+                        </View> */}
 
                         <View style={styles2.section}>
                             <Text style={styles2.sectionTitle}>Payment Details</Text>
                             <View style={styles2.infoRow}>
                                 <DollarSign color="#4CAF50" size={24} />
-                                <Text style={styles2.infoText}>Amount: ${data.amount}</Text>
-                            </View>
-                            <View style={styles2.infoRow}>
                                 <Text style={styles2.infoText}>Single Ride Fare: ${data.single_ride_fair}</Text>
+                                {/* <Text style={styles2.infoText}>Amount: ${data.amount}</Text> */}
                             </View>
+                            {/* <View style={styles2.infoRow}>
+                            </View> */}
                             <View style={styles2.infoRow}>
                                 <Text style={styles2.infoText}>Payment Status: {data.is_paid ? 'Paid' : 'Unpaid'}</Text>
                             </View>
@@ -330,10 +345,11 @@ const busRegistration = () => {
                             <Text style={styles2.sectionTitle}>Additional Information</Text>
                             <View style={styles2.infoRow}>
                                 <Calendar color="#1A237E" size={24} />
-                                <Text style={styles2.infoText}>Semester ID: {data.semester_id}</Text>
+                                {/* <Text style={styles2.infoText}>Semester ID: {data.semester_id}</Text> */}
+                                <Text style={styles2.infoText}>Passenger Name: {user?.username}</Text>
                             </View>
                             <View style={styles2.infoRow}>
-                                <Text style={styles2.infoText}>Passenger ID: {data.passenger_id}</Text>
+                                <Text style={styles2.infoText}>Ride Date: {formatDate(data.ride_date)}</Text>
                             </View>
                             {/* <View style={styles2.infoRow}>
                 <Text style={styles2.infoText}>Semester Passenger ID: {data.semester_passenger_id}</Text>
@@ -345,6 +361,7 @@ const busRegistration = () => {
                                 <View style={styles2.infoRow}>
                                     <Text style={styles2.infoText}>Approved At: {formatDate(data.updatedAt)}</Text>
                                 </View> : null}
+
                         </View>
                     </ScrollView>
                 </SafeAreaView>)

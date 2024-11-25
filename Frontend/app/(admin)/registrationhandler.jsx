@@ -30,6 +30,7 @@ const RegistrationHandler = () => {
     const [showDueDatePicker, setShowDueDatePicker] = useState(false);
     const [loading, setLoading] = useState(true);
     const [semester, setSemester] = useState("");
+    const [single_ride_student, setSingle_ride_student] = useState([]);
 
     useEffect(() => {
         setLoading(true); // Show loader
@@ -53,6 +54,17 @@ const RegistrationHandler = () => {
                 setStudents(resp.data.data);
             } else {
                 // throw new Error(resp);
+            }
+        } catch (error) {
+            console.log(error.response);
+        }
+        try {
+            const resp = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/singleridepassenger`, { withCredentials: true });
+            if (resp.status === 200) {
+                // console.log(resp.data.data);
+                console.log("Hello")
+                setSingle_ride_student(resp.data.data);
+                console.log(single_ride_student);
             }
         } catch (error) {
             console.log(error.response);
@@ -200,6 +212,34 @@ const RegistrationHandler = () => {
         setLoading(false);
 
     };
+    const handleVerifyPayment_single_ride = (studentId) => {
+        setLoading(true);
+        const verifyPayment = async () => {
+            try {
+                await setAuthHeaders(axios);
+                const resp = await axios.put(
+                    `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/singleridepassenger/approve/` + studentId,
+                    { withCredentials: true }
+                );
+
+                if (resp.status === 200) {
+                    toast.show("Payment Verified", { type: "success", duration: 6000, offset: 30 });
+                } else {
+                    throw new Error(resp);
+                }
+            } catch (error) {
+                console.log("Hello")
+                console.log(error.response)
+                toast.show(error.response.message, { type: "error", duration: 6000, offset: 30 });
+                // console.log("Hello")
+                // console.log(error.response);
+            };
+        }
+        verifyPayment();
+        fetchStudents();
+        setLoading(false);
+
+    };
 
     if (loading) {
         return (
@@ -210,7 +250,7 @@ const RegistrationHandler = () => {
     }
     return (
         <View style={styles.container}>
-            <Text style={styles.header}> Ride Registration</Text>
+            <Text style={styles.header} className="pt-8"> Ride Registration</Text>
             {!isRegistrationOpen && (
                 <View style={styles.registrationForm}>
                     <Text style={styles.formTitle}>Open Registration</Text>
@@ -295,6 +335,26 @@ const RegistrationHandler = () => {
                                         <TouchableOpacity
                                             style={styles.actionButton}
                                             onPress={() => handleVerifyPayment(item.semester_passenger_id)}
+                                            disabled={item.is_paid === true}
+                                        >
+                                            {!item.is_paid && <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />}
+                                        </TouchableOpacity>
+
+                                    </View>
+                                </View>
+                            )}
+                        />
+                        <FlatList
+                            data={single_ride_student}
+                            keyExtractor={(item) => item.single_ride_passenger_id}
+                            renderItem={({ item }) => (
+                                <View style={styles.studentCard}>
+                                    <Text style={styles.studentName}>{item.passenger_id}</Text>
+                                    <Text style={styles.paymentStatus}>Payment: {item.is_paid ? 'Paid' : "Unpaid"}</Text>
+                                    <View style={styles.actions}>
+                                        <TouchableOpacity
+                                            style={styles.actionButton}
+                                            onPress={() => handleVerifyPayment_single_ride(item.single_ride_passenger_id)}
                                             disabled={item.is_paid === true}
                                         >
                                             {!item.is_paid && <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />}

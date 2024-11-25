@@ -170,7 +170,7 @@ const get_openreg_busses_with_routes = asynchandler(async (req, res, next) => {
             `SELECT * FROM busregistrations where due_date > ? and semester_id = ?`,
             { replacements: [new Date(), semester[0].semester_id], type: QueryTypes.SELECT }
         );
-        if (!getallregistration) {
+        if (!getallregistration[0]) {
             return next(new ApiError(400, "No Bus Registration Found"));
         }
         for (const i in getallregistration) {
