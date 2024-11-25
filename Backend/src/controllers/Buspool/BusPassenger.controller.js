@@ -240,10 +240,18 @@ const show_card = asynchandler(async (req, res, next) => {
     try {
         const passenger_id = req.user.user_id;
         const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers WHERE
-             passenger_id = '${passenger_id}'`, { type: sequelize.QueryTypes.SELECT });
+             passenger_id = '${passenger_id}' and is_paid = true`, { type: sequelize.QueryTypes.SELECT });
         if (!getPassenger) {
-            const [single_ride_passenger] = await sequelize.query(`SELECT * FROM singleridepassengers WHERE
-                passenger_id = '${passenger_id}' and ride_date - ? <= 1 `, { replacements: [new Date()], type: sequelize.QueryTypes.SELECT });
+            const [single_ride_passenger] = await sequelize.query(`
+                SELECT * 
+                FROM singleridepassengers 
+                WHERE single_ride_passenger_id = :passenger_id 
+                AND ride_date >= NOW() - INTERVAL '1 day' and is_paid = true
+              `, {
+                replacements: { passenger_id: passenger_id },
+                type: sequelize.QueryTypes.SELECT
+              });
+
             if (!single_ride_passenger) {
                 return next(new ApiError(400, "No details found"));
             }
