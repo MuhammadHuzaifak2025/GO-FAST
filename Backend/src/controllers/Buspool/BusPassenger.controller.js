@@ -278,7 +278,7 @@ const show_card = asynchandler(async (req, res, next) => {
         let data;
         if (!getPassenger) {
             const [single_ride_passenger] = await sequelize.query(`
-                SELECT a.*, b.*, c.* 
+                SELECT a.*, b.*,c.* 
                 FROM singleridepassengers a
                 INNER JOIN buses b ON a.bus_id = b.bus_id
                 INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id
@@ -292,14 +292,12 @@ const show_card = asynchandler(async (req, res, next) => {
             if (!single_ride_passenger) {
                 return next(new ApiError(400, "No details found"));
             }
+            else {
+                single_ride_passenger.semester_ride = false;
+                single_ride_passenger.single_ride = true;
 
-            single_ride_passenger.semester_ride = false;
-            single_ride_passenger.single_ride = true;
-            data = single_ride_passenger;
-        } else {
-            getPassenger.semester_ride = true;
-            getPassenger.single_ride = false;
-            data = getPassenger;
+                return res.status(200).json(new ApiResponse(200, single_ride_passenger));
+            }
         }
 
         // Include necessary details for validation
