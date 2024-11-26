@@ -61,33 +61,13 @@ const showSingleRidePassenger_toAdmin = asynchandler(async (req, res, next) => {
             return next(new ApiError(400, "No Semester Found"));
         }
 
-        const transport_organizations = await sequelize.query(`select * from transport_organizations
-             a inner join busregistrations b
-            on a.organization_id = b.organization
-             inner join semesters c on b.semester_id = c.semester_id 
-             where c.semester_id = ? and a.owner = ?`,
-            { replacements: [semester_id.semester_id, req.user.user_id], type: QueryTypes.SELECT });
-        if (!transport_organizations[0]) {
-            return next(new ApiError(400, "You are not an owner of the organization"));
-        }
+        const semester_passengers = await sequelize.query(`select * from singleridepassengers a
+            inner join buses b on a.bus_id = b.bus_id
+            inner join transport_organizations c on b.bus_organization = c.organization_id
+            where c.owner = ? `,
+            { replacements: [req.user.user_id, new Date()], type: QueryTypes.SELECT });
 
-        const busses = await sequelize.query(`
-            select * from buses where bus_organization = ? and seats > 0`,
-            { replacements: [transport_organizations[0].organization_id], type: QueryTypes.SELECT });
-        transport_organizations[0].busses = busses[0];
-        for (const bus of busses) {
-            const singleride_passenger = await sequelize.query(`select * from singleridepassengers where bus_id = ?`,
-                { replacements: [bus.bus_id], type: QueryTypes.SELECT });
-            bus.singleride_passenger = singleride_passenger;
-            const busroutes = await sequelize.query(`
-                select * from routes a inner join busroutes b on a.route_id = b.route_id where b.bus_id = ?`,
-                { replacements: [bus.bus_id], type: QueryTypes.SELECT });
-            bus.routes = busroutes;
-            console.log(busroutes);
-        }
-
-
-        return res.status(200).json(new ApiResponse(200, transport_organizations));
+        return res.status(200).json(new ApiResponse(200, semester_passengers));
         return next(new ApiError(400, "No Busses Found"));
     } catch (error) {
         next(error);
@@ -136,9 +116,15 @@ const fetch_my_single_ride_passengers = asynchandler(async (req, res, next) => {
             // return next(new ApiError(202, "Passenger already registered for this semester, cant request for single ride"));
             res.status(202).json(new ApiResponse(202, "Passenger already registered for this semester, cant request for single ride"));
         }
-        const [getPassenger] = await sequelize.query(`SELECT * FROM singleridepassengers where passenger_id = ?`,
+        const [getPassenger] = await sequelize.query(`SELECT * FROM singleridepassengers a 
+            inner join buses b on a.bus_id = b.bus_id
+            inner join transport_organizations c on b.bus_organization = c.organization_id
+            where passenger_id = ? `,
             { replacements: [req.user.user_id], type: QueryTypes.SELECT });
         if (getPassenger) {
+            const [getroutes] = await sequelize.query(`SELECT * FROM routes a inner join busroutes b on a.route_id = b.route_id where b.bus_id = ?`,
+                { replacements: [getPassenger.bus_id], type: QueryTypes.SELECT });
+            getPassenger.routes = getroutes;
             return res.status(200).json(new ApiResponse(200, getPassenger));
         }
         return next(new ApiError(400, "No Passengers Found"));
@@ -191,7 +177,7 @@ const showSingleRideBusses_toUser = asynchandler(async (req, res, next) => { // 
         if (!transport_organizations[0]) {
             return next(new ApiError(400, "No Transport Organization Found"));
         }
-        if(transport_organizations[0].due_date > new Date()){
+        if (transport_organizations[0].due_date > new Date()) {
             return next(new ApiError(400, "Semester Registration are only open for now"));
         }
         transport_organizations[0].due_date = new Date();

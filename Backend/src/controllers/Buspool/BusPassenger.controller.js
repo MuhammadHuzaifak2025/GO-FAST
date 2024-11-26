@@ -2,7 +2,8 @@ import sequelize from "../../database/index.js";
 import asynchandler from "../../utils/AsyncHandler.js";
 import ApiError from "../../utils/ErrorHandling.js";
 import ApiResponse from "../../utils/ResponseHandling.js";
-
+import bcrypt from "bcrypt";
+const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 const create_Semester = asynchandler(async (req, res, next) => {
     try {
         const { Year, Type } = req.body;
@@ -150,7 +151,7 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
         const [getorganization] = await sequelize.query(`SELECT * FROM transport_organizations WHERE owner = '${req.user.user_id}'`,
             { type: sequelize.QueryTypes.SELECT });
         if (!req.user.admin && !getorganization) {
-            return next(new ApiError(400 ,"Unauthorized"));
+            return next(new ApiError(400, "Unauthorized"));
         }
 
 
@@ -163,7 +164,7 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
             , type: sequelize.QueryTypes.SELECT
         });
         if (!getPassenger) {
-            return next(new ApiError(400 ,"Passenger not found"));
+            return next(new ApiError(400, "Passenger not found"));
         }
         const transaction = await sequelize.transaction();
         const pay = await sequelize.query(
@@ -181,18 +182,18 @@ const pay_Semester_Passenger = asynchandler(async (req, res, next) => {
             const checkseats = await sequelize.query(`SELECT * FROM buses WHERE bus_id =
                 (SELECT bus_id FROM semester_passengers WHERE semester_passenger_id = '${semester_passenger_id}')`, { type: sequelize.QueryTypes.SELECT });
             if (!checkseats) {
-                return next(new ApiError(400 ,"Error checking bus seats"));
+                return next(new ApiError(400, "Error checking bus seats"));
             }
             if (checkseats[0].seats <= 0) {
                 transaction.rollback();
-                return next(new ApiError(400 ,"Bus is full"));
+                return next(new ApiError(400, "Bus is full"));
             }
             else {
                 transaction.commit();
                 const updateseats = await sequelize.query(`UPDATE buses SET seats = seats + 1 WHERE bus_id =
                 (SELECT bus_id FROM semester_passengers WHERE semester_passenger_id = '${semester_passenger_id}') returning *`, { type: sequelize.QueryTypes.UPDATE });
                 if (!updateseats) {
-                    return next(new ApiError(400 ,"Error updating bus seats"));
+                    return next(new ApiError(400, "Error updating bus seats"));
                 }
                 return res.status(200).json(new ApiResponse(200, "Payment successful"));
             }
@@ -236,6 +237,78 @@ const confirm_Payment = asynchandler(async (req, res, next) => {
     }
 });
 
+// const crypto = require("crypto");
+import CryptoJS from "crypto-js";
+const ENCRYPTION_KEY = "12345678901234567890123456789012";
+const IV = "1234567890123456";
+
+function encrypt(text) {
+    const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY), {
+        iv: CryptoJS.enc.Utf8.parse(IV),
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+    });
+    return encrypted.toString();
+}
+
+// Decrypt function
 
 
-export { create_Semester, confirm_Payment, get_Semesters, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };
+const show_card = asynchandler(async (req, res, next) => {
+    try {
+        const passenger_id = req.user.user_id;
+        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers a
+            INNER JOIN buses b ON a.bus_id = b.bus_id
+            INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id
+            INNER JOIN semesters d ON a.semester_id = d.semester_id
+            WHERE passenger_id = :passenger_id AND is_paid = true`, {
+            replacements: { passenger_id },
+            type: sequelize.QueryTypes.SELECT
+        });
+
+        let data;
+        if (!getPassenger) {
+            const [single_ride_passenger] = await sequelize.query(`
+                SELECT a.*, b.*, c.* 
+                FROM singleridepassengers a
+                INNER JOIN buses b ON a.bus_id = b.bus_id
+                INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id
+                WHERE single_ride_passenger_id = :passenger_id 
+                AND ride_date >= NOW() - INTERVAL '1 day' AND is_paid = true
+              `, {
+                replacements: { passenger_id },
+                type: sequelize.QueryTypes.SELECT
+            });
+
+            if (!single_ride_passenger) {
+                return next(new ApiError(400, "No details found"));
+            }
+
+            single_ride_passenger.semester_ride = false;
+            single_ride_passenger.single_ride = true;
+            data = single_ride_passenger;
+        } else {
+            getPassenger.semester_ride = true;
+            getPassenger.single_ride = false;
+            data = getPassenger;
+        }
+
+        // Include necessary details for validation
+        const qrPayload = JSON.stringify({
+            passenger_id: data.passenger_id,
+            ride_date: data.ride_date || data.createdAt, // Include the ride or creation date
+            timestamp: new Date().toISOString(), // Add a generation timestamp
+        });
+
+        // Encrypt the QR payload
+        data.qr = encrypt(qrPayload);
+
+        return res.status(200).json(new ApiResponse(200, data));
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+
+export { create_Semester, confirm_Payment, get_Semesters, show_card, register_Semester_Passenger, get_Semester_Passengers, getBill, pay_Semester_Passenger };

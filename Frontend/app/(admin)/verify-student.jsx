@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Audio } from 'expo-av';
-import { 
-  StyleSheet, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  View, 
-  Animated, 
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Animated,
   Easing,
   Dimensions
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoJS from "crypto-js";
 
 const { width } = Dimensions.get('window');
+
+const ENCRYPTION_KEY = "12345678901234567890123456789012"; // 32 characters
+const IV = "1234567890123456"; // 16 characters
 
 export default function App() {
   const [facing, setFacing] = useState('back');
@@ -41,10 +45,14 @@ export default function App() {
 
   async function playSound() {
     console.log('Loading Sound');
-    const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/store-scanner-beep-90395.mp3'));
+    const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/verified.mp3'));
     setSound(sound);
-
-    console.log('Playing Sound');
+    await sound.playAsync();
+  }
+  async function playSound_invalid() {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync(require('../../assets/sounds/invalid.mp3'));
+    setSound(sound);
     await sound.playAsync();
   }
 
@@ -71,10 +79,49 @@ export default function App() {
     }
   }
 
-  const fetchResult = (result) => {
-    playSound();
-    setIsCameraActive(false);
+  function decrypt(cipherText) {
+    const decrypted = CryptoJS.AES.decrypt(cipherText, CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY), {
+      iv: CryptoJS.enc.Utf8.parse(IV),
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+    return decrypted.toString(CryptoJS.enc.Utf8);
   }
+
+  const validateQR = (qrData) => {
+    try {
+      const decryptedData = decrypt(qrData);
+      const { passenger_id, ride_date, timestamp } = JSON.parse(decryptedData);
+
+      // Validate date (ensure ride date or timestamp is valid)
+      const now = new Date();
+      const rideDate = new Date(ride_date);
+      if (rideDate < now) {
+        throw new Error("QR code is expired");
+      }
+      // Optionally, fetch from the database to verify passenger_id or ride_date
+      return { valid: true, passenger_id, ride_date };
+    } catch (error) {
+      // console.error("QR validation error:", error);
+      return { valid: false, error: error.message };
+    }
+  };
+  const fetchResult = (result) => {
+    if (validateQR(result.data).valid) {
+      playSound();
+      // Add a delay before proceeding
+      setTimeout(() => {
+        // setIsCameraActive(false);
+      }, 10000); // Delay of 1000ms (1 second)
+    } else {
+      playSound_invalid();
+      // Add a delay before proceeding
+      setTimeout(() => {
+        // alert("Invalid QR code");
+        // setIsCameraActive(false);
+      }, 10000); // Delay of 1000ms (1 second)
+    }
+  };
 
   const scanLineAnimation = animation.interpolate({
     inputRange: [0, 1],
@@ -89,13 +136,13 @@ export default function App() {
       {isCameraActive ? (
         <View style={styles.cameraContainer}>
           <CameraView style={styles.camera} facing={facing} onBarcodeScanned={fetchResult}>
-            <Animated.View 
+            <Animated.View
               style={[
-                styles.scanLine, 
-                { 
-                  transform: [{ translateY: scanLineAnimation }] 
+                styles.scanLine,
+                {
+                  transform: [{ translateY: scanLineAnimation }]
                 }
-              ]} 
+              ]}
             />
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
