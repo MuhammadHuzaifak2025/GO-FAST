@@ -1,6 +1,8 @@
 {
   "expo": {
-    "permissions": ["CAMERA"],
+    "permissions": [
+      "CAMERA"
+    ],
     "name": "Gofast",
     "slug": "Gofast",
     "version": "1.0.0",
@@ -15,15 +17,20 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.Gofast"
     },
     "android": {
-
-      "permissions": ["CAMERA"],
+      "permissions": [
+        "CAMERA",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.Gofast"
     },
     "web": {
       "bundler": "metro",
@@ -40,6 +47,12 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
+        }
+      ],[
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoibXVoYW1tYWRodXphaWZhNDMzNyIsImEiOiJjbTN4d2x2MmQxaXM0MnJxenlkMjg5OW9hIn0.LmpgQtqRQ5pWQLBk20tx3w",
+          "RNMapboxMapsVersion": "11.0.0"
         }
       ]
     ],
