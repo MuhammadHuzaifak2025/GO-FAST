@@ -205,6 +205,13 @@ const complete_ride = asynchandler(async (req, res, next) => {
         if (fetch_ride[0].ride_status === 'completed') {
             return next(new ApiError(400, "Ride already completed"));
         }
+        if (fetch_ride[0].driver !== req.user.user_id) {
+            return next(new ApiError(400, "You are not authorized to complete this ride"));
+        }
+        if (fetch_ride[0].start_time > new Date()) {
+            return next(new ApiError(400, "Ride not yet started"));
+        }
+
         const ride = await sequelize.query(
             `UPDATE carpool_rides SET ride_status = 'completed' WHERE ride_id = ?`,
             {
@@ -212,6 +219,8 @@ const complete_ride = asynchandler(async (req, res, next) => {
                 type: QueryTypes.UPDATE,
             }
         );
+
+        console.log("ride", ride);
         if (ride) {
             return res.status(200).json(new ApiResponse(200, "Ride completed successfully", ride));
         } else {

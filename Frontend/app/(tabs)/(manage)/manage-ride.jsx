@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { setAuthHeaders } from '../../../utils/expo-store';
 import { useToast } from 'react-native-toast-notifications';
-import { FlashList } from '@shopify/flash-list';
+import { Cancellable, FlashList } from '@shopify/flash-list';
 
 const PassengerItem = ({ username, phone, fare, ride_id, passenger_id, seats, refreshPassenger }) => {
 
@@ -92,6 +92,7 @@ const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
   const handleRequestAction = async (action) => {
     const confirmText = action === 'accept' ? 'Accept this request?' : 'Reject this request?';
     const successMessage = action === 'accept' ? 'Request accepted successfully.' : 'Request rejected successfully.';
+    console.log(myRide);
 
     Alert.alert(
       `${action === 'accept' ? 'Accept' : 'Reject'} Request`,
@@ -103,6 +104,7 @@ const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
           style: action === 'accept' ? 'default' : 'destructive',
           onPress: async () => {
             try {
+
               await setAuthHeaders(axios);
               let response;
               if (action === 'accept') {
@@ -125,6 +127,7 @@ const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
               if (response.status === 200) {
                 
                 if(action === 'accept') {
+                  console.log(myRide.seat_available);
                   setMyRide({ ...myRide, seats_available: myRide.seat_available - seatsRequested });
                 }
           
@@ -151,7 +154,8 @@ const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
             }
           },
         },
-      ]
+      ],
+      
     );
   };
 
@@ -284,6 +288,52 @@ const ManageRides = () => {
     fetchRequests().then(() => fetchPassengers()).finally(() => setRefreshing(false));
   }, [fetchRequests, fetchPassengers]);
 
+  const completeRide = async () => {
+      
+      Alert.alert(
+        "Complete Ride",
+        "Are you sure you want to complete this ride?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Complete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+
+                await setAuthHeaders(axios);
+                const response = await axios.put(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/complete`, { 'ride_id': myRide.ride_id });
+  
+                if (response.status === 200) {
+
+                  toast.show('Ride completed successfully.', {
+                    type: "success",
+                    duration: 4000,
+                    offset: 30,
+                    animationType: "slide-in",
+                  });
+                  router.replace('/publish-ride');
+                } else {
+
+                  throw new Error(response);
+                }
+              } catch (error) {
+
+                console.log("1",error.response);
+
+                toast.show(error.response.data.message, {
+                  type: "danger",
+                  duration: 4000,
+                  offset: 30,
+                  animationType: "slide-in",
+                });
+              }
+            },
+          },
+        ]
+      );
+    }
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
@@ -350,7 +400,14 @@ const ManageRides = () => {
             ListEmptyComponent={() => (<Text style={styles.emptyText}>No passengers for this ride</Text>)}
           />
         )}
+      
+      <TouchableOpacity style={styles.requestButton} onPress={completeRide}>
+        <Text style={styles.requestButtonText}>Complete Ride</Text>
+      </TouchableOpacity>
+
       </View>
+
+
     </SafeAreaView>
   );
 };
@@ -458,7 +515,26 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 20,
   },
+  requestButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    right: 16,
+    backgroundColor: "#ff6347",
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  requestButtonText: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 18,
+    color: "#fff",
+  },
 });
 
 export default ManageRides;
-

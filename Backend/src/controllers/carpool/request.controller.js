@@ -180,9 +180,9 @@ const fetch_ride_requests_by_ride_id = asynchandler(async (req, res, next) => {
 
 const accept_ride_request = asynchandler(async (req, res, next) => {
 
-    const transaction = await sequelize.transaction(); // Start a transaction
     
     try {
+        const transaction = await sequelize.transaction(); // Start a transaction
 
         const { requestId } = req.body;
         if (!requestId) {
@@ -203,6 +203,9 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
         }
         if (ride_details[0].is_approved) {
             return next(new ApiError(400, "Ride request already accepted"));
+        }
+        if (ride_details[0].seats_requested > ride_details[0].seat_available) {
+            return next(new ApiError(400, "No seats available"));
         }
         
         

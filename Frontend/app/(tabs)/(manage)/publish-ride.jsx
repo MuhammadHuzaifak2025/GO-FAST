@@ -65,7 +65,7 @@ const RideItem = ({ from, to, time, price, seats, car, id, refreshRides, ride })
                 throw new Error(response);
               }
             } catch (error) {
-              console.error(error);
+              // console.error(error);
               toast.show(error.response.data.message, {
                 type: "danger",
                 duration: 4000,

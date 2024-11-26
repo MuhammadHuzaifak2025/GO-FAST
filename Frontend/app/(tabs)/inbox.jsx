@@ -1,118 +1,74 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useState, useCallback } from 'react';
+import { GiftedChat } from 'react-native-gifted-chat';
+import io from 'socket.io-client';
+import { useGlobalContext } from '../../context/GlobalProvider';
 
-const initialMessages = [
-  { id: '1', text: 'Hello! Is this ride still available?', sender: 'user' },
-  { id: '2', text: 'Yes, it is. Are you interested?', sender: 'driver' },
-  { id: '3', text: 'Yes! Could I join at 8:30 AM?', sender: 'user' },
-];
+const ChatScreen = ({ route }) => {
+  
+  const { user } = useGlobalContext();
 
-const MessageItem = ({ text, sender }) => (
-  <LinearGradient
-    colors={sender === 'user' ? ['#ff6347', 'tomato'] : ['#f0f0f0', '#dcdcdc']}
-    style={[styles.messageItem, sender === 'user' ? styles.userMessage : styles.driverMessage]}
-  >
-    <Text style={sender === 'user' ? styles.userText : styles.driverText}>{text}</Text>
-  </LinearGradient>
-);
+  // const { roomId, userId, userName } = route.params; // Pass these as props
+  const userId = user.user_id;
+  const userName = user.username;
+  const roomId = 1;
+  const [messages, setMessages] = useState([]);
+  const [socket, setSocket] = useState(null);
 
-const Inbox = () => {
-  const [messages, setMessages] = useState(initialMessages);
-  const [newMessage, setNewMessage] = useState('');
+  useEffect(() => {
+    const socketInstance = io('http://<your-server-ip>:5000'); // Replace with your server address
+    setSocket(socketInstance);
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      setMessages([...messages, { id: Date.now().toString(), text: newMessage, sender: 'user' }]);
-      setNewMessage('');
-    }
-  };
+    // Join the chat room
+    socketInstance.emit('joinRoom', roomId);
+
+    // Listen for incoming messages
+    socketInstance.on('receiveMessage', (data) => {
+      const incomingMessage = {
+        _id: data.messageId,
+        text: data.text,
+        createdAt: new Date(data.createdAt),
+        user: {
+          _id: data.senderId,
+          name: data.senderName,
+        },
+      };
+      setMessages((prevMessages) => GiftedChat.append(prevMessages, incomingMessage));
+    });
+
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, [roomId]);
+
+  const handleSend = useCallback(
+    (newMessages = []) => {
+      const message = newMessages[0];
+
+      // Emit the message to the server
+      socket.emit('sendMessage', {
+        room: roomId,
+        messageId: message._id,
+        text: message.text,
+        senderId: userId,
+        senderName: userName,
+        createdAt: message.createdAt,
+      });
+
+      setMessages((prevMessages) => GiftedChat.append(prevMessages, message));
+    },
+    [socket, roomId, userId, userName]
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Inbox</Text>
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <MessageItem text={item.text} sender={item.sender} />}
-        style={styles.messageList}
-        inverted
-      />
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type your message..."
-          value={newMessage}
-          onChangeText={setNewMessage}
-        />
-        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-          <Text style={styles.sendText}>Send</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <GiftedChat
+      messages={messages}
+      onSend={(messages) => handleSend(messages)}
+      user={{
+        _id: userId,
+        name: userName,
+      }}
+    />
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'tomato',
-    textAlign: 'center',
-    marginVertical: 15,
-  },
-  messageList: {
-    flex: 1,
-    paddingHorizontal: 10,
-  },
-  messageItem: {
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 10,
-    maxWidth: '75%',
-  },
-  userMessage: {
-    alignSelf: 'flex-end',
-  },
-  driverMessage: {
-    alignSelf: 'flex-start',
-  },
-  userText: {
-    color: '#fff',
-  },
-  driverText: {
-    color: '#333',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-  },
-  sendButton: {
-    backgroundColor: 'tomato',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    marginLeft: 10,
-  },
-  sendText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-});
-
-export default Inbox;
+export default ChatScreen;
