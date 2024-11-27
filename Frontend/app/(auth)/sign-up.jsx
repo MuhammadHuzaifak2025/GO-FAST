@@ -2,17 +2,19 @@ import { View, Text, StyleSheet, ScrollView, Alert, ToastAndroid } from 'react-n
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 import axios from 'axios'
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { useToast } from "react-native-toast-notifications";
-
+import MapboxPlacesAutocomplete from "react-native-mapbox-places-autocomplete";
 import FormField from '../../components/FormField';
 import CustomButton from '../../components/CustomButton';
 import { Link, router } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
+// import { useDispatch } from "react-redux";
+// import { setOrigin, setDestination } from "../store/actions"; // Update this path as per your file structure
 
 const SignUp = () => {
 
-  const {isLoading, user, setUser} = useGlobalContext();
+  const { isLoading, user, setUser } = useGlobalContext();
 
   const [form, setForm] = useState({
     username: '',
@@ -29,62 +31,62 @@ const SignUp = () => {
   const submit = async () => {
 
     setIsSubmitting(true)
-    
-    try{
-          if(!form.username || !form.email || !form.password || !form.address || !form.phone){
-            toast.show('Please fill all fields', {
-              type: "danger",
-              duration: 4000,
-              offset: 30,
-              animationType: "slide-in",
-            });
-            return;
-          }
-          if(form.password !== confirm){
-            toast.show('Passwords do not match', {
-              type: "danger",
-              duration: 4000,
-              offset: 30,
-              animationType: "slide-in",
-            });
-            return;
-          }
 
-            const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`, form, {withCredentials: true} );
-            
-            if(response.status === 201){
-              
-              toast.show("Successfully created account, please enter OTP sent to your email address", {
-              type: "success",
-              duration: 8000,
-              offset: 30,
-              animationType: "slide-in",
-            });
-            
-            setUser(response.data.data);
-            router.push('/verify-email');
-          }
-          else {
-            throw new Error(response);
-          }
-        } catch (error){
+    try {
+      if (!form.username || !form.email || !form.password || !form.address || !form.phone) {
+        toast.show('Please fill all fields', {
+          type: "danger",
+          duration: 4000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+        return;
+      }
+      if (form.password !== confirm) {
+        toast.show('Passwords do not match', {
+          type: "danger",
+          duration: 4000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+        return;
+      }
 
-          toast.show(error.response.data.message, {
-            type: "danger",
-            duration: 4000,
-            offset: 30,
-            animationType: "slide-in",
-          });
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user`, form, { withCredentials: true });
 
-        } finally {
-          
-          setIsSubmitting(false);
-        }
-        
+      if (response.status === 201) {
+
+        toast.show("Successfully created account, please enter OTP sent to your email address", {
+          type: "success",
+          duration: 8000,
+          offset: 30,
+          animationType: "slide-in",
+        });
+
+        setUser(response.data.data);
+        router.push('/verify-email');
+      }
+      else {
+        throw new Error(response);
+      }
+    } catch (error) {
+
+      toast.show(error.response.data.message, {
+        type: "danger",
+        duration: 4000,
+        offset: 30,
+        animationType: "slide-in",
+      });
+
+    } finally {
+
+      setIsSubmitting(false);
+    }
+
   }
 
   return (
-    <SafeAreaView style={{flex:1,height:'100%'}}>
+    <SafeAreaView style={{ flex: 1, height: '100%' }}>
       <ScrollView>
 
         <View style={styles.container}>
@@ -95,9 +97,9 @@ const SignUp = () => {
             title="Username"
             placeholder="Enter your username"
             value={form.username}
-            handleChangeText = {(e) => setForm({...form, username: e})}
+            handleChangeText={(e) => setForm({ ...form, username: e })}
             secureTextEntry={false}
-            otherStyles={{marginBottom: 20, marginTop: 10}}
+            otherStyles={{ marginBottom: 20, marginTop: 10 }}
             isCapital={false}
           />
 
@@ -105,10 +107,10 @@ const SignUp = () => {
             title="Email"
             placeholder="Enter your email"
             value={form.email}
-            handleChangeText = {(e) => setForm({...form, email: e})}
+            handleChangeText={(e) => setForm({ ...form, email: e })}
             keyboardType="email-address"
             secureTextEntry={false}
-            otherStyles={{marginBottom: 20}}
+            otherStyles={{ marginBottom: 20 }}
             isCapital={false}
           />
           <FormField
@@ -116,27 +118,32 @@ const SignUp = () => {
             placeholder="Enter your phone number"
             value={form.phone}
             keyboardType="phone-pad"
-            handleChangeText = {(e) => setForm({...form, phone: e})}
+            handleChangeText={(e) => setForm({ ...form, phone: e })}
             secureTextEntry={false}
-            otherStyles={{marginBottom: 20}}
+            otherStyles={{ marginBottom: 20 }}
           />
-          <FormField
-            title="Address"
+          <MapboxPlacesAutocomplete
+            id="origin"
             placeholder="Enter your Address"
-            value={form.address}
-            handleChangeText = {(e) => setForm({...form, address: e})}
-            secureTextEntry={false}
-            otherStyles={{marginBottom: 20}}
+            accessToken={process.env.EXPO_PUBLIC_MAPBOXTOKEN} // Replace with your .env variable
+            onPlaceSelect={(data) => {
+              dispatch(setOrigin(data));
+              dispatch(setDestination(null));
+            }}
+            onClearInput={({ id }) => {
+              id === "origin" && dispatch(setOrigin(null));
+            }}
+            countryId="PK"
+            inputStyle={styles.inputS}
           />
-
           <FormField
             title="Password"
             placeholder="Enter your password"
             keyboardType="password"
             value={form.password}
-            handleChangeText = {(e) => setForm({...form, password: e})}
+            handleChangeText={(e) => setForm({ ...form, password: e })}
             secureTextEntry={true}
-            otherStyles={{marginBottom: 20}}
+            otherStyles={{ marginBottom: 20 }}
             isCapital={false}
           />
           <FormField
@@ -144,26 +151,26 @@ const SignUp = () => {
             placeholder="Re-Enter your password"
             keyboardType="password"
             value={confirm}
-            handleChangeText = {(e) => setConfirm(e)}
+            handleChangeText={(e) => setConfirm(e)}
             secureTextEntry={true}
-            otherStyles={{marginBottom: 20}}
+            otherStyles={{ marginBottom: 20 }}
             isCapital={false}
           />
 
           <CustomButton
-            textContent= "Sign Up"
-            handlePress= {submit}
-            containerStyles={{marginTop: 7}}
-            isLoading={isSubmitting}/>
+            textContent="Sign Up"
+            handlePress={submit}
+            containerStyles={{ marginTop: 7 }}
+            isLoading={isSubmitting} />
 
           <View style={styles.forgot}>
-            <Text style={{fontFamily: 'Poppins-Regular', fontSize: 16,color: 'grey'}}>
+            <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 16, color: 'grey' }}>
               Have an account?
             </Text>
 
             <Link href="./sign-in"
-                  style={{fontFamily: 'Poppins-SemiBold',color: 'red', fontSize: 16}}>
-                Sign In
+              style={{ fontFamily: 'Poppins-SemiBold', color: 'red', fontSize: 16 }}>
+              Sign In
             </Link>
 
           </View>
@@ -173,31 +180,36 @@ const SignUp = () => {
       </ScrollView>
     </SafeAreaView>
   )
-
 }
-
 const styles = StyleSheet.create({
+  inputS: {
+    flex: 1,
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 16,
+    width: '100%',
+    paddingLeft: 5
+  },
   container: {
-      justifyContent: 'center',
-      minHeight: vh(88),
-      width: '100vw',
-      padding: 15,
-      margin: 6,
-    },
-    textM: {
-      fontFamily: 'Poppins-SemiBold',
-      fontSize: 22,
-      fontWeight: '500',
-      marginBottom: 10,
-      marginTop: 10,
-    },
-    forgot: {
-      // alignItems: 'center',
-      justifyContent: 'center',
-      paddingTop: 15,
-      flexDirection: 'row',
-      gap: 2,
-    }
-  });
+    justifyContent: 'center',
+    minHeight: vh(88),
+    width: '100vw',
+    padding: 15,
+    margin: 6,
+  },
+  textM: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 22,
+    fontWeight: '500',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  forgot: {
+    // alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 15,
+    flexDirection: 'row',
+    gap: 2,
+  }
+});
 
 export default SignUp
