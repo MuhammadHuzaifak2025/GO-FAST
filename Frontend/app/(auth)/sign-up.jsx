@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, ScrollView, Alert, ToastAndroid } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, ToastAndroid, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { vw, vh, vmin, vmax } from 'react-native-expo-viewport-units';
 import axios from 'axios'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "react-native-toast-notifications";
 import MapboxPlacesAutocomplete from "react-native-mapbox-places-autocomplete";
 import FormField from '../../components/FormField';
@@ -22,11 +22,14 @@ const SignUp = () => {
     password: '',
     address: '',
     phone: '',
+
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();
   const [confirm, setConfirm] = useState('');
+
+
 
   const submit = async () => {
 
@@ -84,7 +87,51 @@ const SignUp = () => {
     }
 
   }
+  const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [sessionToken, setSessionToken] = useState(''); // State to store session token
 
+  // Function to generate session token (you can also generate it on your backend if needed)
+  const generateSessionToken = () => {
+    return Math.random().toString(36).substring(2); // Example session token generator (replace with a more secure one if needed)
+  };
+  useEffect(() => {
+    if (!sessionToken) {
+      setSessionToken(generateSessionToken()); // Generate session token if not already set
+    }
+  }, [sessionToken]);
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (form.address.length < 3) {
+        setSuggestions([]);  // Clear suggestions if address is too short
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `https://api.mapbox.com/search/searchbox/v1/suggest?q=${form.address}&access_token=${process.env.EXPO_PUBLIC_MAPBOXTOKEN}&session_token=${sessionToken}&country=PK`
+        );
+        if (response.data && response.data.suggestions) {
+          setSuggestions(response.data.suggestions || []);
+        }
+        console.error('Error fetching suggestions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Delay the API call to reduce the number of requests made while typing
+    const debounceTimeout = setTimeout(() => {
+      fetchSuggestions();
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(debounceTimeout);  // Clean up timeout if address changes
+  }, [form.address]);
+  const handleSelectAddress = (address) => {
+    setForm({ ...form, address });
+    setSuggestions([]); // Clear suggestions once an address is selected
+  };
   return (
     <SafeAreaView style={{ flex: 1, height: '100%' }}>
       <ScrollView>
@@ -122,20 +169,31 @@ const SignUp = () => {
             secureTextEntry={false}
             otherStyles={{ marginBottom: 20 }}
           />
-          <MapboxPlacesAutocomplete
-            id="origin"
+          <FormField
+            title="Address"
             placeholder="Enter your Address"
-            accessToken={process.env.EXPO_PUBLIC_MAPBOXTOKEN} // Replace with your .env variable
-            onPlaceSelect={(data) => {
-              dispatch(setOrigin(data));
-              dispatch(setDestination(null));
-            }}
-            onClearInput={({ id }) => {
-              id === "origin" && dispatch(setOrigin(null));
-            }}
-            countryId="PK"
-            inputStyle={styles.inputS}
+            value={form.address}
+            keyboardType="phone-pad"
+            handleChangeText={(e) => setForm({ ...form, address: e })}
+            secureTextEntry={false}
+            otherStyles={{ marginBottom: 20 }}
           />
+          {loading && <Text>Loading...</Text>}
+          {suggestions.length > 0 && (
+            <View style={styles.suggestionsList}>
+              {suggestions.map((suggestion, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.suggestionItem}
+                  onPress={() => handleSelectAddress(suggestion.full_address || suggestion.place_formatted)}
+                >
+                  <Text style={styles.suggestionText}>
+                    {suggestion.full_address || suggestion.place_formatted}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           <FormField
             title="Password"
             placeholder="Enter your password"
@@ -182,13 +240,34 @@ const SignUp = () => {
   )
 }
 const styles = StyleSheet.create({
+  cont1: {
+    borderWidth: 1,
+    borderRadius: 12,
+    width: '100%',
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    focus: 'border-color: black',
+    backgroundColor: '#FFF',
+    borderColor: 'tomato',
+  },
   inputS: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: 16,
     flex: 1,
     fontFamily: 'Poppins-SemiBold',
     fontSize: 16,
     width: '100%',
     paddingLeft: 5
   },
+  img: {
+    width: 25,
+    height: 25,
+    resizeMode: 'contain',
+    tintColor: 'tomato',
+    marginRight: 10
+  }
+  ,
   container: {
     justifyContent: 'center',
     minHeight: vh(88),
