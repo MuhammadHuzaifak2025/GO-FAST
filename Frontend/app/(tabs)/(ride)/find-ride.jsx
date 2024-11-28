@@ -290,6 +290,7 @@ const FindRide = () => {
           data={filteredRides}
           keyExtractor={(item) => item.ride_id}
           renderItem={({ item }) => (
+            item.isPassenger ? null :
             <RideItem 
               from={item.routes[0]?.route_name || 'Unknown'}
               to={item.routes[1]?.route_name || 'Unknown'}
@@ -309,6 +310,7 @@ const FindRide = () => {
           )}
           refreshing={refreshing}
           onRefresh={() => {
+            setRides([]);
             setRefreshing(true);
             setListEnd(false);
             setPageCount(1);

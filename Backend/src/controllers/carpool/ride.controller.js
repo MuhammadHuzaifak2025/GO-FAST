@@ -125,11 +125,12 @@ const GetRides = asynchandler(async (req, res, next) => {
         const page = parseInt(req.params.page) || 1;
         const limit = parseInt(req.params.limit) || 10;
         const offset = (page - 1) * limit;
-        console.log(page, limit, offset);
+        // console.log(page, limit, offset);
 
         const rides = await sequelize.query(
-            `SELECT c.*, u.username FROM carpool_rides c
+            `SELECT c.*, u.username,passenger_id FROM carpool_rides c
             JOIN users u ON c.driver = u.user_id
+            LEFT OUTER JOIN ride_passengers p ON c.ride_id = p.ride_id
             WHERE c.ride_status = 'available' 
             AND c."start_time" >= now() AND
             c.driver != ${req.user.user_id} 
@@ -137,6 +138,8 @@ const GetRides = asynchandler(async (req, res, next) => {
             LIMIT ${limit} OFFSET ${offset}`,
             { type: QueryTypes.SELECT }
         );
+
+        // console.log("rides", rides);
 
         const rides_total = await sequelize.query(
             `SELECT COUNT(*) FROM carpool_rides 
@@ -152,6 +155,14 @@ const GetRides = asynchandler(async (req, res, next) => {
         if (rides.length) {
 
             for (const rides_details of rides) {
+
+                // console.log("," ,rides_details);
+
+                if(rides_details.passenger_id && rides_details.passenger_id === req.user.user_id){
+                    rides_details.isPassenger = true;
+                    // console.log("Hello");
+                    continue;
+                }
                 const vehicle = await sequelize.query(
                     `SELECT * FROM carpool_vehicles WHERE vehicle_id = ${rides_details.vehicle_id};`,
                     { type: QueryTypes.SELECT }
@@ -498,7 +509,8 @@ const fetchongoingride = asynchandler(async (req, res, next) => {
         const rides = await sequelize.query(
             `SELECT a.*,b.*,c.username FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id JOIN users c ON b.driver = c.user_id
             WHERE
-            a.passenger_id = ${req.user.user_id} 
+            a.passenger_id = ${req.user.user_id} AND 
+            b.ride_status != 'completed'
             ORDER BY a."createdAt" DESC `,
             { type: QueryTypes.SELECT }
         );
@@ -512,7 +524,7 @@ const fetchongoingride = asynchandler(async (req, res, next) => {
                 );
 
                 // console.log("ridedoutes", ridedoutes);
-                rides_details.routes = ridedoutes[0];
+                // rides_details.routes = ridedoutes[0];
 
                 rides_details.vehicle = vehicle[0];
                 rides_details.vehicle_id = undefined;

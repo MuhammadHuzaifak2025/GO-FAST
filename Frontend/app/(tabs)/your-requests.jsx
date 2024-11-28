@@ -153,6 +153,7 @@ const YourRequests = () => {
         throw new Error(response);
       }
     } catch (error) {
+      console.error('Error fetching requests:', error.response);
       if (error.response?.data?.message !== 'No pending requests found') {
         toast.show('Error fetching your requests, please try again later', {
           type: "danger",
@@ -194,7 +195,7 @@ const YourRequests = () => {
         setRides(response.data.data);
       }
     } catch (error) {
-      // console.error('Error fetching ongoing rides:', error);
+      console.error('Error fetching ongoing rides:', error.response);
     }
   };
 

@@ -92,7 +92,7 @@ const TabsLayout = () => {
             )
           }}/>
         <Tabs.Screen
-          name="inbox"
+          name="(Chat)"
           options={{
             title: 'Inbox',
             headerShown: false,

@@ -1,10 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GiftedChat } from 'react-native-gifted-chat';
 import io from 'socket.io-client';
-import { useGlobalContext } from '../../context/GlobalProvider';
+import { useGlobalContext } from '../../../context/GlobalProvider';
+import { useLocalSearchParams } from 'expo-router';
+import { getToken } from '../../../utils/expo-store';
 
-const ChatScreen = ({ route }) => {
+const ChatScreen = () => {
   
+  const item = useLocalSearchParams();
+
+
   const { user } = useGlobalContext();
 
   // const { roomId, userId, userName } = route.params; // Pass these as props
@@ -15,11 +20,11 @@ const ChatScreen = ({ route }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const socketInstance = io('http://<your-server-ip>:5000'); // Replace with your server address
+
+    const socketInstance = io(`${process.env.EXPO_PUBLIC_BACKEND_WS}`, {auth: { token: async () => await getToken('accessToken') }}); // Replace with your server address
     setSocket(socketInstance);
 
-    // Join the chat room
-    socketInstance.emit('joinRoom', roomId);
+    console.log(socketInstance);
 
     // Listen for incoming messages
     socketInstance.on('receiveMessage', (data) => {
@@ -38,7 +43,7 @@ const ChatScreen = ({ route }) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [roomId]);
+  }, []);
 
   const handleSend = useCallback(
     (newMessages = []) => {
@@ -64,8 +69,9 @@ const ChatScreen = ({ route }) => {
       messages={messages}
       onSend={(messages) => handleSend(messages)}
       user={{
-        _id: userId,
-        name: userName,
+        _id: user.user_id,
+        name: user.username,
+        
       }}
     />
   );
