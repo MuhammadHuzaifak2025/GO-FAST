@@ -18,7 +18,6 @@
       "supportsTablet": true
     },
     "android": {
-
       "permissions": ["CAMERA"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -33,6 +32,13 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location.",
+          "PermissionDetailsLocationAndroid": "This app wants to access your location to provide you with the best experience possible."
+        }
+      ],
       "expo-font",
       [
         "expo-camera",
