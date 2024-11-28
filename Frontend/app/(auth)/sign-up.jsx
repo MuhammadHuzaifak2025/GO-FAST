@@ -70,7 +70,8 @@ const SignUp = () => {
       }
 
       if (!location) {
-        console.error('Location not available for proximity');
+        // console.error('Location not available for proximity');
+        setLocation({ latitude: 24.8607, longitude: 67.0011 }); // Default to Karachi coordinates
         return;
       }
 
@@ -286,9 +287,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 5,            // Shadow for Android
-    zIndex: 999, 
+    zIndex: 999,
     flex: 1,
-    flexDirection:'column'            // Ensure it stays on top
+    flexDirection: 'column'            // Ensure it stays on top
   },
   suggestionItem: {
     padding: 12,
