@@ -10,7 +10,7 @@ const fetchride_request = asynchandler(async (req, res, next) => {
         const checkDriver = await sequelize.query(
             `SELECT * FROM ride_requests a 
              INNER JOIN carpool_rides b ON a.ride_id = b.ride_id 
-             WHERE b.driver = ?`,
+             WHERE b.driver = ? and b.ride_status != 'completed'`,
             {
                 replacements: [user_id],
                 type: QueryTypes.SELECT,
