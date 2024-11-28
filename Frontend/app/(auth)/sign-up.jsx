@@ -211,7 +211,7 @@ const SignUp = () => {
           />
           {loading && <Text>Loading...</Text>}
           {Array.isArray(suggestions) && suggestions.length > 0 && (
-            <View style={styles.suggestionsList}>
+            <ScrollView style={styles.suggestionsList}>
               {suggestions.map((suggestion, index) => (
                 <TouchableOpacity
                   key={index}
@@ -223,7 +223,7 @@ const SignUp = () => {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
           )}
           <FormField
             title="Password"
@@ -286,9 +286,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 5,            // Shadow for Android
-    zIndex: 999,             // Ensure it stays on top
+    zIndex: 999, 
     flex: 1,
-    flexDirection: 'column',
+    flexDirection:'column'            // Ensure it stays on top
   },
   suggestionItem: {
     padding: 12,
