@@ -226,7 +226,7 @@ const accept_ride_request = asynchandler(async (req, res, next) => {
                 transaction
             });
 
-        console.log(rides_seats[0][0]);
+        // console.log(rides_seats[0][0]);
 
         if (rides_seats[0][0].seat_available < 0) {
             // console.log("rollback");

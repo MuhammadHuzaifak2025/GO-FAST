@@ -3,6 +3,7 @@ import sequelize from "../../database/index.js";
 import { QueryTypes } from "sequelize";
 
 const store_driver = async (data) => {
+
     const [driver_id, request_id, driver_socket_it] = data;
     try {
         const driver = await sequelize.query(

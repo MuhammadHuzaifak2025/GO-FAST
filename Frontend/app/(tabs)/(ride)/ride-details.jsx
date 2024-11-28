@@ -139,10 +139,10 @@ const RideDetailsScreen = () => {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.contactButton}>
+          {/* <TouchableOpacity style={styles.contactButton}>
             <Ionicons name="chatbubble-ellipses-outline" size={20} color="#ff6347" />
             <Text style={styles.contactText}>Contact {ride.username}</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <View style={styles.vehicleInfo}>
             <Text style={styles.vehicleDetails}>Seats available: {ride.seat_available}</Text>

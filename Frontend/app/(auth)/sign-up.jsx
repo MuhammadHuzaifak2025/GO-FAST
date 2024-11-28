@@ -272,10 +272,10 @@ const SignUp = () => {
 }
 const styles = StyleSheet.create({
   suggestionsList: {
-    position: 'absolute',    // Makes the suggestion list float under the input field
-    top: 60,                 // Adjust according to the input field height
-    left: 0,
-    right: 0,
+    // position: 'absolute',    // Makes the suggestion list float under the input field
+    // top: 60,                 // Adjust according to the input field height
+    // left: 0,
+    // right: 0,
     backgroundColor: '#fff',
     borderRadius: 8,
     paddingVertical: 8,
@@ -287,6 +287,8 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,            // Shadow for Android
     zIndex: 999,             // Ensure it stays on top
+    flex: 1,
+    flexDirection: 'column',
   },
   suggestionItem: {
     padding: 12,
