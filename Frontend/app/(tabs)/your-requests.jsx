@@ -267,7 +267,7 @@ const YourRequests = () => {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#ff6347" />
+                <ActivityIndicator size="large" color={Colors.light.primary} />
                 <Text style={styles.loadingText}>Loading pending requests...</Text>
             </View>
         );
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f5f5f5",
     },
     loadingText: {
-        color: "#ff6347",
+        color: Colors.light.primary,
         marginTop: 10,
         fontSize: 16,
     },

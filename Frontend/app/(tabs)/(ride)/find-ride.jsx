@@ -259,7 +259,7 @@ const FindRide = () => {
                     <FontAwesome
                         name={showFilter ? "times" : "filter"}
                         size={24}
-                        color={Colors.light.item}
+                        color={Colors.light.primary}
                     />
                 </TouchableOpacity>
             </View>

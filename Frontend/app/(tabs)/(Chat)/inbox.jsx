@@ -36,6 +36,8 @@ const ChatScreen = () => {
 
       if (connected) {
         socketRef.current.on('reconnect', () => {
+          
+          console.log('Reconnected');
           socketRef.current.emit('request-ride-chat', {
             request_id: item.request_id,
           });
