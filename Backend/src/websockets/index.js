@@ -40,7 +40,6 @@ io.use(async (socket, next) => {
         next(new Error("Authentication Error"));
     }
 });
-
 io.on('connection', (socket) => {
     // console.log("User connected:", socket.user.user_id);
 
@@ -87,11 +86,20 @@ io.on('connection', (socket) => {
                     return socket.emit('error', { message: 'No passenger found' });
                 }
             }
+
         } catch (error) {
             console.error(error.message);
             socket.emit('error', { message: error.message || 'Error processing ride request' });
         }
     });
+
+    socket.on('reconnect', async (data) => {
+        console.log("Reconnect", data);
+        // socket.emit('request-ride-chat', (data))
+        socket.to(socket.id, { message: 'Both users connected' });
+        socket.to(socket.reciever).emit('both-connected', { message: 'Both users connected' });
+    })
+
 
     socket.on('send-chat-message', async (data) => {
         try {

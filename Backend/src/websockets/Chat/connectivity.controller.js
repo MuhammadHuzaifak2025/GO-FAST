@@ -64,6 +64,57 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
     }
 };
 
+const check_if_both_connected = async (socket, request_id) => {
+    try {
+        // Check if the driver (owner) is connected
+        const [Owner_ride_request] = await sequelize.query(
+            `SELECT * FROM ride_requests WHERE request_id = ? AND owner_socket_id IS NOT NULL`,
+            {
+                replacements: [request_id],
+                type: QueryTypes.SELECT,
+            }
+        );
+
+        // Check if the requesting user (passenger) is connected
+        const [Requesting_user_ride_request] = await sequelize.query(
+            `SELECT * FROM ride_requests WHERE request_id = ? AND requesting_user_socket_id IS NOT NULL`,
+            {
+                replacements: [request_id],
+                type: QueryTypes.SELECT,
+            }
+        );
+
+        // Emit messages if both are connected
+        if (Owner_ride_request) {
+            socket.to(Owner_ride_request.owner_socket_id).emit('socket-connected', {
+                message: "Owner (Driver) is Connected",
+            });
+        }
+
+        if (Requesting_user_ride_request) {
+            socket.to(Requesting_user_ride_request.requesting_user_socket_id).emit('socket-connected', {
+                message: "Passenger is Connected",
+            });
+        }
+
+        // Emit message if both are connected at the same time
+        if (Owner_ride_request && Requesting_user_ride_request) {
+            socket.to(Owner_ride_request.owner_socket_id).emit('both-connected', {
+                message: "Both Driver and Passenger are Connected",
+            });
+            socket.to(Requesting_user_ride_request.requesting_user_socket_id).emit('both-connected', {
+                message: "Both Driver and Passenger are Connected",
+            });
+        }
+    } catch (error) {
+        console.error("Error in check_if_both_connected:", error.message); // Log for debugging
+        socket.emit('error', {
+            message: error.message || 'Error processing ride request',
+        });
+    }
+};
+
+
 const search_for_driver = async (socket, request_id,) => {
     try {
         const driver = await sequelize.query(
