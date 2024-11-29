@@ -107,14 +107,16 @@ io.on('connection', (socket) => {
                 await io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
         }
         // io.to.emit({ message: 'Both users connected' });
-        io.to(socket.id).emit('both-connected', { message: 'Both users are connected' });
+        io.emit('both-connected', { message: 'Both users are connected' });
         io.to(socket.reciever).emit('both-connected', { message: 'Both users connected' });
+        console.log(socket.id, socket.reciever, "");
     }
     );
 
 
     socket.on('send-chat-message', async (data) => {
         try {
+            console.log(data);
             console.log(socket.reciever);
             if (socket.reciever === undefined) {
                 return socket.emit('chat-error', { message: 'Recipient not online' });

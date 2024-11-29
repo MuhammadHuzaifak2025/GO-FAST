@@ -61,7 +61,7 @@ const ChatScreen = () => {
           setIsLoading(true);
         });
 
-        tempSocket.on("receive-chat-message", (message) => {
+        tempSocket.on("receive-message", (message) => {
           setMessages((prevMessages) =>
             GiftedChat.append(prevMessages, [
               {
