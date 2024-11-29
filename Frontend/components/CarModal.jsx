@@ -10,6 +10,7 @@ import {
     Animated,
     ActivityIndicator,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useToast } from "react-native-toast-notifications";
@@ -250,13 +251,29 @@ export default function CarModal({ visible, onClose }) {
                             secureTextEntry={false}
                             otherStyles={{ marginVertical: 5 }}
                         />
-                        <FormField
-                            placeholder="Type Of Vehicle"
-                            value={form.type_of_car}
-                            handleChangeText={(e) => setForm({ ...form, type_of_car: e })}
-                            secureTextEntry={false}
-                            otherStyles={{ marginVertical: 5 }}
-                        />
+
+                        <View style={styles.picker}>
+                            <Picker
+                                selectedValue={form.type_of_car}
+                                onValueChange={(e) => setForm({ ...form, type_of_car: e })}
+                                mode="dropdown"
+                                style={{ color: Colors.light.item,fontFamily: "Poppins-SemiBold", fontSize: 16, paddingLeft: 0}}
+                            >
+                                <Picker.Item label="Type Of Vehicle" value="" />
+                               
+                                <Picker.Item
+                                    style={{fontFamily: "Poppins-SemiBold", fontSize: 16}}
+                                    label={"Car"}
+                                    value={"Car"}
+                                    />
+                                <Picker.Item
+                                    style={{fontFamily: "Poppins-SemiBold", fontSize: 16}}
+                                    label={"Bike"}
+                                    value={"Bike"}
+                                />
+    
+                            </Picker>
+                        </View>
                         <FormField
                             placeholder="Registration Number"
                             value={form.registrationNumber}
@@ -316,6 +333,22 @@ const styles = StyleSheet.create({
         top: 15,
         right: 15,
         zIndex: 1,
+    },
+    picker: {
+        textAlign: 'left',
+        backgroundColor: "#ffffff", // Picker background is white
+        color: "#333", // Darker text for better readability
+        borderRadius: 10,
+        marginVertical: 10,
+        paddingHorizontal: 10,
+        height: 50, // Increased height for better touch target
+        borderWidth: 1,
+        borderColor: Colors.light.contrast,
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     title: {
         fontSize: 28,
