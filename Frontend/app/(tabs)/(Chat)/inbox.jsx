@@ -49,7 +49,7 @@ const ChatScreen = () => {
         });
 
         tempSocket.on("reconnects", () => {
-          tempSocket.emit("reconnect", {"request_id": item.request_id});
+          tempSocket.emit("reconnect", { "request_id": item.request_id });
         });
 
         tempSocket.on("connect_error", (error) => {
@@ -60,7 +60,10 @@ const ChatScreen = () => {
           console.log("Both users connected to chat");
           setIsLoading(true);
         });
-
+        tempSocket.on("socket-disconnected", (message) => {
+          socketRef.current.disconnect();
+          setIsLoading(false);
+        });
         tempSocket.on("receive-message", (message) => {
           setMessages((prevMessages) =>
             GiftedChat.append(prevMessages, [
