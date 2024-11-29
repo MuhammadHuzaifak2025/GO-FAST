@@ -91,7 +91,7 @@ const ChatList = () => {
             <View style={styles.rideItemContainer}>
               <TouchableOpacity
                 style={styles.rideItem}
-                onPress={() => callsocket(item)}>
+                onPress={() => router.push({pathname: 'inbox', params: item})}>
                 <Text style={styles.rideTime}>{item.username}</Text>
               </TouchableOpacity>
             </View>

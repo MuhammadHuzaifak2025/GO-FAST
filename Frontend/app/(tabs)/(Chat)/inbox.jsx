@@ -1,3 +1,4 @@
+import { Text, View, SafeAreaView, ActivityIndicator, StyleSheet } from 'react-native';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { GiftedChat } from 'react-native-gifted-chat';
 import io from 'socket.io-client';
@@ -7,7 +8,9 @@ import { getToken } from '../../../utils/expo-store';
 import { v4 as uuidv4 } from 'uuid';
 
 const ChatScreen = () => {
+
   const item = useLocalSearchParams(); // Optional params from the route
+
   const senderId = item.user_id; // Replace with dynamic ID if needed
   const senderName = item.username; // Replace with dynamic name if needed
 
@@ -15,72 +18,78 @@ const ChatScreen = () => {
 
   const [messages, setMessages] = useState([]);
   const [connected, setConnected] = useState(false);
-  const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const initializeSocket = async () => {
-      if (socketRef.current) return;
 
-      const token = await getToken('accessToken');
-      socketRef.current = io(`${process.env.EXPO_PUBLIC_BACKEND_WS}`, {
-        auth: { token },
-      });
+    const connectToSocket = async () => {
+        try {
+            const token = await getToken('accessToken');
 
-      socketRef.current.on('connect', () => {
-        console.log('Connected to server');
-        setConnected(true);
-        socketRef.current.emit('request-ride-chat', {
-          request_id: item.request_id,
-        });
-      });
+            // Connect to the WebSocket server
+            const tempSocket = io(`${process.env.EXPO_PUBLIC_BACKEND_WS}`, {
+                auth: { token },
+                transports: ['websocket'],
+            });
 
-      if (connected) {
-        socketRef.current.on('reconnect', () => {
-          
-          console.log('Reconnected');
-          socketRef.current.emit('request-ride-chat', {
-            request_id: item.request_id,
-          });
-        });
+            // Set the socket instance in state
+            setSocket(tempSocket);
 
-        socketRef.current.on('receive-message', (data) => {
-          const incomingMessage = {
-            _id: uuidv4(),
-            text: data.message,
-            createdAt: new Date(data.timestamp),
-            user: {
-              _id: data.senderId,
-              name: data.senderName,
-            },
-          };
-          setMessages((prevMessages) =>
-            GiftedChat.append(prevMessages, [incomingMessage])
-          );
-        });
-      }
+            // Handle connection events
+            tempSocket.on('connect', () => {
+                console.log('Socket connected:', tempSocket.id);
+                connectToChat(tempSocket);
+            });
+
+            tempSocket.on('reconnect', () => {
+                tempSocket.emit('reconnect', item.request_id);
+            });
+
+            tempSocket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+            });
+
+            tempSocket.on('both-connected', () => {
+                setIsLoading(true);
+            })
+        } catch (error) {
+            console.error('Error connecting to socket:', error);
+        }
     };
 
-    initializeSocket();
+    const connectToChat = (tempSocket) => {
+        if (tempSocket && item?.request_id) {
+            tempSocket.emit('request-ride-chat', {
+                request_id: item.request_id,
+            });
+        }
+    };
 
+    // Initialize socket connection
+    connectToSocket();
+    connectToChat(socket);
+
+    // Clean up function to disconnect the socket on unmount
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
+        if (socket) {
+            socket.disconnect();
+            console.log('Socket disconnected');
+        }
     };
-  }, [item.request_id]); // Dependency array to rerun if request_id changes
+}, [item.request_id]); 
 
   const handleSend = useCallback(
     (newMessages = []) => {
       const message = newMessages[0];
 
-      if (!socketRef.current) {
+      if (!socket) {
         console.warn('Socket not initialized');
         return;
       }
 
       // Emit the message to the server
-      socketRef.current.emit('send-chat-message', {
+      socket.emit('send-chat-message', {
         request_id: item.request_id,
         message: message.text,
         timestamp: new Date().toISOString(),
@@ -97,15 +106,43 @@ const ChatScreen = () => {
   );
 
   return (
-    <GiftedChat
-      messages={messages}
-      onSend={(messages) => handleSend(messages)}
-      user={{
-        _id: user.user_id,
-        name: user.username,
-      }}
-    />
+    <SafeAreaView style={styles.container}>
+
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.light.contrast} />
+          <Text style={styles.loadingText}>Loading rides...</Text>
+        </View>
+      ) : (
+        <GiftedChat
+        messages={messages}
+        onSend={(messages) => handleSend(messages)}
+        user={{
+          _id: user.user_id,
+          name: user.username,
+        }}
+        />
+      )}
+
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    // backgroundColor: "#ffffff",
+},
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+},
+loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#333",
+},
+});
 
 export default ChatScreen;
