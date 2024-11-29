@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
         let userType;
         try {
             const response = await is_driver_is_requester([data.request_id, socket.user.user_id]);
-
+       
             if (response === "driver") {
                 await store_driver([socket.user.user_id, data.request_id, socket.id]);
                 userType = "driver";
@@ -63,19 +63,20 @@ io.on('connection', (socket) => {
                 message: 'Ride request chat initiated',
                 user: userType,
             });
+            
             if (userType === "driver") {
                 console.log("Driver", socket.id);
                 await searchForPassenger(socket, data.request_id);
-                
-                if(socket.reciever)
-                    io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+
+                if (socket.reciever)
+                    await io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
             if (userType === "passenger") {
                 console.log("Passenger", socket.id);
                 await search_for_driver(socket, data.request_id);
-                
-                if(socket.reciever)
-                    io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+
+                if (socket.reciever)
+                    await io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         } catch (error) {
             console.error(error.message);

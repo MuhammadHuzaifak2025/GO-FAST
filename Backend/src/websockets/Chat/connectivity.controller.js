@@ -43,12 +43,13 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
         );
 
         if (passengers.length > 0) {
+            
             if (passengers[0].requesting_user_socket_id) {
                 socket.reciever = passengers[0].requesting_user_socket_id;
                 socket.to(socket.reciever).emit('ride-request-chat', {
                     message: 'Driver is ready to chat',
                 });
-                socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+                await socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         }
     } catch (error) {
@@ -68,13 +69,14 @@ const search_for_driver = async (socket, request_id,) => {
                 type: QueryTypes.SELECT,
             }
         );
+       
         if (driver[0]) {
             if (driver[0].owner_socket_id) {
                 socket.reciever = driver[0].owner_socket_id;
-                socket.to(socket.reciever).emit('ride-request-chat', {
+                await socket.to(socket.reciever).emit('ride-request-chat', {
                     message: 'Passenger is ready to chat',
                 });
-                socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+                await socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         }
 
@@ -119,7 +121,7 @@ const is_driver_is_requester = async (data) => {
         if (!request_id || !user_id) {
             throw new Error("Invalid request data");
         }
-
+        console.log("request_id", request_id);
         // Check if the user is the driver
         const checkDriver = await sequelize.query(
             `SELECT * FROM ride_requests a 
@@ -131,10 +133,10 @@ const is_driver_is_requester = async (data) => {
             }
         );
 
+        console.log("checkDriver", checkDriver);
         if (checkDriver.length > 0) {
             return "driver";
         }
-
         // Check if the user is the requesting passenger
         const checkPassenger = await sequelize.query(
             `SELECT * FROM ride_requests a 
