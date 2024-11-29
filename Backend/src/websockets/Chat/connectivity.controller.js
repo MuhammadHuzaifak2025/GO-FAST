@@ -48,6 +48,7 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
                 socket.to(socket.reciever).emit('ride-request-chat', {
                     message: 'Driver is ready to chat',
                 });
+                socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         }
     } catch (error) {
@@ -73,6 +74,7 @@ const search_for_driver = async (socket, request_id,) => {
                 socket.to(socket.reciever).emit('ride-request-chat', {
                     message: 'Passenger is ready to chat',
                 });
+                socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         }
 
