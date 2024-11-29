@@ -121,6 +121,20 @@ const ChatScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+
+      <View style={styles.header}>
+        <TouchableOpacity
+            onPress={() => router.replace("/chat-list")}
+            style={styles.backButton}
+        >
+            <Ionicons
+                name="arrow-back"
+                size={28}
+                color={Colors.light.contrast}
+            />
+        </TouchableOpacity>
+      </View>
+
       {!isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" />
@@ -143,6 +157,26 @@ const ChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  scrollContent: {
+      flexGrow: 1,
+  },
+  header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      // backgroundColor: "white",
+  },
+  backButton: {
+      padding: 8,
+      borderRadius: 8,
+      backgroundColor: "rgba(255, 255, 255, 0.2)",
   },
   loadingContainer: {
     flex: 1,
