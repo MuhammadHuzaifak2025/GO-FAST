@@ -26,6 +26,9 @@ const store_driver = async (data) => {
             throw new Error("Driver not found");
         }
     } catch (error) {
+        // socket.emit('error', {
+        //     message: error.message || 'Error processing ride request',
+        // });
         throw new Error("Error processing ride requestasdas");
     }
 };
@@ -43,7 +46,7 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
         );
 
         if (passengers.length > 0) {
-            
+
             if (passengers[0].requesting_user_socket_id) {
                 socket.reciever = passengers[0].requesting_user_socket_id;
                 socket.to(socket.reciever).emit('ride-request-chat', {
@@ -53,6 +56,9 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
             }
         }
     } catch (error) {
+        socket.emit('error', {
+            message: error.message || 'Error processing ride request',
+        });
         console.error("Error in searchForPassenger:", error.message); // Log for debugging
         socket.emit('error', { message: error.message || 'Error processing ride request' });
     }
@@ -69,7 +75,7 @@ const search_for_driver = async (socket, request_id,) => {
                 type: QueryTypes.SELECT,
             }
         );
-       
+
         if (driver[0]) {
             if (driver[0].owner_socket_id) {
                 socket.reciever = driver[0].owner_socket_id;
@@ -112,6 +118,9 @@ const store_requesting_passenger = async (data) => {
         }
     } catch (error) {
         console.error("Error in is_driver_is_requester:", error.message);
+        // socket.emit('error', {
+        //     message: error.message || 'Error processing ride request',
+        // });
         throw new Error("Error processing ride request");
     }
 }
@@ -154,8 +163,7 @@ const is_driver_is_requester = async (data) => {
 
         throw new Error("User not found for the given request");
     } catch (error) {
-        console.error("Error in is_driver_is_requester:", error.message); // Log for debugging
-        throw new Error(error.message || "Error processing ride request");
+        return error;
     }
 };
 
