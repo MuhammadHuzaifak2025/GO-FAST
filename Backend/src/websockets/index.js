@@ -95,10 +95,22 @@ io.on('connection', (socket) => {
 
     socket.on('reconnect', async (data) => {
         console.log("Reconnect", data);
-        // socket.emit('request-ride-chat', (data))
-        socket.to(socket.id, { message: 'Both users connected' });
-        socket.to(socket.reciever).emit('both-connected', { message: 'Both users connected' });
-    })
+        const response = await is_driver_is_requester([data.request_id, socket.user.user_id]);
+        if (response === "driver") {
+            const resp = await searchForPassenger(socket, data.request_id);
+            if (!resp)
+                await io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+        }
+        if (response === "passenger") {
+            const resp = await search_for_driver(socket, data.request_id);
+            if (!resp)
+                await io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+        }
+        // io.to.emit({ message: 'Both users connected' });
+        io.to(socket.id).emit('both-connected', { message: 'Both users are connected' });
+        io.to(socket.reciever).emit('both-connected', { message: 'Both users connected' });
+    }
+    );
 
 
     socket.on('send-chat-message', async (data) => {

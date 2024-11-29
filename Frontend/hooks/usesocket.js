@@ -1,13 +1,13 @@
 import axios from 'axios';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
 const useSocket = (data) => {
     const [socket, setSocket] = useState(null);
 
-    // Function to retrieve the token (mock implementation, replace with actual logic)
     const getToken = async (key) => {
-        // Replace this with your token retrieval logic
+
         return "yourAccessToken";
     };
 
@@ -32,13 +32,16 @@ const useSocket = (data) => {
                 });
 
                 tempSocket.on('reconnect', () => {
-                    console.log('Socket reconnected');
-                    connectToChat(tempSocket);
+                    tempSocket.emit('reconnect', data);
                 });
 
                 tempSocket.on('connect_error', (error) => {
                     console.error('Socket connection error:', error);
                 });
+
+                tempSocket.on('both-connected', () => {
+                    router.push({ pathname: 'inbox', params: item })
+                })
             } catch (error) {
                 console.error('Error connecting to socket:', error);
             }
@@ -63,7 +66,7 @@ const useSocket = (data) => {
                 console.log('Socket disconnected');
             }
         };
-    }, [data.request_id]); // Re-run if request_id changes
+    }, [data.request_id]); 
 
     return socket;
 };
