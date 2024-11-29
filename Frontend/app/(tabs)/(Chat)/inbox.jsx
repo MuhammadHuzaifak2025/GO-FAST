@@ -48,8 +48,8 @@ const ChatScreen = () => {
           }
         });
 
-        tempSocket.on("reconnect", () => {
-          tempSocket.emit("reconnect", item.request_id);
+        tempSocket.on("reconnects", () => {
+          tempSocket.emit("reconnect", {"request_id": item.request_id});
         });
 
         tempSocket.on("connect_error", (error) => {
@@ -124,7 +124,7 @@ const ChatScreen = () => {
       {!isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" />
-          <Text style={styles.loadingText}>Loading rides...</Text>
+          <Text style={styles.loadingText}>Waiting For Other Partner to Connect</Text>
         </View>
       ) : (
         <GiftedChat

@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
                 await searchForPassenger(socket, data.request_id);
 
                 if (socket.reciever)
-                    await io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+                    await io.to(socket.reciever).emit('reconnects', { message: 'Reconnect to chat' });
                 else {
                     return socket.emit('error', { message: 'No passenger found' });
                 }
@@ -81,7 +81,7 @@ io.on('connection', (socket) => {
                 await search_for_driver(socket, data.request_id);
 
                 if (socket.reciever)
-                    await io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
+                    await io.to(socket.reciever).emit('reconnects', { message: 'Reconnect to chat' });
                 else {
                     return socket.emit('error', { message: 'No passenger found' });
                 }
@@ -96,6 +96,7 @@ io.on('connection', (socket) => {
     socket.on('reconnect', async (data) => {
         console.log("Reconnect", data);
         const response = await is_driver_is_requester([data.request_id, socket.user.user_id]);
+        console.log(response);
         if (response === "driver") {
             const resp = await searchForPassenger(socket, data.request_id);
             if (!resp)
