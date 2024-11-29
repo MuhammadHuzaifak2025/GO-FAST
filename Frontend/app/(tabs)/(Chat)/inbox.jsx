@@ -4,15 +4,16 @@ import {
   SafeAreaView,
   ActivityIndicator,
   StyleSheet,
+  TouchableOpacity
 } from "react-native";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { GiftedChat } from "react-native-gifted-chat";
 import io from "socket.io-client";
 import { useGlobalContext } from "../../../context/GlobalProvider";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { getToken } from "../../../utils/expo-store";
 import { v4 as uuidv4 } from "uuid";
-
+import { Ionicons } from "@expo/vector-icons";
 const ChatScreen = () => {
   const item = useLocalSearchParams();
 
@@ -127,14 +128,14 @@ const ChatScreen = () => {
 
       <View style={styles.header}>
         <TouchableOpacity
-            onPress={() => router.replace("/chat-list")}
-            style={styles.backButton}
+          onPress={() => router.replace("/chat-list")}
+          style={styles.backButton}
         >
-            <Ionicons
-                name="arrow-back"
-                size={28}
-                color={Colors.light.contrast}
-            />
+          <Ionicons
+            name="arrow-back"
+            size={28}
+
+          />
         </TouchableOpacity>
       </View>
 
@@ -166,20 +167,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   scrollContent: {
-      flexGrow: 1,
+    flexGrow: 1,
   },
   header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingVertical: 16,
-      paddingHorizontal: 16,
-      // backgroundColor: "white",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    // backgroundColor: "white",
   },
   backButton: {
-      padding: 8,
-      borderRadius: 8,
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
   },
   loadingContainer: {
     flex: 1,
