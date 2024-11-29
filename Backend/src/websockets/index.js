@@ -66,10 +66,16 @@ io.on('connection', (socket) => {
             if (userType === "driver") {
                 console.log("Driver", socket.id);
                 await searchForPassenger(socket, data.request_id);
+                
+                if(socket.reciever)
+                    io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
             if (userType === "passenger") {
                 console.log("Passenger", socket.id);
                 await search_for_driver(socket, data.request_id);
+                
+                if(socket.reciever)
+                    io.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         } catch (error) {
             console.error(error.message);

@@ -56,7 +56,7 @@ const RequestItem = ({ time, car, refreshRides, username, req_id }) => {
                 throw new Error(response);
               }
             } catch (error) {
-              console.log(error.response);
+              // console.log(error.response);
               toast.show('Failed to delete request. Please try again.', {
                 type: "danger",
                 duration: 4000,
@@ -153,7 +153,7 @@ const YourRequests = () => {
         throw new Error(response);
       }
     } catch (error) {
-      console.error('Error fetching requests:', error.response);
+      // console.error('Error fetching requests:', error.response);
       if (error.response?.data?.message !== 'No pending requests found') {
         toast.show('Error fetching your requests, please try again later', {
           type: "danger",
@@ -195,7 +195,7 @@ const YourRequests = () => {
         setRides(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching ongoing rides:', error.response);
+      // console.error('Error fetching ongoing rides:', error.response);
     }
   };
 

@@ -8,7 +8,7 @@ const fetchride_request = asynchandler(async (req, res, next) => {
     try {
         const user_id = req.user.user_id;
         const checkDriver = await sequelize.query(
-            `SELECT a.*, b.* ,c.username FROM ride_requests a 
+            `SELECT a.*, b.* ,c.username, c.user_id FROM ride_requests a 
              INNER JOIN carpool_rides b ON a.ride_id = b.ride_id
              inner join users c on a.requesting_user = c.user_id 
              WHERE b.driver = ? and b.ride_status != 'completed'`,
@@ -27,10 +27,11 @@ const fetchride_request = asynchandler(async (req, res, next) => {
 
         }
         const ride_request = await sequelize.query(
-            `SELECT a.*, b, FROM ride_requests a WHERE requesting_user = ${user_id}
-            inner join users b on a.requesting_user = b.user_id
-            inner join car_pool_rides c on a.ride_id = c.ride_id
-            WHERE c.ride_status != 'completed'`,
+            `SELECT a.*, b.username, b.user_id FROM ride_requests a
+            inner join carpool_rides c on a.ride_id = c.ride_id
+            inner join users b on b.user_id = c.driver
+            WHERE requesting_user = ${user_id} AND
+            c.ride_status != 'completed'`,
             {
                 type: QueryTypes.SELECT,
             }

@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { setAuthHeaders } from '../../../utils/expo-store';
 import { useToast } from 'react-native-toast-notifications';
-import { Cancellable, FlashList } from '@shopify/flash-list';
+import { FlashList } from '@shopify/flash-list';
 
 const PassengerItem = ({ username, phone, fare, ride_id, passenger_id, seats, refreshPassenger }) => {
 

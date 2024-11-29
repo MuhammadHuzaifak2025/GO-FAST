@@ -1,67 +1,92 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { GiftedChat } from 'react-native-gifted-chat';
 import io from 'socket.io-client';
 import { useGlobalContext } from '../../../context/GlobalProvider';
 import { useLocalSearchParams } from 'expo-router';
 import { getToken } from '../../../utils/expo-store';
+import { v4 as uuidv4 } from 'uuid';
 
 const ChatScreen = () => {
-  
-  const item = useLocalSearchParams();
 
+  const item = useLocalSearchParams(); // Optional params from the route
+  // console.log("1",item);
+
+  const senderId = item.user_id; // Replace with dynamic ID if needed
+  const senderName = item.username; // Replace with dynamic name if needed
 
   const { user } = useGlobalContext();
 
-  // const { roomId, userId, userName } = route.params; // Pass these as props
-  const userId = user.user_id;
-  const userName = user.username;
-  const roomId = 1;
   const [messages, setMessages] = useState([]);
-  const [socket, setSocket] = useState(null);
+  
+  const [isInit, setisInit] = useState(false);
+  
+  const socketRef = useRef(null);
 
   useEffect(() => {
-
-    const socketInstance = io(`${process.env.EXPO_PUBLIC_BACKEND_WS}`, {auth: { token: async () => await getToken('accessToken') }}); // Replace with your server address
-    setSocket(socketInstance);
-
-    console.log(socketInstance);
-
-    // Listen for incoming messages
-    socketInstance.on('receiveMessage', (data) => {
-      const incomingMessage = {
-        _id: data.messageId,
-        text: data.text,
-        createdAt: new Date(data.createdAt),
-        user: {
-          _id: data.senderId,
-          name: data.senderName,
-        },
+      const initializeSocket = async () => {
+          if (socketRef.current) return; // Skip reinitialization
+  
+          const token = await getToken('accessToken');
+          socketRef.current = io(`${process.env.EXPO_PUBLIC_BACKEND_WS}`, { auth: { token } });
+  
+          socketRef.current.on('reconnect', () => {
+              console.log('Reconnected to server');
+              if (!isInit) {
+                  socketRef.current.emit('request-ride-chat', { request_id: item.request_id });
+              }
+          });
+  
+          socketRef.current.on('receive-message', (data) => {
+              const incomingMessage = {
+                  _id: uuidv4(),
+                  text: data.message,
+                  createdAt: new Date(data.timestamp),
+                  user: {
+                      _id: senderId,
+                      name: senderName,
+                  },
+              };
+              setMessages((prevMessages) => GiftedChat.append(prevMessages, incomingMessage));
+          });
+  
+          if (!isInit) {
+              setisInit(true);
+              socketRef.current.emit('request-ride-chat', { request_id: item.request_id });
+          }
       };
-      setMessages((prevMessages) => GiftedChat.append(prevMessages, incomingMessage));
-    });
+  
+      initializeSocket();
+  
+      return () => {
+          if (socketRef.current) {
+              socketRef.current.disconnect();
+          }
+      };
+  }, [isInit]);
 
-    return () => {
-      socketInstance.disconnect();
-    };
-  }, []);
 
   const handleSend = useCallback(
     (newMessages = []) => {
       const message = newMessages[0];
 
+      if (!socketRef.current) {
+        console.warn('Socket not initialized');
+        return;
+      }
+
       // Emit the message to the server
-      socket.emit('sendMessage', {
-        room: roomId,
-        messageId: message._id,
-        text: message.text,
-        senderId: userId,
-        senderName: userName,
-        createdAt: message.createdAt,
+      socketRef.current.emit('send-chat-message', {
+        request_id: item.request_id,
+        message: message.text,
+        timestamp: new Date().toISOString(),
+        senderId,
+        senderName,
       });
 
-      setMessages((prevMessages) => GiftedChat.append(prevMessages, message));
+      // Append the message to the local state
+      setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
     },
-    [socket, roomId, userId, userName]
+    [socketRef, senderId, senderName]
   );
 
   return (
@@ -71,8 +96,8 @@ const ChatScreen = () => {
       user={{
         _id: user.user_id,
         name: user.username,
-        
       }}
+      
     />
   );
 };
