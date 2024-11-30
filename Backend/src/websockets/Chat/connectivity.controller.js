@@ -323,9 +323,9 @@ const fetchall_messages = async (socket) => {
                 type: QueryTypes.SELECT,
             }
         );
-        socket.to(socket.id).emit('all-messages', { messages });
-        console.log(messages);
-        return messages;
+        // socket.to(socket.id).emit('all-messages', { messages });
+        // console.log(messages);
+        return messages.reverse();
     } catch (error) {
         socket.emit('error', {
             message: error.message || 'Error processing ride request',

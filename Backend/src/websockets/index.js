@@ -127,6 +127,7 @@ io.on('connection', (socket) => {
                     message: data.message,
                     timestamp: new Date(),
                 });
+                save_message(data, socket);
             }
             else {
                 save_message(data, socket);
