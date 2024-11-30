@@ -14,7 +14,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { getToken } from "../../../utils/expo-store";
 import { v4 as uuidv4 } from "uuid";
 import { Ionicons } from "@expo/vector-icons";
+
 const ChatScreen = () => {
+
   const item = useLocalSearchParams();
 
   const senderId = item.user_id;

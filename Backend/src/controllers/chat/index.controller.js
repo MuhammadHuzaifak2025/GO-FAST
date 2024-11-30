@@ -27,7 +27,7 @@ const fetchride_request = asynchandler(async (req, res, next) => {
 
         }
         const ride_request = await sequelize.query(
-            `SELECT a.*, b.username, b.user_id FROM ride_requests a
+            `SELECT a.*, b.username, b.user_id, c.* FROM ride_requests a
             inner join carpool_rides c on a.ride_id = c.ride_id
             inner join users b on b.user_id = c.driver
             WHERE requesting_user = ${user_id} AND

@@ -11,22 +11,83 @@ import { useFocusEffect } from '@react-navigation/native';
 import useSocket from '../../../hooks/usesocket';
 import { Colors } from "../../../constants/Colors";
 
+const ChatComponent = ({item}) => {
+
+  const rideDate = new Date(item.start_time);
+  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const month = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+  ];
+
+  let hours = rideDate.getHours();
+  let minutes = rideDate.getMinutes();
+  const newformat = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12 || 12;
+  hours = hours < 10 ? `0${hours}` : hours;
+  minutes = minutes < 10 ? `0${minutes}` : minutes;
+
+  const formatTime = `${hours}:${minutes} ${newformat}`;
+
+  return (
+    <View style={styles.rideItemContainer}>
+      <TouchableOpacity
+        style={styles.chatItem}
+        onPress={() => router.push({ pathname: 'inbox', params: item })}
+        >
+        <View style={styles.chatContent}>
+          {/* Avatar */}
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {item.username?.charAt(0).toUpperCase() || "?"}
+            </Text>
+          </View>
+          
+          {/* Text Section */}
+          <View style={styles.chatTextContainer}>
+            <Text style={styles.chatUsername} numberOfLines={1} ellipsizeMode="tail">
+              {item.username}
+            </Text>
+            <Text style={styles.rideTime}>
+                    {weekday[rideDate.getDay()]}, {rideDate.getDate()}{" "}
+                    {month[rideDate.getMonth()]} • {formatTime}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 const ChatList = () => {
 
   const toast = useToast();
-
+  
   const [chat, setChat] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   // const {uses}
 
   const fetchRequests = async () => {
 
     try {
+      setChat([]);
       setIsLoading(true);
 
       setAuthHeaders();
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/requests/chat`);
-      console.log(response.data);
+      // console.log(response.data);
 
       if (response.status === 200) {
 
@@ -88,38 +149,17 @@ const ChatList = () => {
           data={chat}
           keyExtractor={(item) => item.request_id}
           renderItem={({ item }) => (
-            
-            console.log(item),
-            <View style={styles.rideItemContainer}>
-              <TouchableOpacity
-                style={styles.chatItem}
-                onPress={() => router.push({ pathname: 'inbox', params: item })}
-              >
-                <View style={styles.chatContent}>
-                  {/* Avatar */}
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                      {item.username?.charAt(0).toUpperCase() || "?"}
-                    </Text>
-                  </View>
-                  
-                  {/* Text Section */}
-                  <View style={styles.chatTextContainer}>
-                    <Text style={styles.chatUsername} numberOfLines={1} ellipsizeMode="tail">
-                      {item.username}
-                    </Text>
-                    <Text style={styles.chatLastMessage} numberOfLines={1} ellipsizeMode="tail">
-                      Tap to view messages
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-
+            <ChatComponent item={item} />
           )}
           ListEmptyComponent={() => (
             <Text style={styles.subheading}>No chats available.</Text>
           )}
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            fetchRequests();
+            setRefreshing(false);
+          }}
           removeClippedSubviews={false}
         />
       )}
@@ -201,7 +241,7 @@ const styles = StyleSheet.create({
   },
   rideTime: {
     fontSize: 14,
-    color: '#ff6347',
+    color: Colors.light.primary,
     // marginTop: 10,
     fontWeight: 'bold',
   },
