@@ -75,7 +75,8 @@ const ChatScreen = () => {
 
             // Validate that `newmessage` is an array
             if (!Array.isArray(newmessage)) {
-              console.error("Invalid messages format: Expected an array.", newmessage);
+              // console.error("Invalid messages format: Expected an array.", newmessage);
+              setIsLoading(true);
               return;
             }
 

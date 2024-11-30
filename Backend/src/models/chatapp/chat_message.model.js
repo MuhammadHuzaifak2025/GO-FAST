@@ -10,6 +10,7 @@ const ChatMessage = sequelize.define('ChatMessage', {
         autoIncrement: true
     },
     chat_id: {
+        onDelete: 'CASCADE',
         type: DataTypes.INTEGER,
         references: {
             model: Chat,

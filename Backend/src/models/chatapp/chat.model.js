@@ -14,7 +14,8 @@ const Chat = sequelize.define('Chat', {
         references: {
             model: ride_request,
             key: 'request_id'
-        }
+        },
+        onDelete: 'CASCADE',
     },
     timestamp: {
         type: DataTypes.DATE,

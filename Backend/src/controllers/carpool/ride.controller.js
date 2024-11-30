@@ -158,7 +158,7 @@ const GetRides = asynchandler(async (req, res, next) => {
 
                 // console.log("," ,rides_details);
 
-                if(rides_details.passenger_id && rides_details.passenger_id === req.user.user_id){
+                if (rides_details.passenger_id && rides_details.passenger_id === req.user.user_id) {
                     rides_details.isPassenger = true;
                     // console.log("Hello");
                     continue;
@@ -290,12 +290,16 @@ const delete_ride = asynchandler(async (req, res, next) => {
         if (!route_id) {
             return next(new ApiError(400, "Failed to delete ride route"));
         }
-
+        const [req_id] = await sequelize.query(`Select * from ride_requests where ride_id = ${ride_id}`, { type: QueryTypes.SELECT })
         const request = await sequelize.query(`Delete from ride_requests where ride_id = ${ride_id}`, { type: QueryTypes.DELETE })
         if (!request) {
             return next(new ApiError(400, "Failed to delete ride request"));
         }
-
+        if (req_id) {
+            for (const req of req_id) {
+                const chat = await sequelize.query(`Delete from "Chats" where request_id = ${req.request_id}`, { type: QueryTypes.DELETE })
+            }
+        }
         const ride = await sequelize.query(
             `DELETE FROM carpool_rides WHERE ride_id = ?`,
             {
@@ -469,7 +473,7 @@ const delete_ride_passenger = asynchandler(async (req, res, next) => {
         if (!driver[0]) {
             return next(new ApiError(400, "Ride not found"));
         }
-        if (driver[0].driver !== req.user.user_id ) {
+        if (driver[0].driver !== req.user.user_id) {
             return next(new ApiError(400, "You are not authorized to delete passengers"));
         }
         if (driver[0].ride_status === 'completed') {
@@ -477,7 +481,7 @@ const delete_ride_passenger = asynchandler(async (req, res, next) => {
         }
 
         const update_seat = await sequelize.query(
-        `UPDATE carpool_rides SET seat_available = seat_available + (SELECT seats_occupied FROM ride_passengers WHERE ride_id = ? AND passenger_id = ?), ride_status='available' WHERE ride_id = ?`,
+            `UPDATE carpool_rides SET seat_available = seat_available + (SELECT seats_occupied FROM ride_passengers WHERE ride_id = ? AND passenger_id = ?), ride_status='available' WHERE ride_id = ?`,
             { type: QueryTypes.UPDATE, replacements: [ride_id, passenger_id, ride_id] }
         );
 
