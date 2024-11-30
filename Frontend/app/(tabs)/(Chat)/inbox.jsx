@@ -19,7 +19,7 @@ const ChatScreen = () => {
 
   const senderId = item.user_id;
   const senderName = item.username;
-
+  const [isonline, setOnline] = useState(false);
   const { user } = useGlobalContext();
 
   const [messages, setMessages] = useState([]);
@@ -153,8 +153,8 @@ const ChatScreen = () => {
   }, [item.request_id]);
 
   useEffect(() => {
-    console.log("Online state changed:", isloading);
-  }, [isloading]);
+    setOnline(online.current);
+  }, [online.current]);
 
   const handleSend = useCallback(
     (newMessages = []) => {
