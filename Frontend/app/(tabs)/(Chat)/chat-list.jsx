@@ -106,7 +106,7 @@ const ChatList = () => {
                   {/* Text Section */}
                   <View style={styles.chatTextContainer}>
                     <Text style={styles.chatUsername} numberOfLines={1} ellipsizeMode="tail">
-                      {item.username || "Unknown User"}
+                      {item.username}
                     </Text>
                     <Text style={styles.chatLastMessage} numberOfLines={1} ellipsizeMode="tail">
                       Tap to view messages
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   
   chatTextContainer: {
-    flex: 1, /* Ensure text container takes available space */
+    // flex: 1, /* Ensure text container takes available space */
     justifyContent: 'center',
   },
   
