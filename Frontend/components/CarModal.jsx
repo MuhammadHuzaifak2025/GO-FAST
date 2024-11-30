@@ -116,6 +116,13 @@ export default function CarModal({ visible, onClose }) {
                 type: "danger",
                 duration: 3000,
             });
+        if( form.seats < 1 || form.seats > 6){
+            toast.show("Please enter a valid number of seats", {
+                type: "danger",
+                duration: 3000,
+            });
+        }
+        
 
         try {
             await setAuthHeaders(axios);
@@ -384,6 +391,7 @@ const styles = StyleSheet.create({
     carItem: {
         backgroundColor: "#f0f0f0", // Light background color
         padding: 10,
+        marginBottom: 10,
         borderRadius: 10, // Rounded corners
         elevation: 5, // Elevation shadow
         shadowColor: "#000",
