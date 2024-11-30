@@ -208,9 +208,11 @@ const SignUp = () => {
             keyboardType="text"
             handleChangeText={(e) => setForm({ ...form, address: e })}
             secureTextEntry={false}
+            form={form}
+            setAddress={setForm}
             otherStyles={{ marginBottom: 20 }}
           />
-          {loading && <Text>Loading...</Text>}
+          {/* {loading && <Text>Loading...</Text>} */}
           {Array.isArray(suggestions) && suggestions.length > 0 && (
             <ScrollView style={styles.suggestionsList}>
               {suggestions.map((suggestion, index) => (
