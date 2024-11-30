@@ -1,12 +1,17 @@
-import React, { useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, ToastAndroid } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, StyleSheet, Alert, ToastAndroid } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import axios from 'axios'
 import { setAuthHeaders } from '../../utils/expo-store'
 import { MapPin, Plus, X } from 'lucide-react-native'
 import { useToast } from "react-native-toast-notifications";
+import { v4 as uuidv4 } from 'uuid';
+import * as Location from 'expo-location';
+// import { useRouter } from 'expo-router';
 
 export default function BusManagement() {
+    const [loading, setLoading] = useState(false);
+    const [isloading, setIsLoading] = useState(false);
     const [newBus, setNewBus] = useState({
         bus_number: '',
         seats: '',
@@ -184,6 +189,64 @@ export default function BusManagement() {
             Alert.alert('Error', 'Failed to create bus')
         }
     }
+    const [location, setLocation] = useState(null);
+    const [suggestions, setSuggestions] = useState([]);
+    useEffect(() => {
+        async function getCurrentLocation() {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setErrorMsg('Permission to access location was denied');
+                return;
+            }
+
+            let location = await Location.getCurrentPositionAsync({});
+            setLocation(location.coords); // Set only the coordinates
+        }
+
+        getCurrentLocation();
+    }, []);
+    const [showSuggestions, setshowsuggestion] = useState(false);
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            // alert("Ajdhsak")
+            if (newRoute.length < 3) {
+                setSuggestions([]); // Clear suggestions if address is too short
+                return;
+            }
+
+            if (!location) {
+                // console.error('Location not available for proximity');
+                setLocation({ latitude: 24.8607, longitude: 67.0011 }); // Default to Karachi coordinates
+                // return;
+            }
+            console.log(newRoute.length);
+
+            setLoading(true);
+            try {
+                console.log(newRoute);
+
+                const TEMPsessionToken = uuidv4();
+                const { longitude, latitude } = location;
+                console.log(encodeURIComponent(newRoute));
+                const response = await axios.get(
+                    `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(newRoute)}&access_token=${process.env.EXPO_PUBLIC_MAPBOXTOKEN}&session_token=${TEMPsessionToken}&language=en&country=PK&limit=10&types=country%2Cstreet%2Cpoi&poi_category=&proximity=${longitude}%2C${latitude}`
+                );
+
+                if (response.data && response.data.suggestions && response.data.suggestions.length > 0) {
+                    console.log(response.data.suggestions[0]?.name);
+                    setSuggestions(response.data.suggestions);
+                }
+            } catch (error) {
+                console.error('Error fetching suggestions:', error.response?.data || error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const debounceTimeout = setTimeout(fetchSuggestions, 500); // Debounce API requests
+
+        return () => clearTimeout(debounceTimeout); // Cleanup timeout
+    }, [showSuggestions, newRoute]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -214,12 +277,32 @@ export default function BusManagement() {
                         style={styles.routeInput}
                         placeholder="Add a new route"
                         value={newRoute}
-                        onChangeText={setNewRoute}
+                        onChangeText={(e) => {
+                            setNewRoute(e);
+                            setshowsuggestion(true);
+                        }}
                     />
                     <TouchableOpacity style={styles.addButton} onPress={addRoute}>
                         <Plus color="#007AFF" size={24} />
                     </TouchableOpacity>
                 </View>
+                {loading && <Text>Loading...</Text>}
+                {Array.isArray(suggestions) && suggestions.length > 0 && (
+                    <ScrollView style={styles.suggestionsList}>
+                        {suggestions.map((suggestion, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={styles.suggestionItem}
+                                onPress={() => setNewRoute(suggestion.full_address || suggestion.place_formatted || suggestion.name)}
+                            >
+                                <Text style={styles.suggestionText}>
+                                    {suggestion.name || suggestion.place_formatted || suggestion.full_address}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
+
                 <FlatList
                     data={newBus.routes}
                     renderItem={({ item, index }) => (
@@ -328,5 +411,30 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         fontSize: 18,
+    },
+    suggestionsList: {
+
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        paddingVertical: 8,
+        maxHeight: 200,          // Limit height for scrollable list
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 5,            // Shadow for Android
+        zIndex: 999,
+        // flex: 1,
+        // flexDirection: 'column'            // Ensure it stays on top
+    },
+    suggestionItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    suggestionText: {
+        fontSize: 16,
+        color: '#333',
     },
 })
