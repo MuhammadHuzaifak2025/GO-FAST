@@ -324,7 +324,7 @@ const fetchall_messages = async (socket) => {
             }
         );
         // socket.to(socket.id).emit('all-messages', { messages });
-        // console.log(messages);
+        console.log(messages);
         return messages.reverse();
     } catch (error) {
         socket.emit('error', {

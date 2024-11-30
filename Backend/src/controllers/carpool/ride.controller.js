@@ -295,6 +295,7 @@ const delete_ride = asynchandler(async (req, res, next) => {
         if (!request) {
             return next(new ApiError(400, "Failed to delete ride request"));
         }
+        console.log("req_id", req_id);
         if (req_id) {
             for (const req of req_id) {
                 const chat = await sequelize.query(`Delete from "Chats" where request_id = ${req.request_id}`, { type: QueryTypes.DELETE })
