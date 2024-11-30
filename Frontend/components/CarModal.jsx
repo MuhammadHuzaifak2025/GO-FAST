@@ -3,6 +3,7 @@ import {
     View,
     Text,
     FlatList,
+    SafeAreaView,
     Modal,
     StyleSheet,
     TouchableOpacity,
@@ -48,6 +49,8 @@ export default function CarModal({ visible, onClose }) {
         } else {
             setIsDropdownOpenForm(false);
             setIsDropdownOpenList(false);
+            dropdownHeightForm.setValue(0);
+            dropdownHeightList.setValue(0);
         }
     }, [visible]);
 
@@ -74,7 +77,7 @@ export default function CarModal({ visible, onClose }) {
 
     const toggleDropdown = (check) => {
         if (check === "form") {
-            const toValue = isDropdownOpenForm ? 0 : 500; // Adjust this value based on your needs
+            const toValue = isDropdownOpenForm ? 0 : 300; // Adjust this value based on your needs
             Animated.timing(dropdownHeightForm, {
                 toValue,
                 duration: 400,
@@ -87,7 +90,7 @@ export default function CarModal({ visible, onClose }) {
 
             setIsDropdownOpenForm(!isDropdownOpenForm);
         } else {
-            const toValue = isDropdownOpenList ? 0 : 200; // Adjust this value based on your needs
+            const toValue = isDropdownOpenList ? 0 : 300; // Adjust this value based on your needs
 
             Animated.timing(dropdownHeightList, {
                 toValue,
@@ -111,18 +114,20 @@ export default function CarModal({ visible, onClose }) {
             !form.color ||
             !form.seats ||
             !form.type_of_car
-        )
+        ){
             toast.show("Please fill all required fields", {
                 type: "danger",
                 duration: 3000,
             });
+            return;
+        }
         if( form.seats < 1 || form.seats > 6){
             toast.show("Please enter a valid number of seats", {
                 type: "danger",
                 duration: 3000,
             });
+            return;
         }
-        
 
         try {
             await setAuthHeaders(axios);
@@ -223,6 +228,7 @@ export default function CarModal({ visible, onClose }) {
                                     </View>
                                 </View>
                             )}
+                            containerStyles={{marginBottom: 20}}
                         />
                     )}
                 </Animated.View>
@@ -240,10 +246,12 @@ export default function CarModal({ visible, onClose }) {
                         color="white"
                     />
                 </TouchableOpacity>
+
                 <Animated.View
                     style={[styles.dropdownContent, { height: dropdownHeightForm }]}
                 >
-                    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                    
+                    <ScrollView >
                         <FormField
                             placeholder="Make"
                             value={form.make}
