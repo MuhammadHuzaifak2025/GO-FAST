@@ -72,7 +72,7 @@ const ChatScreen = () => {
           try {
             // Extract messages array from the response
             const newmessage = messages.messages;
-
+            console.log("New Messages:", newmessage);
             // Validate that `newmessage` is an array
             if (!Array.isArray(newmessage)) {
               // console.error("Invalid messages format: Expected an array.", newmessage);
@@ -92,20 +92,20 @@ const ChatScreen = () => {
                 console.warn("Skipping invalid message:", message);
                 return null;
               }
-
+              console.log("Message:", message.chat_message_id, message.message, message.timestamp, message.sender);
               return {
                 _id: message.chat_message_id, // Use unique ID
                 text: message.message, // Message content
                 createdAt: new Date(message.timestamp), // Parse timestamp to Date
                 user: {
-                  _id: message.sender, // Sender's ID
-                  name: `User ${message.sender}`, // Placeholder for sender's name
+                  _id: message.sender === user.user_id ? message.sender : null, // Sender's ID
+                  name: `User ${message.sender === user.user_id ? message.sender : message.reciever}`, // Placeholder for sender's name
                 },
               };
             }).filter((msg) => msg !== null); // Remove null entries (invalid messages)
 
             // Append new messages to the existing state
-            setMessages((prevMessages) => GiftedChat.append(prevMessages, formattedMessages));
+            setMessages(formattedMessages);
 
             console.log("Formatted Messages:", formattedMessages);
             setIsLoading(true);

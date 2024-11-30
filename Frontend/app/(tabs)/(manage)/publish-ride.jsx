@@ -88,7 +88,7 @@ const RideItem = ({
                                 animationType: "slide-in",
                             });
 
-                            if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
+                            if (refreshRides) await refreshRides(); // Refresh the rides list if a refresh function is provided
                         } else {
                             throw new Error(response);
                         }
@@ -190,6 +190,7 @@ const PublishRide = () => {
     const toast = useToast();
 
     const fetchRides = async () => {
+        setRides([]);
         setLoadingF(true);
 
         try {
@@ -268,7 +269,7 @@ const PublishRide = () => {
                     dateTime: "",
                     price: "",
                 });
-                fetchRides();
+                await fetchRides();
             } else {
                 throw new Error(resp);
             }
@@ -513,7 +514,7 @@ const PublishRide = () => {
                 />
             </TouchableOpacity>
 
-            <Animated.View style={{ height: dropdownHeightList, overflow: "hidden" }}>
+            <Animated.View style={{ height: dropdownHeightList, overflow: "hidden", marginBottom: 4 }}>
                 {loadingF ? (
                     <View style={styles.loadingContainer}>
                         <Text style={styles.loadingText}>Loading...</Text>
@@ -684,6 +685,7 @@ const styles = StyleSheet.create({
     rideItem: {
         backgroundColor: "white",
         padding: 20,
+        marginBottom: 20,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: Colors.light.primary,
@@ -698,7 +700,7 @@ const styles = StyleSheet.create({
         top: 10,
         right: 10,
         zIndex: 1,
-        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: Colors.light.primary,
         borderRadius: 15,
         padding: 5,
     },
