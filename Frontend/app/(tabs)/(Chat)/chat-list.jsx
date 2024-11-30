@@ -8,7 +8,6 @@ import { setAuthHeaders } from '../../../utils/expo-store';
 import { useToast } from 'react-native-toast-notifications';
 import { FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import useSocket from '../../../hooks/usesocket';
 import { Colors } from "../../../constants/Colors";
 
 const ChatComponent = ({item}) => {
@@ -118,9 +117,6 @@ const ChatList = () => {
     }
 
   }
-  const callsocket = (item) => {
-    useSocket(item);
-  };
 
 
   useFocusEffect(
