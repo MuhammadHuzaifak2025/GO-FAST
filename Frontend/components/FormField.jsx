@@ -9,6 +9,7 @@ import {
 import React, { useState } from "react";
 import { icons } from "../constants";
 import { Colors } from "../constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
 
 const FormField = ({
     title,
@@ -18,6 +19,8 @@ const FormField = ({
     otherStyles,
     secureTextEntry,
     isCapital,
+    form,
+    setAddress,
     ...props
 }) => {
     const [showPassword, setShowPassword] = useState(secureTextEntry);
@@ -56,10 +59,20 @@ const FormField = ({
                 />
 
                 {title === "Password" && (
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <TouchableOpacity onPress={() => setShowPassword("")}>
                         <Image
                             source={showPassword ? icons.eye : icons.eyeHide}
                             style={styles.img}
+                        />
+                    </TouchableOpacity>
+                )}
+                {title === "Address" && (
+                    <TouchableOpacity onPress={() => setAddress({ address: "" })}>
+                        <Ionicons
+                            name="close"
+                            style={styles.img}
+                            size={24}
+                            color={Colors.light.contrast}
                         />
                     </TouchableOpacity>
                 )}

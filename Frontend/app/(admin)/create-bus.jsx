@@ -286,7 +286,7 @@ export default function BusManagement() {
                         <Plus color="#007AFF" size={24} />
                     </TouchableOpacity>
                 </View>
-                {loading && <Text>Loading...</Text>}
+                {/* {loading && <Text>Loading...</Text>} */}
                 {Array.isArray(suggestions) && suggestions.length > 0 && (
                     <ScrollView style={styles.suggestionsList}>
                         {suggestions.map((suggestion, index) => (
