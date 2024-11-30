@@ -235,6 +235,21 @@ const PublishRide = () => {
             });
             return;
         }
+        else if(new Date(form.dateTime) < new Date()){
+            toast.show("Please select a valid date and time", {
+                type: "danger",
+                duration: 3000,
+            });
+            return;
+        }
+        else if(form.price < 0 || form.price > 10000 ){
+            toast.show("Please enter a valid price", {
+                type: "danger",
+                duration: 3000,
+            });
+            return;
+        }
+        
         try {
             await setAuthHeaders(axios);
 

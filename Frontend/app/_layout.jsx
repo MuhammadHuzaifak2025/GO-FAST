@@ -5,6 +5,7 @@ import { useFonts } from 'expo-font';
 import { ToastProvider } from 'react-native-toast-notifications';
 import "../global.css";
 import GlobalProvider from '../context/GlobalProvider';
+import { Colors } from '../constants/Colors';
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
@@ -53,7 +54,8 @@ const RootLayout = () => {
           placement="bottom"
           offset={30} // offset for both top and bottom toasts
           swipeEnabled={true}
-          dangerColor='#EC5F5F'>
+          dangerColor='#EC5F5F'
+          successColor={Colors.light.primary}>
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />

@@ -136,11 +136,11 @@ const ChatList = () => {
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#ff6347" />
+          <ActivityIndicator size="large" color={Colors.light.primary} />
           <Text style={styles.loadingText}>Loading chats...</Text>
         </View>
       ) : (
-        <FlashList
+        <FlashList 
           estimatedItemSize={100}
           data={chat}
           keyExtractor={(item) => item.request_id}

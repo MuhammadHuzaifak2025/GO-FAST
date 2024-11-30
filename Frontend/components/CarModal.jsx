@@ -121,7 +121,7 @@ export default function CarModal({ visible, onClose }) {
             });
             return;
         }
-        if( form.seats < 1 || form.seats > 6){
+        if( (form.seats < 1 || form.seats > 6) || (form.type_of_car === "Bike" && form.seats > 2) ){
             toast.show("Please enter a valid number of seats", {
                 type: "danger",
                 duration: 3000,
