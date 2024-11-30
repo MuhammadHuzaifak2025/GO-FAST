@@ -13,7 +13,7 @@ const TabIcon = ({ icon, color, name, focused }) => {
                 textAlign: "center",
                 gap: 5,
                 flexDirection: "column",
-                width: 50,
+                width: 60,
             }}
         >
             <Image
@@ -27,6 +27,7 @@ const TabIcon = ({ icon, color, name, focused }) => {
                 }}
             />
             <Text
+            
                 style={[
                     {
                         color: color,
@@ -62,13 +63,13 @@ const TabsLayout = () => {
                 <Tabs.Screen
                     name="your-requests"
                     options={{
-                        title: "Your Requests",
+                        title: "Your Rides",
                         headerShown: false,
                         tabBarIcon: ({ color, focused }) => (
                             <TabIcon
                                 icon={icons.rides}
                                 color={color}
-                                name="Your Ride"
+                                name="Your Rides"
                                 focused={focused}
                             />
                         ),
@@ -83,7 +84,7 @@ const TabsLayout = () => {
                             <TabIcon
                                 icon={icons.search}
                                 color={color}
-                                name="Find Ride"
+                                name="Find Rides"
                                 focused={focused}
                             />
                         ),

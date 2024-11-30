@@ -9,7 +9,7 @@ import { useToast } from 'react-native-toast-notifications';
 import { FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import useSocket from '../../../hooks/usesocket';
-
+import { Colors } from "../../../constants/Colors";
 
 const ChatList = () => {
 
@@ -88,11 +88,31 @@ const ChatList = () => {
           data={chat}
           keyExtractor={(item) => item.request_id}
           renderItem={({ item }) => (
+            
+            console.log(item),
             <View style={styles.rideItemContainer}>
               <TouchableOpacity
-                style={styles.rideItem}
-                onPress={() => router.push({pathname: 'inbox', params: item})}>
-                <Text style={styles.rideTime}>{item.username}</Text>
+                style={styles.chatItem}
+                onPress={() => router.push({ pathname: 'inbox', params: item })}
+              >
+                <View style={styles.chatContent}>
+                  {/* Avatar */}
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                      {item.username?.charAt(0).toUpperCase() || "?"}
+                    </Text>
+                  </View>
+                  
+                  {/* Text Section */}
+                  <View style={styles.chatTextContainer}>
+                    <Text style={styles.chatUsername} numberOfLines={1} ellipsizeMode="tail">
+                      {item.username || "Unknown User"}
+                    </Text>
+                    <Text style={styles.chatLastMessage} numberOfLines={1} ellipsizeMode="tail">
+                      Tap to view messages
+                    </Text>
+                  </View>
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -247,6 +267,70 @@ const styles = StyleSheet.create({
   },
   formField: {
     marginVertical: 10,
+  },
+  rideItemContainer: {
+    flex: 1,
+    marginVertical: 5,
+    alignSelf: 'stretch',
+    paddingHorizontal: 15,
+  },
+  
+  rideItemContainer: {
+    flex: 1,
+    marginVertical: 5,
+    alignSelf: 'stretch',
+    paddingHorizontal: 15,
+  },
+  
+  chatItem: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    marginBottom: 5,
+  },
+  
+  chatContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#d1d1d1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  
+  avatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  
+  chatTextContainer: {
+    flex: 1, /* Ensure text container takes available space */
+    justifyContent: 'center',
+  },
+  
+  chatUsername: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  
+  chatLastMessage: {
+    fontSize: 14,
+    color: '#666', /* Softer color for secondary text */
+    marginTop: 4,
   },
 });
 
