@@ -23,7 +23,10 @@ const ChatScreen = () => {
   const { user } = useGlobalContext();
 
   const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
+  const loading = useRef(false);
+  const online = useRef(false);
+  const [isloading, setIsLoading] = useState(false);
 
   const socketRef = useRef(null);
 
@@ -57,14 +60,65 @@ const ChatScreen = () => {
           console.error("Socket connection error:", error);
         });
 
+        tempSocket.on("ride-request-chat", () => {
+          console.log("Ride request chat event received");
+        })
         tempSocket.on("both-connected", () => {
-          console.log("Both users connected to chat");
-          setIsLoading(true);
+          console.log("Both-connected event received");
+          online.current = true;
         });
+
+        tempSocket.on("all-messages", (messages) => {
+          try {
+            // Extract messages array from the response
+            const newmessage = messages.messages;
+
+            // Validate that `newmessage` is an array
+            if (!Array.isArray(newmessage)) {
+              console.error("Invalid messages format: Expected an array.", newmessage);
+              return;
+            }
+
+            // Format the messages according to GiftedChat requirements
+            const formattedMessages = newmessage.map((message) => {
+              // Ensure each message has the required fields
+              if (
+                typeof message.chat_message_id === "undefined" ||
+                typeof message.message === "undefined" ||
+                typeof message.timestamp === "undefined" ||
+                typeof message.sender === "undefined"
+              ) {
+                console.warn("Skipping invalid message:", message);
+                return null;
+              }
+
+              return {
+                _id: message.chat_message_id, // Use unique ID
+                text: message.message, // Message content
+                createdAt: new Date(message.timestamp), // Parse timestamp to Date
+                user: {
+                  _id: message.sender, // Sender's ID
+                  name: `User ${message.sender}`, // Placeholder for sender's name
+                },
+              };
+            }).filter((msg) => msg !== null); // Remove null entries (invalid messages)
+
+            // Append new messages to the existing state
+            setMessages((prevMessages) => GiftedChat.append(prevMessages, formattedMessages));
+
+            console.log("Formatted Messages:", formattedMessages);
+            setIsLoading(true);
+          } catch (error) {
+            console.error("Error processing messages:", error);
+          }
+        });
+
+
+
         tempSocket.on("socket-disconnected", (message) => {
-          socketRef.current.disconnect();
-          setIsLoading(false);
+          online.current = false;
         });
+
         tempSocket.on("receive-message", (message) => {
           setMessages((prevMessages) =>
             GiftedChat.append(prevMessages, [
@@ -81,7 +135,7 @@ const ChatScreen = () => {
           );
         });
       } catch (error) {
-        console.error("Error connecting to socket:", error);
+        console.error("Error connecting to socket:", error.message);
       }
     };
 
@@ -97,6 +151,10 @@ const ChatScreen = () => {
     };
   }, [item.request_id]);
 
+  useEffect(() => {
+    console.log("Online state changed:", isloading);
+  }, [isloading]);
+
   const handleSend = useCallback(
     (newMessages = []) => {
       const message = newMessages[0];
@@ -106,13 +164,17 @@ const ChatScreen = () => {
         return;
       }
 
+      console.log("Sending message:", message.text);
+
       // Emit the message to the server
       socketRef.current.emit("send-chat-message", {
         request_id: item.request_id,
+        reciever: item?.user_id,
         message: message.text,
         timestamp: new Date().toISOString(),
         senderId,
         senderName,
+        online: online.current,
       });
 
       // Append the message to the local state
@@ -139,7 +201,7 @@ const ChatScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {!isLoading ? (
+      {!isloading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" />
           <Text style={styles.loadingText}>Waiting For Other Partner to Connect</Text>

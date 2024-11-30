@@ -5,7 +5,7 @@ import app from '../app.js';
 import { createServer } from "http";
 import { Server } from "socket.io";  // Import the socket.io server
 // import { processRideRequest } from "../websockets/ride_request.js";
-import { is_driver_is_requester, remove_socket_id, search_for_driver, searchForPassenger, store_driver, store_requesting_passenger } from "./Chat/connectivity.controller.js";
+import { fetchall_messages, is_driver_is_requester, processRideRequest, remove_socket_id, save_message, search_for_driver, searchForPassenger, store_driver, store_requesting_passenger } from "./Chat/connectivity.controller.js";
 
 const server = createServer(app);
 
@@ -46,6 +46,7 @@ io.on('connection', (socket) => {
     socket.on('request-ride-chat', async (data) => {
         let userType;
         try {
+            const createchatifnot = await processRideRequest(data.request_id, socket);
             const response = await is_driver_is_requester([data.request_id, socket.user.user_id]);
 
             if (response === "driver") {
@@ -60,18 +61,16 @@ io.on('connection', (socket) => {
             else {
                 return socket.emit('error', { message: response.error || 'Error processing ride request' });
             }
-
-            io.to(socket.id).emit('ride-request-chat', {
-                message: 'Ride request chat initiated',
-                user: userType,
-            });
-
+            const resp = await fetchall_messages(socket);
+            io.to(socket.id).emit('all-messages', { messages: resp });
             if (userType === "driver") {
                 console.log("Driver", socket.id);
                 await searchForPassenger(socket, data.request_id);
 
-                if (socket.reciever)
+                if (socket.reciever) {
+
                     await io.to(socket.reciever).emit('reconnects', { message: 'Reconnect to chat' });
+                }
                 else {
                     return socket.emit('error', { message: 'No passenger found' });
                 }
@@ -80,8 +79,9 @@ io.on('connection', (socket) => {
                 console.log("Passenger", socket.id);
                 await search_for_driver(socket, data.request_id);
 
-                if (socket.reciever)
+                if (socket.reciever) {
                     await io.to(socket.reciever).emit('reconnects', { message: 'Reconnect to chat' });
+                }
                 else {
                     return socket.emit('error', { message: 'No passenger found' });
                 }
@@ -117,15 +117,20 @@ io.on('connection', (socket) => {
 
     socket.on('send-chat-message', async (data) => {
         try {
-            console.log(data);
-            console.log(socket.reciever);
-            if (socket.reciever === undefined) {
-                return socket.emit('chat-error', { message: 'Recipient not online' });
+            console.log("Send chat message", data);
+            if (data.online === true) {
+                console.log("Hello")
+                if (socket.reciever === undefined) {
+                    return socket.emit('chat-error', { message: 'Recipient not online' });
+                }
+                await socket.to(socket.reciever).emit('receive-message', {
+                    message: data.message,
+                    timestamp: new Date(),
+                });
             }
-            await socket.to(socket.reciever).emit('receive-message', {
-                message: data.message,
-                timestamp: new Date(),
-            });
+            else {
+                save_message(data, socket);
+            }
         } catch (error) {
             socket.emit('chat-error', { message: 'Failed to send message', error: error.message });
         }

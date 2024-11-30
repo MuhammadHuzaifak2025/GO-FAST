@@ -2,6 +2,34 @@ import { Socket } from "socket.io";
 import sequelize from "../../database/index.js";
 import { QueryTypes } from "sequelize";
 
+const processRideRequest = async (request_id, socket) => {
+    try {
+        const chat = await sequelize.query(
+            `select * from "Chats" where request_id = ?`,
+            {
+                replacements: [request_id],
+                type: QueryTypes.SELECT,
+            });
+        if (!chat[0]) {
+            const insertChat = await sequelize.query(
+                `INSERT INTO "Chats" (request_id, timestamp, "createdAt", "updatedAt") VALUES (?, ?,?,?)`,
+                {
+                    replacements: [request_id, new Date(), new Date(), new Date()],
+                    type: QueryTypes.INSERT,
+                });
+            console.log(insertChat[0]);
+            socket.chat = insertChat[0].chat_id;
+            return insertChat;
+
+        }
+        socket.chat = chat[0].chat_id;
+        return chat[0];
+    } catch (error) {
+        console.error("Error in processRideRequest:", error.message); // Log for debugging
+        throw new Error("Error processing ride request");
+    }
+}
+
 const store_driver = async (data) => {
 
     const [driver_id, request_id, driver_socket_it] = data;
@@ -49,9 +77,9 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
 
             if (passengers[0].requesting_user_socket_id) {
                 socket.reciever = passengers[0].requesting_user_socket_id;
-                socket.to(socket.reciever).emit('ride-request-chat', {
-                    message: 'Driver is ready to chat',
-                });
+                // socket.to(socket.reciever).emit('ride-request-chat', {
+                //     message: 'Driver is ready to chat',
+                // });
                 // await socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         }
@@ -130,9 +158,9 @@ const search_for_driver = async (socket, request_id,) => {
         if (driver[0]) {
             if (driver[0].owner_socket_id) {
                 socket.reciever = driver[0].owner_socket_id;
-                await socket.to(socket.reciever).emit('ride-request-chat', {
-                    message: 'Passenger is ready to chat',
-                });
+                // await socket.to(socket.reciever).emit('ride-request-chat', {
+                //     message: 'Passenger is ready to chat',
+                // });
                 // await socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
         }
@@ -258,4 +286,52 @@ const remove_socket_id = async (socket, socket_id) => {
     }
 }
 
-export { store_driver, remove_socket_id, search_for_driver, store_requesting_passenger, is_driver_is_requester, searchForPassenger };
+const save_message = async (data, socket) => {
+    try {
+        const { request_id, message, timestamp, senderId, receiver, senderName } = data;
+        const message_data = {
+            request_id,
+            message,
+            timestamp,
+            receiver,
+            senderId,
+            senderName,
+        };
+        console.log(data.reciever)
+        await sequelize.query(
+            `INSERT INTO "ChatMessages" (chat_id, sender, receiver, message, timestamp, is_read, "createdAt", "updatedAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            {
+                replacements: [socket.chat, socket.user.user_id, data.reciever, message_data.message, message_data.timestamp, false, new Date(), new Date()],
+                type: QueryTypes.INSERT,
+            }
+        );
+    } catch (error) {
+        console.error("Error in save_message:", error.message); // Log for debugging
+        socket.emit('error', {
+            message: error.message || 'Error processing ride request',
+        });
+    }
+}
+
+const fetchall_messages = async (socket) => {
+    try {
+        console.log(socket.chat);
+        const messages = await sequelize.query(
+            `SELECT * FROM "ChatMessages" WHERE chat_id = ? order by timestamp`,
+            {
+                replacements: [socket.chat],
+                type: QueryTypes.SELECT,
+            }
+        );
+        socket.to(socket.id).emit('all-messages', { messages });
+        console.log(messages);
+        return messages;
+    } catch (error) {
+        socket.emit('error', {
+            message: error.message || 'Error processing ride request',
+        });
+        console.error("Error in fetchall_messages:", error.message); // Log for debugging
+    }
+}
+
+export { store_driver, save_message, fetchall_messages, remove_socket_id, processRideRequest, search_for_driver, store_requesting_passenger, is_driver_is_requester, searchForPassenger };
