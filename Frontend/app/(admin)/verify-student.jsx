@@ -14,6 +14,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoJS from "crypto-js";
+import axios from 'axios';
+import { Toast } from 'react-native-toast-notifications';
+import { Colors } from '../../constants/Colors';
+import { setAuthHeaders } from '../../utils/expo-store';
 
 const { width } = Dimensions.get('window');
 
@@ -23,9 +27,10 @@ const IV = "1234567890123456"; // 16 characters
 export default function App() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
-  const [studentId, setStudentId] = useState('');
+  const [studentId, setStudentId] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [sound, setSound] = useState();
+  const [isverified, setIsVerified] = useState(false);
   const [animation] = useState(new Animated.Value(0));
 
   useEffect(() => {
@@ -71,9 +76,25 @@ export default function App() {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   }
 
-  function handleVerifyStudent() {
-    if (studentId.trim()) {
-      alert(`Verifying student with ID: ${studentId}`);
+  async function handleVerifyStudent() {
+    if (studentId) {
+      alert('Verifying student...');
+      await setAuthHeaders(axios);
+      try {
+        setAuthHeaders(axios);
+        const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration/verify`,
+          { passenger_id: studentId },
+          { withCredentials: true }
+        )
+        if (resp.data.data) {
+          Toast.show('Student verified successfully', { type: 'success' });
+          console.log();
+        }
+      } catch (error) {
+        console.log(error.response.data.message);
+        alert(error.response.data.message);
+        Toast.show(error.response.data.message, { type: 'danger' });
+      }
     } else {
       alert('Please enter a valid Student ID.');
     }
@@ -107,19 +128,25 @@ export default function App() {
     }
   };
   const fetchResult = (result) => {
+    if (isverified) {
+      return;
+    }
     if (validateQR(result.data).valid) {
       playSound();
+      setIsVerified(true);
       // Add a delay before proceeding
       setTimeout(() => {
-        // setIsCameraActive(false);
-      }, 10000); // Delay of 1000ms (1 second)
+        setIsVerified(false);
+      }, 5000); // Delay of 1000ms (1 second)
     } else {
       playSound_invalid();
+      setIsVerified(true);
       // Add a delay before proceeding
       setTimeout(() => {
+        setIsVerified(false);
         // alert("Invalid QR code");
         // setIsCameraActive(false);
-      }, 10000); // Delay of 1000ms (1 second)
+      }, 5000); // Delay of 1000ms (1 second)
     }
   };
 
@@ -171,10 +198,11 @@ export default function App() {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
+          keyboardType='numeric'
           placeholder="Enter Student ID"
-          placeholderTextColor="#a0a0a0"
+          placeholderTextColor={Colors.light.fadedItem}
           value={studentId}
-          onChangeText={setStudentId}
+          onChangeText={(e) => setStudentId(e)}
         />
         <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyStudent}>
           <Text style={styles.buttonText}>Verify</Text>
@@ -227,8 +255,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 50,
-    color: '#ffffff',
+    color: 'black',
     fontSize: 16,
+    borderColor: Colors.light.primary,
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    height: 50,
+    marginRight: 10,
   },
   verifyButton: {
     backgroundColor: '#4CAF50',

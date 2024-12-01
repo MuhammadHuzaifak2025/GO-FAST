@@ -21,8 +21,8 @@ import { Colors } from "../../../constants/Colors";
 const ChatScreen = () => {
   const { width, height } = useWindowDimensions();
   const item = useLocalSearchParams();
-  const senderId = item.user_id;
-  const senderName = item.username;
+  const senderId = item?.user_id;
+  const senderName = item?.username;
   const [isOnline, setIsOnline] = useState(false);
   const { user } = useGlobalContext();
   const [messages, setMessages] = useState([]);
@@ -84,8 +84,8 @@ const ChatScreen = () => {
                   text: message.message,
                   createdAt: new Date(message.timestamp),
                   user: {
-                    _id: message.sender === user.user_id ? message.sender : senderId,
-                    name: message.sender === user.user_id ? user.username : senderName,
+                    _id: message.sender === user?.user_id ? message.sender : senderId,
+                    name: message.sender === user?.user_id ? user?.username : senderName,
                   },
                 };
               })
@@ -133,7 +133,7 @@ const ChatScreen = () => {
         console.log("Socket disconnected");
       }
     };
-  }, [item.request_id, user.user_id, user.username, senderId, senderName]);
+  }, [item.request_id, user?.user_id, user?.username, senderId, senderName]);
 
   const handleSend = useCallback(
     (newMessages = []) => {
@@ -166,20 +166,39 @@ const ChatScreen = () => {
         wrapperStyle={{
           right: {
             backgroundColor: Colors.light.primary,
+            // borderRadius: 20,
+            padding: 5,
+            margin: 5,
+            elevation: 8,
+            shadowColor: "white",
+            shadowOpacity: 0.3,
+            shadowRadius: 5,
+            shadowOffset: { width: 0, height: 3 },
           },
           left: {
-            backgroundColor: '#f0f0f0',
+            backgroundColor: 'white',
+            // borderRadius: 20,
+            padding: 5,
+            margin: 5,
+            elevation: 8,
+            shadowColor: Colors.light.primary,
+            shadowOpacity: 0.3,
+            shadowRadius: 5,
+            shadowOffset: { width: 0, height: 3 },
           },
         }}
         textStyle={{
           right: {
             color: '#ffffff',
+            fontSize: 16,
           },
           left: {
             color: '#000000',
+            fontSize: 16,
           },
         }}
       />
+
     );
   };
 
@@ -231,8 +250,8 @@ const ChatScreen = () => {
           messages={messages}
           onSend={(messages) => handleSend(messages)}
           user={{
-            _id: user.user_id,
-            name: user.username,
+            _id: user?.user_id,
+            name: user?.username,
           }}
           renderBubble={renderBubble}
           renderSend={renderSend}
@@ -249,7 +268,7 @@ const ChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.contrast,
+    // backgroundColor: Colors.light.contrast,
   },
   header: {
     backgroundColor: Colors.light.contrast,
@@ -261,6 +280,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
+    opacity: 0.7,
+    zIndex: -1,
     // flex: 1,
   },
   backButton: {

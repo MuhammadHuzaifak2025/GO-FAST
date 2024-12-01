@@ -228,6 +228,31 @@ const get_busPassenger_ifregistered = asynchandler(async (req, res, next) => {
 }
 );
 
+const verifyPassenger = asynchandler(async (req, res, next) => {
+    try {
+        const { passenger_id } = req.body;
+        const [semester_id] = await sequelize.query(`SELECT * FROM semesters order by semester_id desc limit 1`,
+            { type: QueryTypes.SELECT });
+        console.log(semester_id)
+        if (!semester_id) {
+            return next(new ApiError(400, "No Semester Found"));
+        }
+        const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers WHERE semester_id = '${semester_id.semester_id}' AND passenger_id = '${passenger_id}' `,
+            { type: QueryTypes.SELECT });
+        if (getPassenger) {
+            return res.status(200).json(new ApiResponse(200, getPassenger));
+        }
+        const singlePassenger = await sequelize.query(`SELECT * FROM singleridepassengers WHERE passenger_id = '${passenger_id}' AND ride_date = '${new Date().toISOString()}' `,
+            { type: QueryTypes.SELECT });
+        if (singlePassenger[0]) {
+            return res.status(200).json(new ApiResponse(200, singlePassenger));
+        }
+        return next(new ApiError(400, "No Passenger Found"));
 
+    } catch (error) {
+        next(error);
+    }
+}
+);
 
-export { openbusregistration, get_busPassenger_ifregistered, get_openreg_busses_with_routes, getbusregistration, showstudentregistration, updateduedate, get_student_registrations };
+export { openbusregistration, verifyPassenger, get_busPassenger_ifregistered, get_openreg_busses_with_routes, getbusregistration, showstudentregistration, updateduedate, get_student_registrations };
