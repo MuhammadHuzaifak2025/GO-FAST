@@ -45,7 +45,6 @@ const ProfileCard = () => {
         } catch (error) {
             setLoading(false);
             setNoRegistered(false);
-            console.error(error.response);
         }
     };
     const flipCard = () => {
@@ -102,9 +101,12 @@ const ProfileCard = () => {
     if (loading) {
         return <Text>Loading...</Text>;
     }
-    if (!noregistered) {
-        return <Text>No registered card</Text>;
-    }
+
+    if (!noregistered)
+        return <SafeAreaView style={styles.containerTEXT}>
+            <Text style={styles.sectionTitleTEXT}>No Open Registrations</Text>
+        </SafeAreaView>
+
     return (
         <SafeAreaView style={styles.container}>
             <TouchableOpacity
@@ -291,11 +293,27 @@ const styles = StyleSheet.create({
     //     marginTop: 10,
     // },
     // const styles = StyleSheet.create({
+    containerTEXT: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     card: {
         width: "100%",
         height: "100%",
         position: "absolute",
         backfaceVisibility: "hidden",
+    },
+    cardWrapper: {
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     gradient: {
         flex: 1,
@@ -353,6 +371,16 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         justifyContent: "center",
         alignItems: "center",
+    },
+    sectionTitleTEXT: {
+        fontSize: 32,
+        fontWeight: '700',
+        marginBottom: 24,
+        color: '#1A237E',
+        textAlign: 'center',
+        textShadowColor: 'rgba(0, 0, 0, 0.1)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     backContent: {
         padding: 20,

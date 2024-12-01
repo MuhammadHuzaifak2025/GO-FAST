@@ -115,6 +115,8 @@ const busRegistration = () => {
       if (resp) {
         console.log(resp.data);
         Alert.alert('Success', 'Student registered successfully');
+        setModalVisible(false);
+        fetchuserstatus();
       }
     } catch (error) {
       console.error(error.response);

@@ -14,6 +14,7 @@ import MailChecker from 'mailchecker';
 import sequelize from "../database/index.js";
 import User from "../models/user.models.js";
 import { QueryTypes } from "sequelize";
+import Transport_Organization from "../models/Transport_Organization/index.model.js";
 
 const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
 
@@ -252,6 +253,13 @@ const signin = asynchandler(async (req, res, next) => {
       return next(new ApiError(500, "Token Generation Failed"));
       //   throw new ApiError(500, "Token Generation Failed");
     }
+    if (userexsist.admin) {
+      const transporter = await Transport_Organization.findOne({ where: { owner: userexsist.user_id } });
+      if (!transporter) {
+        return next(new ApiError(400, "User is not a transporter"));
+      }
+    }
+
     res.cookie("refresh-token", refresh_token, {
       httpOnly: true,
       secure: true,
@@ -351,7 +359,7 @@ const forgetpassword = asynchandler(async (req, res, next) => {
       return next(new ApiError(400, "User does not exist at this Email"));
     }
 
-    if(userexsist.is_verified === false){
+    if (userexsist.is_verified === false) {
       return next(new ApiError(400, "User is not verified"));
     }
 
