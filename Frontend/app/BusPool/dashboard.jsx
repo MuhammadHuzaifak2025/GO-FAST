@@ -19,6 +19,7 @@ const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.9;
 const CARD_HEIGHT = CARD_WIDTH * 0.9;
 import QRCode from "react-native-qrcode-svg";
+import { Colors } from "../../constants/Colors";
 
 const ProfileCard = () => {
     const [isFlipped, setIsFlipped] = useState(false);
@@ -112,7 +113,7 @@ const ProfileCard = () => {
                 accessible={true}
                 accessibilityLabel="Flip transportation card"
             >
-                <View style={styles.cardWrapper}>
+                <View style={[styles.cardWrapper]}>
                     <Animated.View
                         style={[
                             styles.cardContainer,
@@ -128,36 +129,21 @@ const ProfileCard = () => {
                                 },
                             ]}
                         >
-                            <LinearGradient
-                                colors={
-                                    card_details?.single_ride === true
-                                        ? ["#1b5e20", "#2e7d32", "#388e3c"]
-                                        : ["#0d47a1", "#1565c0", "#1976d2"]
-                                }
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={styles.gradient}
-                            >
+                            <View style={styles.gradient}>
                                 <View style={styles.cardContent}>
                                     <View>
                                         <View style={styles.header}>
-                                            <Text
-                                                style={[
-                                                    styles.headerText,
-                                                    { textDecorationLine: "underline" },
-                                                ]}
-                                            >
-                                                {card_details?.organization_name} Transport{" "}
+                                            <Text style={styles.headerText}>
+                                                {card_details?.organization_name} Transport
                                             </Text>
-
                                             <MaterialCommunityIcons
                                                 name="bus"
                                                 size={24}
-                                                color="#fff"
+                                                color={Colors.light.contrast}
                                             />
                                         </View>
-                                        <Text style={styles.SubHeader}>
-                                            Student: {user?.username}{" "}
+                                        <Text style={styles.subHeader}>
+                                            Student: {user?.username}
                                         </Text>
                                     </View>
                                     <View style={styles.detailsContainer}>
@@ -165,21 +151,20 @@ const ProfileCard = () => {
                                             <MaterialCommunityIcons
                                                 name="seat-passenger"
                                                 size={20}
-                                                color="#fff"
+                                                color={Colors.light.contrast}
                                             />
                                             <Text style={styles.detailText}>
                                                 Bus Id: {card_details?.bus_id}
                                             </Text>
                                         </View>
                                         <View style={styles.detailItem}>
-                                            {/* <Text style={styles.headerText}>Transportation Card</Text> */}
                                             <MaterialCommunityIcons
                                                 name="identifier"
                                                 size={20}
-                                                color="#fff"
+                                                color={Colors.light.contrast}
                                             />
                                             <Text style={styles.detailText}>
-                                                Bus Number:{card_details?.bus_number}
+                                                Bus Number: {card_details?.bus_number}
                                             </Text>
                                         </View>
                                         {card_details?.single_ride ? (
@@ -187,11 +172,13 @@ const ProfileCard = () => {
                                                 <MaterialCommunityIcons
                                                     name="calendar"
                                                     size={20}
-                                                    color="#fff"
+                                                    color={Colors.light.contrast}
                                                 />
                                                 <Text style={styles.detailText}>
                                                     Created:{" "}
-                                                    {formatDate(new Date(card_details?.ride_date))}
+                                                    {new Date(
+                                                        card_details?.ride_date,
+                                                    ).toLocaleDateString()}
                                                 </Text>
                                             </View>
                                         ) : (
@@ -199,20 +186,18 @@ const ProfileCard = () => {
                                                 <MaterialCommunityIcons
                                                     name="calendar"
                                                     size={20}
-                                                    color="#fff"
+                                                    color={Colors.light.contrast}
                                                 />
                                                 <Text style={styles.detailText}>
-                                                    Validated for :{" "}
-                                                    {card_details?.type_semester +
-                                                        " " +
-                                                        card_details.year}
+                                                    Validated for: {card_details?.type_semester}{" "}
+                                                    {card_details?.year}
                                                 </Text>
                                             </View>
                                         )}
                                     </View>
                                     <Text style={styles.slideText}>Slide to see QR code</Text>
                                 </View>
-                            </LinearGradient>
+                            </View>
                         </Animated.View>
                         <Animated.View
                             style={[
@@ -240,18 +225,72 @@ const styles = StyleSheet.create({
         marginTop: 70,
         alignItems: "center",
     },
-    cardWrapper: {
-        borderRadius: 20,
-        overflow: "hidden",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 10,
-    },
+    // cardWrapper: {
+    //     backgroundColor: "#fff",
+    //     borderRadius: 12,
+    //     padding: 16,
+    //     marginBottom: 16,
+    //     elevation: 2,
+    //     shadowColor: "#000",
+    //     shadowOffset: { width: 0, height: 2 },
+    //     shadowOpacity: 0.1,
+    //     shadowRadius: 4,
+    // },
     cardContainer: {
         width: CARD_WIDTH,
         height: CARD_HEIGHT,
     },
+    // card: {
+    //     width: "100%",
+    //     height: "100%",
+    //     position: "absolute",
+    //     backfaceVisibility: "hidden",
+    // },
+    // gradient: {
+    //     flex: 1,
+    //     padding: 20,
+    // },
+    // cardContent: {
+    //     flex: 1,
+    //     justifyContent: "space-between",
+    // },
+    // header: {
+    //     flexDirection: "row",
+    //     justifyContent: "space-between",
+    //     alignItems: "center",
+    // },
+    // headerText: {
+    //     fontSize: 24,
+    //     fontWeight: "bold",
+    //     color: Colors.light.contrast,
+    // },
+    // SubHeader: {
+    //     marginBottom: 20,
+    //     fontSize: 20,
+    //     fontWeight: "bold",
+    //     color: Colors.light.contrast,
+    // },
+    // detailsContainer: {
+    //     flex: 1,
+    //     justifyContent: "center",
+    // },
+    // detailItem: {
+    //     flexDirection: "row",
+    //     alignItems: "center",
+    //     marginBottom: 10,
+    // },
+    // detailText: {
+    //     fontSize: 16,
+    //     color: Colors.light.contrast,
+    //     marginLeft: 10,
+    // },
+    // slideText: {
+    //     fontSize: 14,
+    //     color: Colors.light.contrast,
+    //     textAlign: "center",
+    //     marginTop: 10,
+    // },
+    // const styles = StyleSheet.create({
     card: {
         width: "100%",
         height: "100%",
@@ -261,6 +300,15 @@ const styles = StyleSheet.create({
     gradient: {
         flex: 1,
         padding: 20,
+        borderRadius: 12,
+        backgroundColor: "#fff",
+        padding: 16,
+        marginBottom: 16,
+        elevation: 6,
+        shadowColor: Colors.light.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     cardContent: {
         flex: 1,
@@ -274,13 +322,12 @@ const styles = StyleSheet.create({
     headerText: {
         fontSize: 24,
         fontWeight: "bold",
-        color: "#fff",
+        color: Colors.light.contrast,
     },
-    SubHeader: {
-        marginBottom: 20,
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "#fff",
+    subHeader: {
+        marginTop: 10,
+        fontSize: 18,
+        color: Colors.light.contrast,
     },
     detailsContainer: {
         flex: 1,
@@ -293,12 +340,12 @@ const styles = StyleSheet.create({
     },
     detailText: {
         fontSize: 16,
-        color: "#fff",
+        color: Colors.light.contrast,
         marginLeft: 10,
     },
     slideText: {
         fontSize: 14,
-        color: "#fff",
+        color: Colors.light.contrast,
         textAlign: "center",
         marginTop: 10,
     },

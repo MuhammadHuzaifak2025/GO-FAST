@@ -117,7 +117,7 @@ const RideItem = ({
             <View style={[styles.rideItem]}>
                 {/* Delete Icon */}
                 <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
-                    <Ionicons name="close" size={24} color="#fff" />
+                    <Ionicons name="close" size={24} color={Colors.light.contrast} />
                 </TouchableOpacity>
 
                 <View style={styles.rideHeader}>
@@ -233,22 +233,20 @@ const PublishRide = () => {
                 duration: 3000,
             });
             return;
-        }
-        else if(new Date(form.dateTime) < new Date()){
+        } else if (new Date(form.dateTime) < new Date()) {
             toast.show("Please select a valid date and time", {
                 type: "danger",
                 duration: 3000,
             });
             return;
-        }
-        else if(form.price < 0 || form.price > 10000 ){
+        } else if (form.price < 0 || form.price > 10000) {
             toast.show("Please enter a valid price", {
                 type: "danger",
                 duration: 3000,
             });
             return;
         }
-        
+
         try {
             await setAuthHeaders(axios);
 
@@ -584,7 +582,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: "bold",
-        color: Colors.light.primary,
+        color: Colors.light.contrast,
         textAlign: "center",
         marginVertical: 5,
         textShadowColor: "rgba(0, 0, 0, 0.2)", // Subtle shadow for depth
@@ -697,6 +695,7 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     rideItem: {
+        marginBottom: 15,
         backgroundColor: "white",
         padding: 20,
         borderRadius: 12,

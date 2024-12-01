@@ -73,12 +73,7 @@ const PassengerItem = ({
     };
 
     return (
-        <LinearGradient
-            colors={["#ff7f7f", "#ffa07a"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.itemContainer, { width: width - 32 }]}
-        >
+        <View style={[styles.itemContainer, { width: width - 32 }]}>
             <TouchableOpacity style={styles.deleteIcon} onPress={handleDelete}>
                 <Ionicons name="close" size={24} color="#fff" />
             </TouchableOpacity>
@@ -90,7 +85,7 @@ const PassengerItem = ({
                     Total Fare: ${parseInt(fare, 10) * parseInt(seats, 10)}
                 </Text>
             </View>
-        </LinearGradient>
+        </View>
     );
 };
 
@@ -179,12 +174,7 @@ const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
     };
 
     return (
-        <LinearGradient
-            colors={["#ff7f7f", "#ffa07a"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.itemContainer, { width: width - 32 }]}
-        >
+        <View style={[styles.itemContainer, { width: width - 32 }]}>
             <View style={styles.itemDetails}>
                 <Text style={styles.itemText}>{username}</Text>
                 <Text style={styles.itemText}>{seatsRequested} Seats</Text>
@@ -205,7 +195,7 @@ const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
                     <Text style={styles.actionText}>Reject</Text>
                 </TouchableOpacity>
             </View>
-        </LinearGradient>
+        </View>
     );
 };
 
@@ -340,12 +330,7 @@ const ManageRides = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <LinearGradient
-                colors={["#ff6347", "#ff7f50"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.header}
-            >
+            <View style={styles.header}>
                 <TouchableOpacity
                     onPress={() => router.replace("/publish-ride")}
                     style={styles.backButton}
@@ -354,7 +339,7 @@ const ManageRides = () => {
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Manage Ride</Text>
                 <View style={styles.placeholder} />
-            </LinearGradient>
+            </View>
 
             <View style={styles.content}>
                 <Text style={styles.sectionTitle}>Pending Requests</Text>
@@ -428,6 +413,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f5f5f5",
     },
     header: {
+        backgroundColor: Colors.light.primary,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
@@ -469,10 +455,11 @@ const styles = StyleSheet.create({
         color: "#666",
     },
     itemContainer: {
-        padding: 16,
+        backgroundColor: "#fff",
         borderRadius: 12,
-        marginBottom: 12,
-        elevation: 3,
+        padding: 16,
+        marginBottom: 16,
+        elevation: 2,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -483,7 +470,7 @@ const styles = StyleSheet.create({
     },
     itemText: {
         fontSize: 16,
-        color: "#fff",
+        color: Colors.light.contrast,
         marginBottom: 4,
     },
     actionButtons: {
@@ -530,7 +517,7 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 16,
         right: 16,
-        backgroundColor: "#ff6347",
+        backgroundColor: Colors.light.primary,
         borderRadius: 12,
         paddingVertical: 16,
         alignItems: "center",
