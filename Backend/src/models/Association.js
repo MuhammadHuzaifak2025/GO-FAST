@@ -40,7 +40,7 @@ const syncModels = async () => {
   }
   let username1 = "admin";
   try {
-    
+
     const userexsist = await User.findOne({ where: { username: username1 } });
     if (!userexsist) {
       const Users = await User.create({
@@ -53,6 +53,20 @@ const syncModels = async () => {
         admin: true,
       });
     }
+    const superadmin = await User.findOne({ where: { username: "superadmin" } });
+    if (!superadmin) {
+      const Users = await User.create({
+        username: "superadmin",
+        email: "superadmin",
+        password: "superadmin",
+        phone: "superadmin",
+        address: "superadmin",
+        is_verified: true,
+        // admin: true,
+        is_super_admin: true,
+      });
+    }
+
   } catch (error) {
     console.log(error)
   }

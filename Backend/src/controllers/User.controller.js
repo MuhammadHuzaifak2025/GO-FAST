@@ -15,8 +15,11 @@ import sequelize from "../database/index.js";
 import User from "../models/user.models.js";
 import { QueryTypes } from "sequelize";
 import Transport_Organization from "../models/Transport_Organization/index.model.js";
+import { aj } from "../app.js";
+
 
 const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
+
 
 const Signup = asynchandler(async (req, res, next) => {
   try {
@@ -25,12 +28,27 @@ const Signup = asynchandler(async (req, res, next) => {
     if (!username || !password || !email || !phone || !address) {
       return next(new ApiError(400, "please fill all the fields: username, email, password, phone, address"));
     }
+
+
+
     const userexsist = await user.findOne({ where: { username } });
     const userexsistemail = await user.findOne({ where: { email } });
     if (userexsist || userexsistemail) {
-      return next(new ApiError(400, "User already exists with same email or username"));
+      if (userexsistemail) {
+        return next(new ApiError(400, "User already exists with same email"));
+      }
+      else {
+        return next(new ApiError(400, "User already exists with same username"));
+      }
     }
+    const decision = await aj.protect(req, {
+      email: email,
+    });
+    console.log("Arcjet decision", decision);
 
+    if (decision.isDenied()) {
+      return next(new ApiError(400, "Invalid Email Address"));
+    }
     const plainKey = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
 
     if (!MailChecker.isValid(email)) {
@@ -533,6 +551,47 @@ const make_admin = asynchandler(async (req, res, next) => {
   }
 });
 
+const createAdmin = asynchandler(async (req, res, next) => {
+  try {
+    if (req.user.is_super_admin === false) {
+      return next(new ApiError(401, "You are not allowed to create admin"));
+    }
+    const { username, email, password, phone, address, license } = req.body;
+    if (!username || !password || !email) {
+      return next(new ApiError(400, "please fill all the fields: username, email, password, phone, address"));
+    }
+    const userexsist = await user.findOne({ where: { username } });
+    const userexsistemail = await user.findOne({ where: { email } });
+    if (userexsist || userexsistemail) {
+      if (userexsistemail) {
+        return next(new ApiError(400, "User already exists with same email"));
+      }
+      else {
+        return next(new ApiError(400, "User already exists with same username"));
+      }
+    }
+
+    const newuser = await user.create({
+      username: username,
+      email: email,
+      password: password,
+      phone: phone,
+      address: address,
+      license: license || null,
+      admin: true,
+      is_super_admin: false
+    });
+    if (newuser) {
+      newuser.password = undefined;
+      res.status(201).json(new ApiResponse(200, newuser, "User Created"));
+    }
+  } catch (error) {
+    next(error);
+
+  }
+});
+
+
 export {
   make_admin,
   updateuser,
@@ -547,5 +606,6 @@ export {
   isuseradmin,
   ChangePasword,
   verifyuser,
-  resendotp
+  resendotp,
+  createAdmin
 };
