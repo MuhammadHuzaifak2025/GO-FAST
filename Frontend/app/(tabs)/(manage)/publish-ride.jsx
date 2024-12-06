@@ -578,6 +578,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         flex: 1,
         marginRight: 10,
+        flexWrap: 'wrap',
     },
     title: {
         fontSize: 32,

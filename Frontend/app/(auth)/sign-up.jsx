@@ -12,6 +12,8 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { v4 as uuidv4 } from 'uuid';
+import { Picker } from "@react-native-picker/picker";
+import { Colors } from '../../constants/Colors';
 // import { useDispatch } from "react-redux";
 // import { setOrigin, setDestination } from "../store/actions"; // Update this path as per your file structure
 
@@ -34,6 +36,7 @@ const SignUp = () => {
   const [confirm, setConfirm] = useState('');
   const toast = useToast();
   const router = useRouter();
+  const [showPicker, setShowPicker] = useState(false);
 
   // Generate session token
   const generateSessionToken = () => Math.random().toString(36).substring(2);
@@ -79,18 +82,20 @@ const SignUp = () => {
       try {
         const TEMPsessionToken = uuidv4();
         const { longitude, latitude } = location;
-        console.log(encodeURIComponent(form.address));
+        // console.log(encodeURIComponent(form.address));
         const response = await axios.get(
           `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(form.address)}&access_token=${process.env.EXPO_PUBLIC_MAPBOXTOKEN}&session_token=${TEMPsessionToken}&language=en&country=PK&limit=10&types=country%2Cstreet%2Cpoi&poi_category=&proximity=${longitude}%2C${latitude}`
         );
 
         if (response.data && response.data.suggestions && response.data.suggestions.length > 0) {
-          console.log(response.data.suggestions[0]?.name);
+          // console.log(response.data.suggestions[0]?.name);
           setSuggestions(response.data.suggestions);
+          setShowPicker(true);
         }
       } catch (error) {
-        console.error('Error fetching suggestions:', error.response?.data || error.message);
+        // console.error('Error fetching suggestions:', error.response?.data || error.message);
       } finally {
+
         setLoading(false);
       }
     };
@@ -104,6 +109,7 @@ const SignUp = () => {
   const handleSelectAddress = (address) => {
     setForm({ ...form, address });
     setSuggestions([]); // Clear suggestions
+    setShowPicker(false); // Hide picker
   };
 
   // Submit form
@@ -201,6 +207,7 @@ const SignUp = () => {
             secureTextEntry={false}
             otherStyles={{ marginBottom: 20 }}
           />
+
           <FormField
             title="Address"
             placeholder="Enter your Address"
@@ -212,22 +219,24 @@ const SignUp = () => {
             setAddress={setForm}
             otherStyles={{ marginBottom: 20 }}
           />
+
           {/* {loading && <Text>Loading...</Text>} */}
-          {Array.isArray(suggestions) && suggestions.length > 0 && (
-            <ScrollView style={styles.suggestionsList}>
-              {suggestions.map((suggestion, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.suggestionItem}
-                  onPress={() => handleSelectAddress(suggestion.full_address || suggestion.place_formatted || suggestion.name)}
-                >
-                  <Text style={styles.suggestionText}>
-                    {suggestion.name || suggestion.place_formatted || suggestion.full_address}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
+          {Array.isArray(suggestions) && suggestions.length > 0 && showPicker && (
+            <Picker
+              selectedValue={form.address}
+              onValueChange={(itemValue) => handleSelectAddress(itemValue)}
+              style={styles.picker}
+              mode="dropdown"
+            >
+            {suggestions.map((suggestion, index) => (
+              <Picker.Item
+                key={index}
+                label={suggestion.name || suggestion.place_formatted || suggestion.full_address}
+                value={suggestion.full_address || suggestion.place_formatted || suggestion.name}
+              />
+            ))}
+        </Picker>
+      )}
           <FormField
             title="Password"
             placeholder="Enter your password"
@@ -350,7 +359,22 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     flexDirection: 'row',
     gap: 2,
-  }
+  },
+  picker: {
+    backgroundColor: "#ffffff", // Picker background is white
+    color: "#333", // Darker text for better readability
+    borderRadius: 10,
+    marginVertical: 10,
+    paddingHorizontal: 10,
+    height: 50, // Increased height for better touch target
+    borderWidth: 1,
+    borderColor: Colors.light.contrast,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+},
 });
 
 export default SignUp

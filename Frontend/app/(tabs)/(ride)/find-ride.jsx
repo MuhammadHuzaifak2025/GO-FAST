@@ -152,7 +152,7 @@ const FindRide = () => {
                 throw new Error(response);
             }
         } catch (error) {
-            console.log(error.response);
+            // console.log(error.response);
             if (error.response.data.message === "No rides available") {
                 setListEnd(true);
             } else {
@@ -421,6 +421,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         flex: 1,
+        flexWrap: 'wrap',
     },
     filterContainer: {
         marginHorizontal: 20,

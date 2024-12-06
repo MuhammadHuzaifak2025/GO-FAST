@@ -67,7 +67,7 @@ const FormField = ({
                     </TouchableOpacity>
                 )}
                 {title === "Address" && (
-                    <TouchableOpacity onPress={() => setAddress({ address: "" })}>
+                    <TouchableOpacity onPress={() => setAddress({ ...form, address: "" })}>
                         <Ionicons
                             name="close"
                             style={styles.img}
