@@ -12,6 +12,7 @@ const allowedOrigins = [
   'https://dkfmdoe-anonymous-8081.exp.direct',
   '192.168.10.6:5001',
   '192.168.100.2:5001',
+  'http://localhost:3000',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5432.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5005.app.github.dev',
@@ -45,6 +46,20 @@ app.use(
   })
 );
 
+const aj = arcjet({
+  // Get your site key from https://app.arcjet.com and set it as an environment
+  // variable rather than hard coding.
+  key: process.env.ARCJET_KEY,
+  rules: [
+    validateEmail({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+      // block disposable, invalid, and email addresses with no MX records
+      block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+    }),
+  ],
+});
+
+
 app.use(express.static("public"));
 
 
@@ -57,6 +72,7 @@ import BusRouter from "./routes/buspool/bus.routes.js";
 import PassengerRouter from "./routes/buspool/Passemger.routes.js";
 import BusRegistrationRouter from "./routes/buspool/busregistration.routes.js";
 import SingleRidePassengerRouter from "./routes/buspool/singleridepassenger.routes.js";
+import arcjet, { detectBot, shield, tokenBucket, validateEmail } from "@arcjet/node";
 
 
 app.use(cookieparser());
@@ -75,3 +91,4 @@ app.use('/gofast/api', SingleRidePassengerRouter);
 app.use(ErrorHandlerMiddleWare);
 
 export default app;
+export { aj };

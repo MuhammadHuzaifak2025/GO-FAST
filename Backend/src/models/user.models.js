@@ -46,7 +46,11 @@ const User = sequelize.define("user", {
     is_verified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
-    }
+    },
+    is_super_admin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 },
     {
         hooks: {

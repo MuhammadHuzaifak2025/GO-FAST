@@ -13,7 +13,8 @@ import {
   ChangePasword,
   verifyuser,
   resendotp,
-  make_admin
+  make_admin,
+  createAdmin
 } from "../controllers/User.controller.js";
 import AuthenticateToken from "../middlewares/Authenticate_token.js";
 const UserRouter = Router();
@@ -32,5 +33,6 @@ UserRouter.route("/user/changepassword").put(AuthenticateToken, ChangePasword);
 UserRouter.route("/user/verifyuser").put(verifyuser);
 UserRouter.route("/user/resend-otp").post(resendotp);
 UserRouter.route("/user/make_admin").post(AuthenticateToken, make_admin)
+UserRouter.route("/user/create_admin").post(AuthenticateToken, createAdmin)
 
 export default UserRouter;

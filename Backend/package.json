@@ -16,6 +16,7 @@
   "author": "Muhammad Huzaifa Saeed Daniyal and Ilyas Moiz",
   "license": "MIT",
   "dependencies": {
+    "@arcjet/node": "^1.0.0-alpha.34",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
