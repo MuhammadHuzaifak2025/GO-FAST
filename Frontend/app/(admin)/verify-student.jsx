@@ -78,7 +78,7 @@ export default function App() {
 
   async function handleVerifyStudent() {
     if (studentId) {
-      alert('Verifying student...');
+      // alert('Verifying student...');
       await setAuthHeaders(axios);
       try {
         setAuthHeaders(axios);
@@ -112,16 +112,19 @@ export default function App() {
   const validateQR = (qrData) => {
     try {
       const decryptedData = decrypt(qrData);
+      console.log(decryptedData)
       const { passenger_id, ride_date, timestamp } = JSON.parse(decryptedData);
 
       // Validate date (ensure ride date or timestamp is valid)
       const now = new Date();
       const rideDate = new Date(ride_date);
-      if (rideDate < now) {
-        throw new Error("QR code is expired");
+      if (rideDate.getMonth() === now.getMonth()) {
+        console.log(rideDate.getMonth(), now.getMonth());
+        console.log("QR code is expired");
+        return { valid: true, passenger_id, ride_date };
       }
+      throw new Error("QR code is expired");
       // Optionally, fetch from the database to verify passenger_id or ride_date
-      return { valid: true, passenger_id, ride_date };
     } catch (error) {
       // console.error("QR validation error:", error);
       return { valid: false, error: error.message };
@@ -139,6 +142,7 @@ export default function App() {
         setIsVerified(false);
       }, 5000); // Delay of 1000ms (1 second)
     } else {
+      // playSound();
       playSound_invalid();
       setIsVerified(true);
       // Add a delay before proceeding

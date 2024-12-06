@@ -40,6 +40,7 @@ const syncModels = async () => {
   }
   let username1 = "admin";
   try {
+    
     const userexsist = await User.findOne({ where: { username: username1 } });
     if (!userexsist) {
       const Users = await User.create({

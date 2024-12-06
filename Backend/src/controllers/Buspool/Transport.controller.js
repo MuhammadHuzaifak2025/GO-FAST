@@ -6,8 +6,11 @@ import { QueryTypes } from "sequelize";
 
 const create_Transport_Manager = asynchandler(async (req, res, next) => {
     try {
-        const { name, email, account_no } = req.body;
-        let owner = req.user.user_id;
+        const { name, email, account_no, user_id } = req.body;
+        let owner = user_id;
+        // if(!owner){
+        //     owner = user_id
+        // }
 
         if (!name || !email || !account_no || !owner) {
             return next(new ApiError(400, "All fields are required"));
