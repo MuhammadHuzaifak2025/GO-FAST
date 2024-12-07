@@ -165,4 +165,57 @@ const get_total_passenger_rides = asynchandler(async (req, res, next) => {
     }
 });
 
-export { get_bus_ratio, seatleft, get_this_month_rides_driver, get_this_month_passenger_spending, get_total_rides_driver, get_total_passenger_rides };
+const get_monthly_stats = asynchandler(async (req, res, next) => {
+    try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        // Fetch rides as driver
+        const driverRides = await CarpoolRide.findAll({
+            where: {
+                driver: req.user.user_id,
+                createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+            },
+        });
+
+        // Fetch rides as completed driver
+        const completedDriverRides = await CarpoolRide.findAll({
+            where: {
+                driver: req.user.user_id,
+                createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+                ride_status: "completed",
+            },
+        });
+
+        // Fetch rides as passenger
+        const passengerRides = await ride_passenger.findAll({
+            where: {
+                passenger_id: req.user.user_id,
+                createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+            },
+        });
+
+        // Calculate stats
+        const thisMonthRidesCount = driverRides.length;
+        const totalFareAsDriver = driverRides.reduce((acc, ride) => acc + (ride.fare || 0), 0);
+        const totalSpentAsPassenger = completedDriverRides.reduce((acc, ride) => acc + (ride.fare || 0), 0);
+        const totalPassengerRidesCount = passengerRides.length;
+        const totalFareAsPassenger = passengerRides.reduce((acc, ride) => acc + (ride.fare || 0), 0);
+
+        // Return combined stats
+        return res.json(new ApiResponse(200, {
+            this_month_rides_as_driver: thisMonthRidesCount,
+            total_fare_as_driver: totalFareAsDriver,
+            total_fare_spent_as_passenger: totalSpentAsPassenger,
+            total_rides_as_passenger: totalPassengerRidesCount,
+            total_fare_as_passenger: totalFareAsPassenger,
+        }));
+    } catch (error) {
+        console.error("Error in get_monthly_stats:", error); // Log for debugging
+        next(error); // Pass error to next middleware
+    }
+});
+
+
+export { get_bus_ratio, seatleft, get_this_month_rides_driver, get_this_month_passenger_spending, get_total_rides_driver, get_total_passenger_rides, get_monthly_stats };
