@@ -101,7 +101,7 @@ const RequestItem = ({ username, seatsRequested, req_id, refreshRides }) => {
             action === "accept"
                 ? "Request accepted successfully."
                 : "Request rejected successfully.";
-        console.log(myRide);
+        // console.log(myRide);
 
         Alert.alert(
             `${action === "accept" ? "Accept" : "Reject"} Request`,

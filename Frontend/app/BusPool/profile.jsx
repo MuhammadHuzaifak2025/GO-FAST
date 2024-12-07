@@ -23,8 +23,9 @@ const Profile = () => {
 
     const [stats, setStats] = useState({
         monthlyRides: 0,
-        totalDistance: 0,
-        savedCarbon: 0,
+        monthlyRidesDrive: 0,
+        moneySpentMonth: 0,
+        moneyEarnedMonth: 0,
     });
 
     const [isLogOut, setIsLogOut] = useState(false);
@@ -35,19 +36,23 @@ const Profile = () => {
         router.replace("/find-ride");
     };
 
+    const fetchMonthlyRides = async () => {
+        try {
+
+            await setAuthHeaders(axios);
+            const response = await axios.get(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/stats`,
+            );
+            setStats(response.data);
+        } catch (error) {
+            // console.log(error);
+        }
+    };
+    
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                await setAuthHeaders(axios);
-                const response = await axios.get(
-                    `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/stats`,
-                );
-                setStats(response.data);
-            } catch (error) {
-                console.log(error);
-            }
-        };
+
         fetchStats();
+
     }, []);
 
     const handleLogOut = async () => {
@@ -98,21 +103,23 @@ const Profile = () => {
                 </View>
 
                 <Text style={styles.statsTitle}>Monthly Ride Stats</Text>
-                <View style={styles.statsContainer}>
+                <ScrollView style={styles.statsContainer}
+                            horizontal={true}>
+                    
                     <View style={styles.statCard}>
                         <FontAwesome5 name="car" size={24} color={Colors.light.contrast} />
-                        <Text style={styles.statLabel}>Rides this Month</Text>
+                        <Text style={styles.statLabel}>Rides Ridden</Text>
                         <Text style={styles.statValue}>{stats.monthlyRides}</Text>
                     </View>
 
                     <View style={styles.statCard}>
                         <MaterialCommunityIcons
-                            name="map-marker-distance"
+                            name="steering"
                             size={24}
                             color={Colors.light.contrast}
                         />
-                        <Text style={styles.statLabel}>Total Distance</Text>
-                        <Text style={styles.statValue}>{stats.totalDistance} km</Text>
+                        <Text style={styles.statLabel}></Text>
+                        <Text style={styles.statValue}>{stats.totalDistance}Rides Driven</Text>
                     </View>
 
                     <View style={styles.statCard}>
@@ -121,10 +128,21 @@ const Profile = () => {
                             size={24}
                             color={Colors.light.contrast}
                         />
-                        <Text style={styles.statLabel}>Saved Carbon</Text>
-                        <Text style={styles.statValue}>{stats.savedCarbon} kg</Text>
+                        <Text style={styles.statLabel}>Money Spent</Text>
+                        <Text style={styles.statValue}>{stats.savedCarbon} Rs</Text>
                     </View>
-                </View>
+
+                    <View style={styles.statCard}>
+                        <Ionicons
+                            name="leaf-outline"
+                            size={24}
+                            color={Colors.light.contrast}
+                        />
+                        <Text style={styles.statLabel}>Money Spent</Text>
+                        <Text style={styles.statValue}>{stats.savedCarbon} Rs</Text>
+                    </View>
+
+                </ScrollView>
 
                 <View style={styles.optionsContainer}>
                     <Text style={styles.optionsTitle}>Account Options</Text>
