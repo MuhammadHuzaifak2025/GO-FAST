@@ -163,6 +163,10 @@ const RegistrationHandler = () => {
     );
     const handlesubmitregistration = async () => {
         try {
+            if (!startDate || !dueDate) {
+                toast.show("Please select start and due dates", { type: "danger", duration: 6000, offset: 30 });
+                return;
+            }
             await setAuthHeaders(axios)
             const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration`, { "start_date": startDate, 'due_date': dueDate }, { withCredentials: true });
             if (resp.status === 200) {
@@ -176,6 +180,9 @@ const RegistrationHandler = () => {
             }
         } catch (error) {
             // console.log(error.response);
+            toast.show(error.response.data.message, { type: "danger", duration: 6000, offset: 30 });
+            setDueDate(null);
+            setStartDate(null);
         }
     }
 

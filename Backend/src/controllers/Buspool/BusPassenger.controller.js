@@ -257,12 +257,15 @@ function encrypt(text) {
 const show_card = asynchandler(async (req, res, next) => {
     try {
         const passenger_id = req.user.user_id;
+        const [getlastsemester] = await sequelize.query(`SELECT * FROM semesters ORDER BY semester_id DESC LIMIT 1`, {
+            type: sequelize.QueryTypes.SELECT
+        });
         const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers a
             INNER JOIN buses b ON a.bus_id = b.bus_id
             INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id
             INNER JOIN semesters d ON a.semester_id = d.semester_id
-            WHERE passenger_id = :passenger_id AND is_paid = true`, {
-            replacements: { passenger_id },
+            WHERE passenger_id = :passenger_id AND is_paid = true and d.semester_id = :semester_id`, {
+            replacements: { passenger_id, semester_id: getlastsemester.semester_id, },
             type: sequelize.QueryTypes.SELECT
         });
 
@@ -296,8 +299,9 @@ const show_card = asynchandler(async (req, res, next) => {
         // Include necessary details for validation
         const qrPayload = JSON.stringify({
             passenger_id: data.passenger_id,
-            ride_date: data.ride_date || data.createdAt, // Include the ride or creation date
+            ride_date: data.ride_date, // Include the ride or creation date
             timestamp: new Date().toISOString(), // Add a generation timestamp
+            semester_ride: data.semester_ride ? getlastsemester.semester_id : null,
         });
 
         // Encrypt the QR payload

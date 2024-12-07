@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import {
   StyleSheet,
@@ -32,8 +33,10 @@ export default function App() {
   const [sound, setSound] = useState();
   const [isverified, setIsVerified] = useState(false);
   const [animation] = useState(new Animated.Value(0));
+  const [semester, setSemester] = useState(null);
 
   useEffect(() => {
+
     Animated.loop(
       Animated.timing(animation, {
         toValue: 1,
@@ -43,6 +46,31 @@ export default function App() {
       })
     ).start();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const createsemester = async () => {
+        try {
+          await setAuthHeaders(axios);
+          const resp = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semesters`, { withCredentials: true });
+
+          if (resp.status === 200) {
+            // Semester found, set it as current
+            // alert('Semester found');
+            setSemester(resp.data.data.semester_id);
+          } else if (resp.status === 204) {
+            Toast.show('No semester found', { type: 'info' });
+          }
+        } catch (error) {
+          console.log(error.response.data.message);
+          alert(error.response.data.message);
+          Toast.show(error.response.data.message, { type: 'danger' });
+        }
+      };
+      createsemester();
+
+    }, [])
+  );
 
   if (!permission) {
     return <View />;
@@ -112,13 +140,17 @@ export default function App() {
   const validateQR = (qrData) => {
     try {
       const decryptedData = decrypt(qrData);
-      console.log(decryptedData)
-      const { passenger_id, ride_date, timestamp } = JSON.parse(decryptedData);
+
+
+      console.log(decryptedData.semester_ride)
+      const { passenger_id, ride_date, timestamp, semester_ride } = JSON.parse(decryptedData);
 
       // Validate date (ensure ride date or timestamp is valid)
       const now = new Date();
       const rideDate = new Date(ride_date);
-      if (rideDate.getMonth() === now.getMonth()) {
+      console.log(rideDate, now);
+      console.log((rideDate && (rideDate.getDate() === now.getDate())), (semester_ride && (semester_ride === semester)), semester_ride, semester);
+      if ((rideDate && (rideDate.getDate() === now.getDate())) || (semester_ride && (semester_ride === semester))) {
         console.log(rideDate.getMonth(), now.getMonth());
         console.log("QR code is expired");
         return { valid: true, passenger_id, ride_date };

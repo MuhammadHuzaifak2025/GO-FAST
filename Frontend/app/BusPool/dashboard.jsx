@@ -9,6 +9,8 @@ import {
     Image,
     Dimensions,
     SafeAreaView,
+    ScrollView,
+    RefreshControl,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -28,6 +30,7 @@ const ProfileCard = () => {
     const { user } = useGlobalContext();
     const [loading, setLoading] = useState(false);
     const [noregistered, setNoRegistered] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const fetchcarddetails = async () => {
         setLoading(true);
         try {
@@ -90,6 +93,11 @@ const ProfileCard = () => {
             fetchcarddetails();
         }, []),
     );
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchcarddetails();
+        setRefreshing(false);
+    };
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString("en-US", {
@@ -98,13 +106,15 @@ const ProfileCard = () => {
             day: "numeric",
         });
     };
-    if (loading) {
+    if (loading && !refreshing) {
         return <Text>Loading...</Text>;
     }
 
     if (!noregistered)
-        return <SafeAreaView style={styles.containerTEXT}>
-            <Text style={styles.sectionTitleTEXT}>No Open Registrations</Text>
+        return <SafeAreaView style={styles.containerTEXT} >
+            <ScrollView
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            ><Text style={styles.sectionTitleTEXT}>No Open Registrations</Text></ScrollView>
         </SafeAreaView>
 
     return (

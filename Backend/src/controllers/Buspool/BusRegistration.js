@@ -20,6 +20,12 @@ const openbusregistration = asynchandler(async (req, res, next) => {
             { replacements: [start_date, start_date], type: QueryTypes.SELECT }
         );
         console.log(getcurrentsemester)
+
+        const [getbusses] = await sequelize.query(`SELECT * FROM buses where bus_organization = ?`,
+            { replacements: [getuserorganization.organization_id], type: QueryTypes.SELECT });
+        if (!getbusses) {
+            return next(new ApiError(400, "No Busses Found In Registration, Register A Bus First"));
+        }
         const [checkifalreadyregistered] = await sequelize.query(
             `SELECT * FROM busregistrations order by registration_id desc limit 1`,
             { replacements: [getuserorganization.organization_id, start_date, due_date], type: QueryTypes.SELECT }
@@ -116,12 +122,16 @@ const get_student_registrations = asynchandler(async (req, res, next) => {
             `SELECT * FROM transport_organizations WHERE owner =?`,
             { replacements: [req.user.user_id], type: QueryTypes.SELECT }
         );
+        const [getcurrentsemester] = await sequelize.query(
+            `SELECT * FROM semesters order by semester_id desc limit 1`,
+            { type: QueryTypes.SELECT }
+        );
         const getallregistration = await sequelize.query(
             `SELECT distinct a.* FROM semester_passengers a inner join buses b on a.bus_id = b.bus_id
              inner join busregistrations c on b.bus_organization = c.organization
-             where b.bus_organization = ? `,
+             where b.bus_organization = ? and a.semester_id = ?`,
 
-            { replacements: [getuserorganization.organization_id,], type: QueryTypes.SELECT }
+            { replacements: [getuserorganization.organization_id, getcurrentsemester.semester_id], type: QueryTypes.SELECT }
         );
         console.log(getallregistration)
         for (const i in getallregistration) {

@@ -293,7 +293,11 @@ export default function BusManagement() {
                             <TouchableOpacity
                                 key={index}
                                 style={styles.suggestionItem}
-                                onPress={() => setNewRoute(suggestion.full_address || suggestion.place_formatted || suggestion.name)}
+                                onPress={() => {
+                                    setNewRoute(suggestion.name + ' ' + suggestion.place_formatted || suggestion.full_address)
+                                    setshowsuggestion(false)
+                                    setSuggestions([])
+                                }}
                             >
                                 <Text style={styles.suggestionText}>
                                     {suggestion.name || suggestion.place_formatted || suggestion.full_address}
@@ -321,7 +325,7 @@ export default function BusManagement() {
                     <Text style={styles.submitButtonText}>Create Bus</Text>
                 </TouchableOpacity>
             </View>
-        </SafeAreaView>
+        </SafeAreaView >
     )
 }
 
