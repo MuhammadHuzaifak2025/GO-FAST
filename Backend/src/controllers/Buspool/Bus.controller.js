@@ -10,6 +10,7 @@ const create_bus = asynchandler(async (req, res, next) => {
             throw new ApiError(403, "You are not authorized to perform this action");
         }
         const { bus_number, seats, single_ride_fair } = req.body;
+        const total_seats = seats;
         const [bus_organization] = await sequelize.query(`
             SELECT organization_id FROM transport_organizations 
             WHERE owner = ${req.user.user_id}`, { type: QueryTypes.SELECT });
@@ -28,14 +29,15 @@ const create_bus = asynchandler(async (req, res, next) => {
         }
 
         const [bus] = await sequelize.query(`
-            INSERT INTO buses (bus_number, seats, bus_organization, single_ride_fair, "createdAt", "updatedAt")
-            VALUES (:bus_number, :seats, :bus_organization, :single_ride_fair, :createdAt, :updatedAt) RETURNING *`,
+            INSERT INTO buses (bus_number, seats, bus_organization, single_ride_fair, total_seats,"createdAt", "updatedAt")
+            VALUES (:bus_number, :seats, :bus_organization, :single_ride_fair,:total_seats, :createdAt, :updatedAt) RETURNING *`,
             {
                 replacements: {
                     bus_number,
                     seats,
                     bus_organization: bus_organization.organization_id,
                     single_ride_fair,
+                    total_seats,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 },
@@ -202,12 +204,23 @@ const delete_bus = asynchandler(async (req, res, next) => {
             throw new ApiError(403, "You are not authorized to perform this action");
         }
         const { bus_id } = req.params;
+        const [semesters] = await sequelize.query(
+            `SELECT * FROM semesters ORDER BY semester_id DESC LIMIT 1`,
+            { type: sequelize.QueryTypes.SELECT }
+        );
+        if (!semesters) {
+            throw new ApiError(404, "No current semester found");
+        }
         const getregistration = await sequelize.query(`SELECT * FROM busregistrations 
             inner join buses on busregistrations.organization = buses.bus_organization
-            WHERE bus_id = ${bus_id}`, { type: QueryTypes.SELECT });
+            WHERE bus_id = ${bus_id} and semester_id=${semesters.semester_id}`, { type: QueryTypes.SELECT });
         if (getregistration[0]) {
             throw new ApiError(400, "Bus is open for registration");
         }
+        const [delete_semester_passenger] = await sequelize.query(`DELETE FROM semester_passengers
+            WHERE bus_id = ${bus_id}`, { type: QueryTypes.DELETE });
+        const [delete_single_ride_passenger] = await sequelize.query(`DELETE FROM "SingleRidePassengers"
+            WHERE bus_id = ${bus_id}`, { type: QueryTypes.DELETE });
         const setbuorgnill = await sequelize.query(`
             UPDATE buses SET bus_organization = null WHERE bus_id = ${bus_id}`, { type: QueryTypes.UPDATE });
         const delete_busroutes = await sequelize.query(`

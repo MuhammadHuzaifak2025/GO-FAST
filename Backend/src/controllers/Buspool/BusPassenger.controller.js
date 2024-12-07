@@ -29,6 +29,7 @@ const create_Semester = asynchandler(async (req, res, next) => {
             }
         );
         if (semester) {
+            const [updateBusses] = await sequelize.query(`UPDATE buses SET seats = total_seats`, { type: sequelize.QueryTypes.UPDATE });
             return res.status(201).json(new ApiResponse(201, "Semester created successfully"));
         }
     } catch (error) {

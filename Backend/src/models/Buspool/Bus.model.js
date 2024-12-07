@@ -17,6 +17,10 @@ const Bus = sequelize.define(
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    total_seats: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     bus_organization: {
         type: DataTypes.INTEGER,
         references: {
