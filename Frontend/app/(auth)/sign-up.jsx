@@ -228,15 +228,16 @@ const SignUp = () => {
               style={styles.picker}
               mode="dropdown"
             >
-            {suggestions.map((suggestion, index) => (
-              <Picker.Item
-                key={index}
-                label={suggestion.name || suggestion.place_formatted || suggestion.full_address}
-                value={suggestion.full_address || suggestion.place_formatted || suggestion.name}
-              />
-            ))}
-        </Picker>
-      )}
+              <Picker.Item label="Suggestions" value="" />
+              {suggestions.map((suggestion, index) => (
+                <Picker.Item
+                  key={index}
+                  label={suggestion.place_formatted || suggestion.full_address}
+                  value={suggestion.full_address || suggestion.place_formatted || suggestion.name}
+                />
+              ))}
+            </Picker>
+          )}
           <FormField
             title="Password"
             placeholder="Enter your password"
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-},
+  },
 });
 
 export default SignUp
