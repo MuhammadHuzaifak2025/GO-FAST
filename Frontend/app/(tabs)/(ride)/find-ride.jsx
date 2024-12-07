@@ -125,7 +125,10 @@ const FindRide = () => {
     const { height, width } = useWindowDimensions();
 
     const fetchRides = async () => {
-        if (pageCount === 1) setIsLoading(true);
+        if (pageCount === 1) {
+            setIsLoading(true);
+            setRides([]);
+        }
         else setMoreLoading(true);
 
         try {

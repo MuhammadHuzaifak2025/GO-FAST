@@ -18,7 +18,7 @@ export default function App() {
             
             <View style={styles.inlineContainer}>
               <Image source={icons.logo} style={styles.logo} />
-              <Text style={styles.textMain}>GoFast</Text>
+              {/* <Text style={styles.textMain}>GoFast</Text> */}
               {/* <Text className="text-blue-800" >GoFast</Text> */}
             </View>
 
@@ -53,13 +53,13 @@ const styles = StyleSheet.create({
   inlineContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: "#EC5F5F",
       padding: 1,
       marginBottom: 60,
     },
   logo: {
       resizeMode: 'contain',
-      height: 50,
+      height: 200,
+      width: 300,
       marginRight: 15,
       backgroundColor: "#FFF"
     },

@@ -61,6 +61,11 @@ const ChatScreen = () => {
 
         tempSocket.on("all-messages", (messages) => {
           try {
+            if (!messages || typeof messages.messages === "undefined") {
+              // console.error("Invalid messages format: Expected an object with messages key.", messages);
+              setIsLoading(false);
+              return;
+            }
             const newMessages = messages.messages;
             if (!Array.isArray(newMessages)) {
               console.error("Invalid messages format: Expected an array.", newMessages);

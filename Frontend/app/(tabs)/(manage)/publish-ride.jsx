@@ -87,7 +87,6 @@ const RideItem = ({
                                 offset: 30,
                                 animationType: "slide-in",
                             });
-
                             if (refreshRides) refreshRides(); // Refresh the rides list if a refresh function is provided
                         } else {
                             throw new Error(response);
@@ -191,7 +190,7 @@ const PublishRide = () => {
 
     const fetchRides = async () => {
         setLoadingF(true);
-
+        setRides([]);
         try {
             await setAuthHeaders(axios);
             const response = await axios.get(
@@ -199,14 +198,17 @@ const PublishRide = () => {
             );
             // console.log("Hekki", response)
             if (response.status === 200) {
-                // console.log("hello", response);
+                console.log("hello", response);
                 setRides(response.data.message.rides);
+                console.log("Rides", rides);
                 setLoadingF(false);
             } else {
+                setRides([]);
                 throw new Error(response);
             }
         } catch (error) {
             if (error.response.data.message === "No rides available") {
+                setRides([]);
             } else {
                 toast.show(error.response.data.message, {
                     type: "danger",
