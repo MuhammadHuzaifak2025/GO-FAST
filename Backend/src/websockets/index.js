@@ -62,10 +62,12 @@ io.on('connection', (socket) => {
                 return socket.emit('error', { message: response.error || 'Error processing ride request' });
             }
             const resp = await fetchall_messages(socket);
-            io.to(socket.id).emit('all-messages', { messages: resp });
+            if (resp)
+                io.to(socket.id).emit('all-messages', { messages: resp });
             if (userType === "driver") {
                 console.log("Driver", socket.id);
                 await searchForPassenger(socket, data.request_id);
+                console.log(User, "User type", userType);
 
                 if (socket.reciever) {
 

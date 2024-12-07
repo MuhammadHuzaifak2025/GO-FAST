@@ -382,7 +382,7 @@ const FindRide = () => {
                     }
                     refreshing={refreshing}
                     onRefresh={() => {
-                        setRides([]);
+                        // setRides([]);
                         setRefreshing(true);
                         setListEnd(false);
                         setPageCount(1);

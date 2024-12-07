@@ -11,8 +11,8 @@ const processRideRequest = async (request_id, socket) => {
                 type: QueryTypes.SELECT,
             });
         if (!chat[0]) {
-            const insertChat = await sequelize.query(
-                `INSERT INTO "Chats" (request_id, timestamp, "createdAt", "updatedAt") VALUES (?, ?,?,?)`,
+            const [insertChat] = await sequelize.query(
+                `INSERT INTO "Chats" (request_id, timestamp, "createdAt", "updatedAt") VALUES (?, ?,?,?) returning chat_id`,
                 {
                     replacements: [request_id, new Date(), new Date(), new Date()],
                     type: QueryTypes.INSERT,
@@ -63,7 +63,7 @@ const store_driver = async (data) => {
 
 const searchForPassenger = async (socket, request_id, passenger_id) => {
     try {
-        const passengers = await sequelize.query(
+        const [passengers] = await sequelize.query(
             `SELECT * FROM ride_requests a 
              INNER JOIN carpool_rides b ON a.ride_id = b.ride_id 
              WHERE request_id = ? and b.driver =?`,
@@ -72,16 +72,18 @@ const searchForPassenger = async (socket, request_id, passenger_id) => {
                 type: QueryTypes.SELECT,
             }
         );
+        console.log("Passenger", passengers);
+        if (passengers) {
 
-        if (passengers.length > 0) {
-
-            if (passengers[0].requesting_user_socket_id) {
-                socket.reciever = passengers[0].requesting_user_socket_id;
+            if (passengers.requesting_user_socket_id) {
+                socket.reciever = passengers.requesting_user_socket_id;
                 // socket.to(socket.reciever).emit('ride-request-chat', {
                 //     message: 'Driver is ready to chat',
                 // });
                 // await socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
+            console.log("Passenger", passengers.requesting_user);
+            socket.receiver_user_id = passengers.requesting_user;
         }
     } catch (error) {
         socket.emit('error', {
@@ -145,6 +147,7 @@ const check_if_both_connected = async (socket, request_id) => {
 
 const search_for_driver = async (socket, request_id,) => {
     try {
+        console.log("kjashdkjashdaksj")
         const driver = await sequelize.query(
             `SELECT * FROM ride_requests a 
              INNER JOIN carpool_rides b ON a.ride_id = b.ride_id 
@@ -158,11 +161,14 @@ const search_for_driver = async (socket, request_id,) => {
         if (driver[0]) {
             if (driver[0].owner_socket_id) {
                 socket.reciever = driver[0].owner_socket_id;
+
                 // await socket.to(socket.reciever).emit('ride-request-chat', {
                 //     message: 'Passenger is ready to chat',
                 // });
                 // await socket.to(socket.reciever).emit('reconnect', { message: 'Reconnect to chat' });
             }
+            console.log("Driversss", driver[0].driver);
+            socket.receiver_user_id = driver[0].driver;
         }
 
     } catch (error) {
@@ -297,11 +303,14 @@ const save_message = async (data, socket) => {
             senderId,
             senderName,
         };
-        console.log(data.reciever)
+        if (!data.receiver) {
+            data.receiver = socket.receiver_user_id;
+        }
+        console.log(data.receiver_user_id)
         await sequelize.query(
             `INSERT INTO "ChatMessages" (chat_id, sender, receiver, message, timestamp, is_read, "createdAt", "updatedAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             {
-                replacements: [socket.chat, socket.user.user_id, data.reciever, message_data.message, message_data.timestamp, false, new Date(), new Date()],
+                replacements: [socket.chat, socket.user.user_id, data.reciever ? data.receiver : socket.receiver_user_id, message_data.message, message_data.timestamp, false, new Date(), new Date()],
                 type: QueryTypes.INSERT,
             }
         );
