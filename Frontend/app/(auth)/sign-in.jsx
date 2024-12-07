@@ -42,9 +42,10 @@ const SignIn = () => {
         setSpinnerState('');
         return;
       }
-
+      
+      console.log('gekk');
       const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/login`, { username: form.username, password: form.password }, { withCredentials: true });
-
+      console.log(response);
       if (response.status === 200) {
 
         setSpinnerState('success');
@@ -91,7 +92,7 @@ const SignIn = () => {
     } catch (error) {
 
       setSpinnerState('failure');
-      // console.log(error.response.data);
+      console.log(error);
 
       toast.show(error.response.data.message, {
         type: "danger",

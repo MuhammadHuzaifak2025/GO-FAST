@@ -187,7 +187,7 @@ const ProfileCard = () => {
                                                     color={Colors.light.contrast}
                                                 />
                                                 <Text style={styles.detailText}>
-                                                    Created:{" "}
+                                                  Ride Date:{" "}
                                                     {new Date(
                                                         card_details?.ride_date,
                                                     ).toLocaleDateString()}

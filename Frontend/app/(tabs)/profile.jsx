@@ -18,14 +18,15 @@ import RideHistory from "../../components/RideHistory";
 import { Colors } from "../../constants/Colors.ts";
 
 const Profile = () => {
-    const { user, setUser, isAuthenticated, setIsAuthenticated } =
-        useGlobalContext();
+
+    const { user, setUser, isAuthenticated, setIsAuthenticated } = useGlobalContext();
     const toast = useToast();
 
     const [stats, setStats] = useState({
         monthlyRides: 0,
-        totalDistance: 0,
-        savedCarbon: 0,
+        monthlyRidesDrive: 0,
+        moneySpentMonth: 0,
+        moneyEarnedMonth: 0,
     });
 
     const [isLogOut, setIsLogOut] = useState(false);
@@ -37,19 +38,29 @@ const Profile = () => {
         router.replace("/BusPool/dashboard");
     };
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                await setAuthHeaders(axios);
-                const response = await axios.get(
-                    `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/stats`,
-                );
-                setStats(response.data);
-            } catch (error) {
-                console.log(error);
+    const fetchMonthlyStats = async () => {
+        try {
+
+            await setAuthHeaders(axios);
+            const response = await axios.get(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/stats/monthly_stats`,
+            );
+            // console.log(response);
+            if(response.status === 200) {
+                setStats(response.data.data);
             }
-        };
-        fetchStats();
+            else{
+                throw new Error(response);
+            }
+        } catch (error) {
+            // console.log(error);
+        }
+    };
+    
+    useEffect(() => {
+
+        fetchMonthlyStats();
+
     }, []);
 
     const handleLogOut = async () => {
@@ -106,33 +117,52 @@ const Profile = () => {
                 </View>
 
                 <Text style={styles.statsTitle}>Monthly Ride Stats</Text>
-                <View style={styles.statsContainer}>
+                <ScrollView style={styles.statsContainer}
+                            contentContainerStyle={{flexDirection: "row",gap: 10}}
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}>
+                    
                     <View style={styles.statCard}>
                         <FontAwesome5 name="car" size={24} color={Colors.light.contrast} />
-                        <Text style={styles.statLabel}>Rides this Month</Text>
-                        <Text style={styles.statValue}>{stats.monthlyRides}</Text>
+                        <Text style={styles.statLabel}>Rides</Text>
+                        <Text style={styles.statLabel}>Ridden</Text>
+                        <Text style={styles.statValue}>{stats?.total_rides_as_passenger }</Text>
                     </View>
 
                     <View style={styles.statCard}>
                         <MaterialCommunityIcons
-                            name="map-marker-distance"
+                            name="steering"
                             size={24}
                             color={Colors.light.contrast}
                         />
-                        <Text style={styles.statLabel}>Total Distance</Text>
-                        <Text style={styles.statValue}>{stats.totalDistance} km</Text>
+                        <Text style={styles.statLabel}>Rides</Text>
+                        <Text style={styles.statLabel}>Driven</Text>
+                        <Text style={styles.statValue}>{stats?.this_month_rides_as_driver || 0 }</Text>
                     </View>
 
                     <View style={styles.statCard}>
                         <Ionicons
-                            name="leaf-outline"
+                            name="cash-outline"
                             size={24}
                             color={Colors.light.contrast}
                         />
-                        <Text style={styles.statLabel}>Saved Carbon</Text>
-                        <Text style={styles.statValue}>{stats.savedCarbon} kg</Text>
+                        <Text style={styles.statLabel}>Money</Text>
+                        <Text style={styles.statLabel}>Spent</Text>
+                        <Text style={styles.statValue}>{stats?.total_fare_as_passenger || 0} Rs</Text>
                     </View>
-                </View>
+
+                    <View style={styles.statCard}>
+                        <Ionicons
+                            name="cash-outline"
+                            size={24}
+                            color={Colors.light.contrast}
+                        />
+                        <Text style={styles.statLabel}>Money</Text> 
+                        <Text style={styles.statLabel}>Earned</Text>
+                        <Text style={styles.statValue}>{stats?.total_fare_as_driver || 0} Rs</Text>
+                    </View>
+
+                </ScrollView>
 
                 <View style={styles.optionsContainer}>
                     <Text style={styles.optionsTitle}>Account Options</Text>
@@ -203,11 +233,12 @@ const styles = StyleSheet.create({
     },
     statsContainer: {
         width: "90%",
-        flexDirection: "row",
-        justifyContent: "space-between",
+        // flex:1,
         marginBottom: 20,
+
     },
     statCard: {
+        flex: 1,
         alignItems: "center",
         borderWidth: 1,
         borderColor: Colors.light.primary,
@@ -219,9 +250,11 @@ const styles = StyleSheet.create({
         padding: 15,
         backgroundColor: "white",
         borderRadius: 10,
-        width: "30%",
+        minWidth: 100,
+        // width: "20%",
     },
     statLabel: {
+        textAlign: "center",
         fontSize: 16,
         color: Colors.light.primary,
         marginTop: 5,

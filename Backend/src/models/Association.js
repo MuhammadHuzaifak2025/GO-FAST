@@ -21,7 +21,7 @@ import busRegistration from "./Buspool/bus_registration_models.js";
 const syncModels = async () => {
   try {
     // console.log(sequelize)
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ force: true });
 
     const username = "abc";
     const userexsist = await User.findOne({ where: { username } });

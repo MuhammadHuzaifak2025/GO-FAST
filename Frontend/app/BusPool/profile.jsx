@@ -13,47 +13,18 @@ import { useGlobalContext } from "../../context/GlobalProvider";
 import { resetSecureStore, setAuthHeaders } from "../../utils/expo-store";
 import { router } from "expo-router";
 
-import CarModal from "../../components/CarModal";
+// import CarModal from "../../components/CarModal";
 import { Colors } from "../../constants/Colors";
 
 const Profile = () => {
-    const { user, setUser, isAuthenticated, setIsAuthenticated } =
-        useGlobalContext();
+    const { user, setUser, isAuthenticated, setIsAuthenticated } = useGlobalContext();
     const toast = useToast();
 
-    const [stats, setStats] = useState({
-        monthlyRides: 0,
-        monthlyRidesDrive: 0,
-        moneySpentMonth: 0,
-        moneyEarnedMonth: 0,
-    });
-
     const [isLogOut, setIsLogOut] = useState(false);
-
-    const [registerCarDisplay, setRegisterCarDisplay] = useState(false);
 
     const handleswitch = () => {
         router.replace("/find-ride");
     };
-
-    const fetchMonthlyRides = async () => {
-        try {
-
-            await setAuthHeaders(axios);
-            const response = await axios.get(
-                `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/user/stats`,
-            );
-            setStats(response.data);
-        } catch (error) {
-            // console.log(error);
-        }
-    };
-    
-    useEffect(() => {
-
-        fetchStats();
-
-    }, []);
 
     const handleLogOut = async () => {
         setIsLogOut(true);
@@ -91,58 +62,12 @@ const Profile = () => {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollView}>
-                <CarModal
-                    visible={registerCarDisplay}
-                    onClose={() => setRegisterCarDisplay(false)}
-                />
 
                 <Text style={styles.title}>Profile</Text>
                 <View style={styles.userInfo}>
                     <Text style={styles.username}>{user?.username}</Text>
                     <Text style={styles.email}>{user?.email}</Text>
                 </View>
-
-                <Text style={styles.statsTitle}>Monthly Ride Stats</Text>
-                <ScrollView style={styles.statsContainer}
-                            horizontal={true}>
-                    
-                    <View style={styles.statCard}>
-                        <FontAwesome5 name="car" size={24} color={Colors.light.contrast} />
-                        <Text style={styles.statLabel}>Rides Ridden</Text>
-                        <Text style={styles.statValue}>{stats.monthlyRides}</Text>
-                    </View>
-
-                    <View style={styles.statCard}>
-                        <MaterialCommunityIcons
-                            name="steering"
-                            size={24}
-                            color={Colors.light.contrast}
-                        />
-                        <Text style={styles.statLabel}></Text>
-                        <Text style={styles.statValue}>{stats.totalDistance}Rides Driven</Text>
-                    </View>
-
-                    <View style={styles.statCard}>
-                        <Ionicons
-                            name="leaf-outline"
-                            size={24}
-                            color={Colors.light.contrast}
-                        />
-                        <Text style={styles.statLabel}>Money Spent</Text>
-                        <Text style={styles.statValue}>{stats.savedCarbon} Rs</Text>
-                    </View>
-
-                    <View style={styles.statCard}>
-                        <Ionicons
-                            name="leaf-outline"
-                            size={24}
-                            color={Colors.light.contrast}
-                        />
-                        <Text style={styles.statLabel}>Money Spent</Text>
-                        <Text style={styles.statValue}>{stats.savedCarbon} Rs</Text>
-                    </View>
-
-                </ScrollView>
 
                 <View style={styles.optionsContainer}>
                     <Text style={styles.optionsTitle}>Account Options</Text>
