@@ -12,6 +12,7 @@ import {
     TextInput,
     Alert,
     ActivityIndicator,
+    ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -335,7 +336,7 @@ const RegistrationHandler = () => {
                             data={students}
                             keyExtractor={(item) => item.semester_passenger_id}
                             renderItem={({ item }) => (
-                                <View style={styles.studentCard}>
+                                <ScrollView style={styles.studentCard} horizontal={true}>
                                     <Text style={styles.studentName}>{item.passenger_id}</Text>
                                     <Text style={styles.paymentStatus}>Payment: {item.is_paid ? 'Paid' : "Unpaid"}</Text>
                                     <View style={styles.actions}>
@@ -348,7 +349,7 @@ const RegistrationHandler = () => {
                                         </TouchableOpacity>
 
                                     </View>
-                                </View>
+                                </ScrollView>
                             )}
                         />
                         <FlatList

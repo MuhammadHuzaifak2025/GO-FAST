@@ -73,6 +73,8 @@ import PassengerRouter from "./routes/buspool/Passemger.routes.js";
 import BusRegistrationRouter from "./routes/buspool/busregistration.routes.js";
 import SingleRidePassengerRouter from "./routes/buspool/singleridepassenger.routes.js";
 import arcjet, { detectBot, shield, tokenBucket, validateEmail } from "@arcjet/node";
+import StatsRouter from "./routes/stats/stats.routes.js";
+
 
 
 app.use(cookieparser());
@@ -86,6 +88,7 @@ app.use('/gofast/api', BusRouter);
 app.use('/gofast/api', PassengerRouter);
 app.use('/gofast/api', BusRegistrationRouter);
 app.use('/gofast/api', SingleRidePassengerRouter);
+app.use('/gofast/api', StatsRouter);
 
 
 app.use(ErrorHandlerMiddleWare);
