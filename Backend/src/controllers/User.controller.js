@@ -129,8 +129,7 @@ const Signup = asynchandler(async (req, res, next) => {
       if (!updateduser) {
         return next(new ApiError(500, "User not updated"));
       }
-      newuser.refreshtoken = refresh_token;
-      newuser.access_token = access_token;
+
       res.status(201).json(new ApiResponse(200, newuser, "User Created, Verify Your Email"));
     }
   } catch (error) {
@@ -258,9 +257,13 @@ const signin = asynchandler(async (req, res, next) => {
       maxAge: 3600 * 1000,
       sameSite: "none",
     });
-    userexsist.refresh_token = undefined;
+    const token = {
+      access_token: access_token,
+      refresh_token: refresh_token,
+    }
+    userexsist.refresh_token = token;
 
-
+    console.log(userexsist);
     res.status(200).json(new ApiResponse(200, userexsist, "User Logged In"));
   } catch (error) {
     return next(new ApiError(500, error.message));
