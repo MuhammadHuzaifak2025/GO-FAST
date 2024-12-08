@@ -50,10 +50,10 @@ const DashboardScreen = () => {
     
     try {
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/stats/seat_left`);
-      console.log(response);
+      // console.log(response);
       if (response.status === 200) {
         setBarData(response.data.data.bus);
-        console.log(barData);
+        // console.log(barData);
       } else {
         throw new Error('Failed to fetch data');
       }
