@@ -261,6 +261,9 @@ const show_card = asynchandler(async (req, res, next) => {
         const [getlastsemester] = await sequelize.query(`SELECT * FROM semesters ORDER BY semester_id DESC LIMIT 1`, {
             type: sequelize.QueryTypes.SELECT
         });
+        if (!getlastsemester) {
+            return next(new ApiError(400, "No semester found"));
+        }
         const [getPassenger] = await sequelize.query(`SELECT * FROM semester_passengers a
             INNER JOIN buses b ON a.bus_id = b.bus_id
             INNER JOIN transport_organizations c ON b.bus_organization = c.organization_id

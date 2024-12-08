@@ -4,12 +4,13 @@ import { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   // Get the "access-token" cookie
   const cookie = request.cookies.get("access-token");
+  const cookie_refresh = request.cookies.get("refresh-token");
 
   // Determine the current pathname
   const pathname = request.nextUrl.pathname;
 
   // Redirect logic
-  if (cookie) {
+  if (cookie || cookie_refresh) {
     // If the user is already authenticated and trying to access "/" or "/login", redirect them to "/admin"
     if (pathname === "/" || pathname === "/login") {
       const adminUrl = new URL("/admin", request.nextUrl.origin);
