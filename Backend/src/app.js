@@ -12,7 +12,7 @@ const allowedOrigins = [
   'https://dkfmdoe-anonymous-8081.exp.direct',
   '192.168.10.6:5001',
   '192.168.100.2:5001',
-  'http://localhost:3000',
+  'http://localhost:3001',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-8081.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5432.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5005.app.github.dev',
@@ -32,7 +32,13 @@ app.use(
   })
 );
 // app.use(cors());
-app.options('*', cors());
+app.options('*', (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.status(204).end();
+});
 
 app.use(
   express.json({
