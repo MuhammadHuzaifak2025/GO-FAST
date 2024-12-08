@@ -51,7 +51,7 @@ const seatleft = asynchandler(async (req, res, next) => {
     try {
         const bus_org = await Transport_Organization.findOne({ where: { owner: req.user.user_id } });
         if (!bus_org) return next(new ApiError(404, "No bus organization found for this user"))
-        const bus = (await Bus.findAll({ where: { bus_organization: bus_org.organization_id }, attributes: ['seats', 'total_seats', 'bus_id'] }));
+        const bus = (await Bus.findAll({ where: { bus_organization: bus_org.organization_id }, attributes: ['seats', 'total_seats', 'bus_id', 'bus_number'] }));
         return res.json(new ApiResponse(200, { bus }));
     } catch (error) {
         next(error);
