@@ -174,7 +174,7 @@ const DashboardScreen = () => {
                   backgroundGradientFrom: "#ffffff",
                   backgroundGradientTo: "#ffffff",
                   decimalPlaces: 0, // No decimals in seat numbers
-                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Bar color
+                  color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`, // Bar color
                   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                 }}
                 style={{
