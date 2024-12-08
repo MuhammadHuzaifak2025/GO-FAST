@@ -129,7 +129,8 @@ const Signup = asynchandler(async (req, res, next) => {
       if (!updateduser) {
         return next(new ApiError(500, "User not updated"));
       }
-
+      newuser.refreshtoken = refresh_token;
+      newuser.access_token = access_token;
       res.status(201).json(new ApiResponse(200, newuser, "User Created, Verify Your Email"));
     }
   } catch (error) {
