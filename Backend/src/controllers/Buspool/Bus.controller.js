@@ -217,12 +217,24 @@ const delete_bus = asynchandler(async (req, res, next) => {
         if (getregistration[0]) {
             throw new ApiError(400, "Bus is open for registration");
         }
-        const [delete_semester_passenger] = await sequelize.query(`DELETE FROM semester_passengers
+        const select_semester_passenger = await sequelize.query(`SELECT * FROM semester_passengers
+            WHERE bus_id = ${bus_id}`, { type: QueryTypes.SELECT });
+        if (select_semester_passenger[0]) {
+            const [delete_semester_passenger] = await sequelize.query(`DELETE FROM semester_passengers
             WHERE bus_id = ${bus_id}`, { type: QueryTypes.DELETE });
-        const [delete_single_ride_passenger] = await sequelize.query(`DELETE FROM "SingleRidePassengers"
+        }
+        const select_single_ride_passenger = await sequelize.query(`SELECT * FROM "SingleRidePassengers"
+            WHERE bus_id = ${bus_id}`, { type: QueryTypes.SELECT });
+        if (select_single_ride_passenger[0]) {
+            const [delete_single_ride_passenger] = await sequelize.query(`DELETE FROM "SingleRidePassengers"
             WHERE bus_id = ${bus_id}`, { type: QueryTypes.DELETE });
-        const setbuorgnill = await sequelize.query(`
+        }
+        const select_busroutes = await sequelize.query(`SELECT * FROM busroutes
+            WHERE bus_id = ${bus_id}`, { type: QueryTypes.SELECT });
+        if (select_busroutes[0]) {
+            const setbuorgnill = await sequelize.query(`
             UPDATE buses SET bus_organization = null WHERE bus_id = ${bus_id}`, { type: QueryTypes.UPDATE });
+        }
         const delete_busroutes = await sequelize.query(`
             DELETE FROM busroutes WHERE bus_id = ${bus_id}`, { type: QueryTypes.DELETE });
 
