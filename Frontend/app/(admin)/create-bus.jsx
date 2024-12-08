@@ -237,7 +237,7 @@ export default function BusManagement() {
                     setSuggestions(response.data.suggestions);
                 }
             } catch (error) {
-                console.error('Error fetching suggestions:', error.response?.data || error.message);
+                // console.error('Error fetching suggestions:', error.response?.data || error.message);
             } finally {
                 setLoading(false);
             }
