@@ -110,11 +110,13 @@ const Signup = asynchandler(async (req, res, next) => {
         secure: true,
         maxAge: 3600 * 100000,
         path: "/",
+        sameSite: "none",
       });
       res.cookie("access-token", access_token, {
         httpOnly: true,
         secure: true,
         maxAge: 3600 * 1000,
+        sameSite: "none",
       });
       const updateduser = await user.update(
         {
@@ -245,11 +247,13 @@ const signin = asynchandler(async (req, res, next) => {
       secure: true,
       maxAge: 3600 * 100000,
       path: "/",
+      sameSite: "none",
     });
     res.cookie("access-token", access_token, {
       httpOnly: true,
       secure: true,
       maxAge: 3600 * 1000,
+      sameSite: "none",
     });
     userexsist.refresh_token = undefined;
 
@@ -264,16 +268,14 @@ const signin = asynchandler(async (req, res, next) => {
 const signout = asynchandler(async (req, res, next) => {
   try {
     res.clearCookie("refresh-token", {
-      path: "/",
+
       secure: true,
-      domain: "localhost",
-      sameSite: "Strict",
+      sameSite: "none",
     });
     res.clearCookie("access-token", {
-      path: "/",
       secure: true,
-      domain: "localhost",
-      sameSite: "Strict",
+
+      sameSite: "none",
     });
 
     res.status(200).json(new ApiResponse(200, {}, "User Logged Out"));
