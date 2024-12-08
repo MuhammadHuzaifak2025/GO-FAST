@@ -232,8 +232,8 @@ const SignUp = () => {
               {suggestions.map((suggestion, index) => (
                 <Picker.Item
                   key={index}
-                  label={suggestion.place_formatted || suggestion.full_address}
-                  value={suggestion.full_address || suggestion.place_formatted || suggestion.name}
+                  label={suggestion.name || suggestion.full_address || suggestion.full_address}
+                  value={suggestion.name || suggestion.full_address || suggestion.full_address}
                 />
               ))}
             </Picker>
