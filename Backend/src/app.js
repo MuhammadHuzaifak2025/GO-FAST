@@ -17,6 +17,7 @@ const allowedOrigins = [
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5432.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5005.app.github.dev',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-4040.app.github.dev',
+  'https://go-fast-sable.vercel.app',
   'https://disreputable-cauldron-p4xrx6j446gh94r7-5000.app.github.dev', // Add this line
 ];
 app.use(
