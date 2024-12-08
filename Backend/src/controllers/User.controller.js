@@ -115,6 +115,7 @@ const Signup = asynchandler(async (req, res, next) => {
       res.cookie("access-token", access_token, {
         httpOnly: true,
         secure: true,
+        path: "/",
         maxAge: 3600 * 1000,
         sameSite: "none",
       });
@@ -252,6 +253,7 @@ const signin = asynchandler(async (req, res, next) => {
     res.cookie("access-token", access_token, {
       httpOnly: true,
       secure: true,
+      path: "/",
       maxAge: 3600 * 1000,
       sameSite: "none",
     });
@@ -268,13 +270,13 @@ const signin = asynchandler(async (req, res, next) => {
 const signout = asynchandler(async (req, res, next) => {
   try {
     res.clearCookie("refresh-token", {
-
+      path: "/",
       secure: true,
       sameSite: "none",
     });
     res.clearCookie("access-token", {
       secure: true,
-
+      path: "/",
       sameSite: "none",
     });
 
