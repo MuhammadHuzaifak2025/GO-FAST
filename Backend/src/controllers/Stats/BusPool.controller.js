@@ -176,6 +176,7 @@ const get_monthly_stats = asynchandler(async (req, res, next) => {
             where: {
                 driver: req.user.user_id,
                 createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+                ride_status: "completed",
             },
         });
 
