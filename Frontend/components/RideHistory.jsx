@@ -15,7 +15,7 @@ import { FlashList } from "@shopify/flash-list";
 import axios from "axios";
 import { setAuthHeaders } from "../utils/expo-store";
 import { Colors } from "../constants/Colors";
-
+import { process } from "../constants";
 const { width } = Dimensions.get("window");
 
 export default function RideHistory({ visible, onClose, user_id }) {

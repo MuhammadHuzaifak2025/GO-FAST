@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useFocusEffect } from '@react-navigation/native';
+import { process } from "../../constants";
 import { Audio } from 'expo-av';
 import {
   StyleSheet,

@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { setAuthHeaders } from '../../utils/expo-store';
+import { process } from "../../constants";
 
 const { width } = Dimensions.get('window');
 

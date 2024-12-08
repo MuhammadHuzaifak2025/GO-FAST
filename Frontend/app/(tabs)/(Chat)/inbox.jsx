@@ -17,6 +17,7 @@ import { getToken } from "../../../utils/expo-store";
 import { v4 as uuidv4 } from "uuid";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "../../../constants/Colors";
+import { process } from "../../../constants";
 
 const ChatScreen = () => {
   const { width, height } = useWindowDimensions();

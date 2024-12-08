@@ -19,6 +19,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { Colors } from "../../constants/Colors";
+import { process } from "../../constants";
 
 const RequestItem = ({ time, car, refreshRides, username, req_id }) => {
     const toast = useToast();
@@ -162,7 +163,9 @@ const RequestRideItem = ({ time, car, refreshRides, username, req_id }) => {
                 style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
-                    marginRight: 20,
+                    marginRight: 10,
+                    flexWrap: "wrap",
+                    flex: 1,
                 }}
             >
                 <Text style={styles.rideText}>
@@ -189,6 +192,7 @@ const YourRequests = () => {
     const toast = useToast();
 
     const fetchRequests = async () => {
+        setRequests([]); // Clear the list before fetching new requests
         setLoading(true);
         try {
             await setAuthHeaders(axios);
@@ -245,6 +249,7 @@ const YourRequests = () => {
 
     const fetchOngoing = async () => {
         try {
+            setRides([]); // Clear the list before fetching new requests
             await setAuthHeaders(axios);
             const response = await axios.get(
                 `${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/ride/ongoing`,

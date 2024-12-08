@@ -16,6 +16,7 @@ import { router } from "expo-router";
 import CarModal from "../../components/CarModal";
 import RideHistory from "../../components/RideHistory";
 import { Colors } from "../../constants/Colors.ts";
+import { process } from "../../constants";
 
 const Profile = () => {
 

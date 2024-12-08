@@ -23,7 +23,7 @@ import axios from "axios";
 import { setAuthHeaders } from "../utils/expo-store";
 import { FlashList } from "@shopify/flash-list";
 import { Colors } from "../constants/Colors";
-
+import { process } from "../constants";
 export default function CarModal({ visible, onClose }) {
     const toast = useToast();
     const [cars, setCars] = useState({});

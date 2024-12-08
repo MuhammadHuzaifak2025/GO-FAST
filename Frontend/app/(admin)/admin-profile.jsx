@@ -15,6 +15,7 @@ import { router } from "expo-router";
 
 import CarModal from "../../components/CarModal";
 import { Colors } from "../../constants/Colors";
+import { process } from "../../constants";
 
 const Profile = () => {
     const { user, setUser, isAuthenticated, setIsAuthenticated } =

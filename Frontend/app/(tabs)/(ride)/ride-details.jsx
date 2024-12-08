@@ -17,6 +17,7 @@ import axios from "axios";
 import { useToast } from "react-native-toast-notifications";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "../../../constants/Colors";
+import { process } from "../../../constants";
 
 const RideDetailsScreen = () => {
     const [seatsRequested, setSeatsRequested] = useState(0);

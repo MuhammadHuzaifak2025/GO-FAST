@@ -9,6 +9,7 @@ import { useToast } from 'react-native-toast-notifications';
 import { FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from "../../../constants/Colors";
+import { process } from "../../../constants";
 
 const ChatComponent = ({item}) => {
 

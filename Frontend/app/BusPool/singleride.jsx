@@ -18,6 +18,7 @@ import axios from 'axios';
 import { setAuthHeaders } from '../../utils/expo-store';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { Toast, useToast } from 'react-native-toast-notifications';
+import { process } from "../../constants";
 // import axios from 'axios';
 
 const { width } = Dimensions.get('window');

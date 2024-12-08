@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
 import AnimatedSpinner from '../../components/loader/AnimatedSpinner';
+import { process } from "../../constants";
 
 const VerifyEmail = () => {
   const toast = useToast();
