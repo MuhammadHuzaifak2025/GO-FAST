@@ -554,13 +554,13 @@ const ride_history = asynchandler(async (req, res, next) => {
     const user_id = req.user.user_id;
 
     const ride = await sequelize.query(
-        `SELECT * FROM carpool_rides WHERE driver = ?`,
+        `SELECT * FROM carpool_rides WHERE driver = ? and ride_status = 'completed'`,
         { type: QueryTypes.SELECT, replacements: [user_id] }
     );
 
 
     const ride_passenger = await sequelize.query(
-        `SELECT * FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id WHERE passenger_id = ?`,
+        `SELECT * FROM ride_passengers a inner join carpool_rides b on a.ride_id = b.ride_id WHERE passenger_id = ? and b.ride_status = 'completed'`,
         { type: QueryTypes.SELECT, replacements: [user_id] }
     );
 
