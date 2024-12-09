@@ -46,10 +46,10 @@ export default function RideHistory({ visible, onClose, user_id }) {
                 setRides(list);
             }
         } catch (error) {
-            toast.show("Could not fetch ride history, please try again later", {
-                type: "danger",
-                duration: 3000,
-            });
+            // toast.show("Could not fetch ride history, please try again later", {
+            //     type: "danger",
+            //     duration: 3000,
+            // });
         } finally {
             setLoading(false);
         }

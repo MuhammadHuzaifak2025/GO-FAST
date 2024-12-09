@@ -46,14 +46,16 @@ const busRegistration = () => {
     bus_organization: '',
     single_ride_fair: 0,
   });
-
+  const [semester, setSemester] = useState({});
   const fetchBuses = async () => {
     try {
       await setAuthHeaders(axios);
       const response = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/busregistration/open`, {
         withCredentials: true,
       });
-      setBuses(response.data.data);
+      console.log(response.data.data[0].semester);
+      setSemester(response.data.data[0].semester);
+      setBuses(response.data.data[0].bus);
       setRegistrationopen(true);
       setLoading(true);
     } catch (error) {
@@ -96,7 +98,7 @@ const busRegistration = () => {
   };
 
   const handleSave = async () => {
-    console.log(pickupRoute, dropoffRoute, selectedBus.semester.semester_id, user.user_id, selectedBus.bus[0].bus_id);
+    console.log(pickupRoute, dropoffRoute, semester.semester_id, user.user_id, selectedBus.bus_id);
     if (!pickupRoute || !dropoffRoute) {
       Alert.alert('Error', 'Please select both pickup and dropoff routes');
       return;
@@ -107,11 +109,11 @@ const busRegistration = () => {
       // return;
       await setAuthHeaders(axios);
       const resp = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/gofast/api/semester-passenger`, {
-        "semester_id": selectedBus.semester.semester_id,
+        "semester_id": semester.semester_id,
         "passenger_id": user.user_id,
         "pickup": pickupRoute,
         "dropoff": dropoffRoute,
-        "bus_id": selectedBus.bus[0].bus_id,
+        "bus_id": selectedBus.bus_id,
       }, { withCredentials: true });
       if (resp) {
         console.log(resp.data);
@@ -128,10 +130,11 @@ const busRegistration = () => {
   };
 
   const renderRouteDropdown = (label, selectedRoute, setSelectedRoute) => (
+    console.log("Hello", selectedRoute),
     <View style={styles.dropdownContainer}>
       <Text style={styles.label}>{label}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {selectedBus?.bus?.[0]?.routes?.map((route) => (
+        {selectedBus?.routes?.map((route) => (
           <TouchableOpacity
             key={route.BusRoutes_id}
             style={[
@@ -196,11 +199,11 @@ const busRegistration = () => {
                   <View style={styles.busIconContainer}>
                     <Bus color="#007AFF" size={24} />
                   </View>
-                  <Text style={styles.busNumber}>Bus {item.bus[0].bus_number}</Text>
+                  <Text style={styles.busNumber}>Bus {item.bus_number}</Text>
                 </View>
                 <View style={styles.busDetails}>
-                  <Text style={styles.busInfo}>Seats: {item.bus[0].seats}</Text>
-                  <Text style={styles.busInfo}>Fare: ${item.bus[0].single_ride_fair}</Text>
+                  <Text style={styles.busInfo}>Seats: {item.seats}</Text>
+                  <Text style={styles.busInfo}>Fare: ${item.single_ride_fair}</Text>
                 </View>
                 <View style={styles.dueDateContainer}>
                   <Clock color="#FF9800" size={16} />
@@ -208,7 +211,7 @@ const busRegistration = () => {
                 </View>
               </TouchableOpacity>
             )}
-            keyExtractor={(item) => item.registration_id.toString()}
+            keyExtractor={(item) => item.bus_id.toString()}
           />
           <Modal
             animationType="slide"
@@ -228,9 +231,9 @@ const busRegistration = () => {
                     {renderInfoItem(<User color="#4CAF50" size={24} />, "Student Name", user?.username, "#4CAF50")}
                     {/* {renderInfoItem(<CreditCard color="#2196F3" size={24} />, "Student ID", user.user_id, "#2196F3")} */}
 
-                    {renderInfoItem(<Calendar color="#FF9800" size={24} />, "Semester Details", (selectedBus.semester.type_semester + ' ' + selectedBus.semester.year), "#FF9800")}
+                    {renderInfoItem(<Calendar color="#FF9800" size={24} />, "Semester Details", (semester.type_semester + ' ' + semester.year), "#FF9800")}
                     {/* {renderInfoItem(<UserCheck color="#9C27B0" size={24} />, "Driver", "John Doe", "#9C27B0")} */}
-                    {renderInfoItem(<MapPin color="#F44336" size={24} />, "Fare", `$${selectedBus.bus[0].single_ride_fair}`, "#F44336")}
+                    {renderInfoItem(<MapPin color="#F44336" size={24} />, "Fare", `$${selectedBus.single_ride_fair}`, "#F44336")}
                     <Text style={styles.label}>Click To Select Routes</Text>
                     {renderRouteDropdown('Pickup Route', pickupRoute, setPickupRoute)}
                     {renderRouteDropdown('Dropoff Route', dropoffRoute, setDropoffRoute)}
