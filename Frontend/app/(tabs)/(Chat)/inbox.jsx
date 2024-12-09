@@ -34,7 +34,7 @@ const ChatScreen = () => {
     const connectToSocket = async () => {
       try {
         const token = await getToken("accessToken");
-        const tempSocket = io(`${process.env.EXPO_PUBLIC_BACKEND_WS}`, {
+        const tempSocket = io(`wss://www.gofastapp.org`, {
           auth: { token },
         });
 

@@ -230,7 +230,7 @@ export default function BusManagement() {
                 const { longitude, latitude } = location;
                 console.log(encodeURIComponent(newRoute));
                 const response = await axios.get(
-                    `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(newRoute)}&access_token=${process.env.EXPO_PUBLIC_MAPBOXTOKEN}&session_token=${TEMPsessionToken}&language=en&country=PK&limit=10&types=country%2Cstreet%2Cpoi&poi_category=&proximity=${longitude}%2C${latitude}`
+                    `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(newRoute)}&access_token=pk.eyJ1Ijoic2VhcmNoLW1hY2hpbmUtdXNlci0xIiwiYSI6ImNrNnJ6bDdzdzA5cnAza3F4aTVwcWxqdWEifQ.RFF7CVFKrUsZVrJsFzhRvQ&session_token=${TEMPsessionToken}&language=en&country=PK&limit=10&types=country%2Cstreet%2Cpoi&poi_category=&proximity=${longitude}%2C${latitude}`
                 );
 
                 if (response.data && response.data.suggestions && response.data.suggestions.length > 0) {
