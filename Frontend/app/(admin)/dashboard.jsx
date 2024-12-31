@@ -7,7 +7,7 @@ import axios from 'axios';
 import { useFocusEffect } from "@react-navigation/native";
 import { PieChart,BarChart } from "react-native-chart-kit";
 import { Colors } from "../../constants/Colors";
-import { process } from "../../constants";
+// import { process } from "../../constants";
 const DashboardScreen = () => {
 
   const { width: screenWidth } = useWindowDimensions();

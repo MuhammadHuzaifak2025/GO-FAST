@@ -22,7 +22,7 @@ const CARD_WIDTH = width * 0.9;
 const CARD_HEIGHT = CARD_WIDTH * 0.9;
 import QRCode from "react-native-qrcode-svg";
 import { Colors } from "../../constants/Colors";
-import { process } from "../../constants";
+// import { process } from "../../constants";
 
 const ProfileCard = () => {
     const [isFlipped, setIsFlipped] = useState(false);

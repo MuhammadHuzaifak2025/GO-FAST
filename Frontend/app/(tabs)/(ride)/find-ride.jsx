@@ -23,7 +23,7 @@ import { useToast } from "react-native-toast-notifications";
 import { router } from "expo-router";
 import { useGlobalContext } from "../../../context/GlobalProvider";
 import { Colors } from "../../../constants/Colors";
-import { process } from "../../../constants";
+// import { process } from "../../../constants";
 
 const RideItem = ({ from, to, time, username, seats, ride_item }) => {
     const { setRide } = useGlobalContext();

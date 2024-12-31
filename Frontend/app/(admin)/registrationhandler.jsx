@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
-import { process } from "../../constants";
+// import { process } from "../../constants";
 import {
     View,
     Text,
@@ -337,7 +337,7 @@ const RegistrationHandler = () => {
                             data={students}
                             keyExtractor={(item) => item.semester_passenger_id}
                             renderItem={({ item }) => (
-                                <ScrollView style={styles.studentCard} horizontal={true}>
+                                <View style={styles.studentCard} >
                                     <Text style={styles.studentName}>{item.passenger_id}</Text>
                                     <Text style={styles.paymentStatus}>Payment: {item.is_paid ? 'Paid' : "Unpaid"}</Text>
                                     <View style={styles.actions}>
@@ -350,7 +350,7 @@ const RegistrationHandler = () => {
                                         </TouchableOpacity>
 
                                     </View>
-                                </ScrollView>
+                                </View>
                             )}
                         />
                         <FlatList
@@ -498,9 +498,10 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 10,
         marginBottom: 10,
+        flexWrap: "wrap",
         flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
+        // justifyContent: "space-between",
+        // alignItems: "center",
     },
     studentName: {
         fontSize: 16,

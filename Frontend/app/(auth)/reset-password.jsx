@@ -10,7 +10,7 @@ import { link, router } from 'expo-router';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
-import { process } from "../../constants";
+// import { process } from "../../constants";
 
 const VerifyEmail = () => {
 

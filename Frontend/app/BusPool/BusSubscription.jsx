@@ -16,7 +16,7 @@ import { MapPin, Bus, X, User, CreditCard, Calendar, UserCheck, Clock, XCircle, 
 import axios from 'axios';
 import { setAuthHeaders } from '../../utils/expo-store';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { process } from "../../constants";
+// import { process } from "../../constants";
 // import axios from 'axios';
 
 const { width } = Dimensions.get('window');

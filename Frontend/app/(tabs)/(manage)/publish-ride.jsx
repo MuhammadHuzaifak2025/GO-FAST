@@ -24,7 +24,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { Colors } from "../../../constants/Colors";
-import { process } from "../../../constants";
+// import { process } from "../../../constants";
 const RideItem = ({
     from,
     to,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Bus, Trash2 } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { process } from "../../constants";
+// import { process } from "../../constants";
 import {
     View,
     Text,
