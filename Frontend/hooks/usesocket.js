@@ -36,14 +36,14 @@ const useSocket = (data) => {
                 });
 
                 tempSocket.on('connect_error', (error) => {
-                    console.error('Socket connection error:', error);
+                    // console.error('Socket connection error:', error);
                 });
 
                 tempSocket.on('both-connected', () => {
                     router.push({ pathname: 'inbox', params: item })
                 })
             } catch (error) {
-                console.error('Error connecting to socket:', error);
+                // console.error('Error connecting to socket:', error);
             }
         };
 

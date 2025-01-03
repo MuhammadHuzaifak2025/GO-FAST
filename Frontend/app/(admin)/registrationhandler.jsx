@@ -96,12 +96,12 @@ const RegistrationHandler = () => {
                         if (resp2.status === 201) {
                             setCurrentSemester(resp2.data.data.type_semester + " " + resp2.data.data.year);
                         } else {
-                            console.error("Failed to create semester");
+                            // console.error("Failed to create semester");
                         }
                     }
                 } catch (error) {
                     // Handle specific error statuses
-                    console.error("Error fetching or creating semester:", error);
+                    // console.error("Error fetching or creating semester:", error);
                     if (error.response?.status === 400) {
                         try {
                             await setAuthHeaders(axios);
@@ -115,10 +115,10 @@ const RegistrationHandler = () => {
                                 console.log("Created semester:", resp2.data.data.type_semester + " " + resp2.data.data.year);
                                 setCurrentSemester(resp2.data.data.type_semester + " " + resp2.data.data.year);
                             } else {
-                                console.error("Failed to create semester");
+                                // console.error("Failed to create semester");
                             }
                         } catch (innerError) {
-                            console.error("Error creating semester in fallback:", innerError.response || innerError.message);
+                            // console.error("Error creating semester in fallback:", innerError.response || innerError.message);
                         }
                     }
                 }

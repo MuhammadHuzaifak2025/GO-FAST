@@ -69,7 +69,7 @@ export function Sidebar() {
                 router.push("/");
               }
             } catch (error) {
-              console.error(error);
+              // console.error(error);
               toast.error("Failed to logout");
             }
           }}
