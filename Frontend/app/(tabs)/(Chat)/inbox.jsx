@@ -34,7 +34,7 @@ const ChatScreen = () => {
     const connectToSocket = async () => {
       try {
         const token = await getToken("accessToken");
-        const tempSocket = io(`wss://www.gofastapp.org`, {
+        const tempSocket = io(process.env.EXPO_PUBLIC_BACKEND_WS, {
           auth: { token },
         });
 
@@ -52,11 +52,11 @@ const ChatScreen = () => {
         });
 
         tempSocket.on("connect_error", (error) => {
-          console.error("Socket connection error:", error);
+          // console.error("Socket connection error:", error);
         });
 
         tempSocket.on("both-connected", () => {
-          console.log("Both-connected event received");
+          // console.log("Both-connected event received");
           setIsOnline(true);
         });
 
@@ -69,7 +69,7 @@ const ChatScreen = () => {
             }
             const newMessages = messages.messages;
             if (!Array.isArray(newMessages)) {
-              console.error("Invalid messages format: Expected an array.", newMessages);
+              // console.error("Invalid messages format: Expected an array.", newMessages);
               setIsLoading(false);
               return;
             }
@@ -100,7 +100,7 @@ const ChatScreen = () => {
             setMessages(formattedMessages);
             setIsLoading(false);
           } catch (error) {
-            console.error("Error processing messages:", error);
+            // console.error("Error processing messages:", error);
             setIsLoading(false);
           }
         });
@@ -126,7 +126,7 @@ const ChatScreen = () => {
           );
         });
       } catch (error) {
-        console.error("Error connecting to socket:", error.message);
+        // console.error("Error connecting to socket:", error.message);
         setIsLoading(false);
       }
     };
