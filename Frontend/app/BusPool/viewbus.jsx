@@ -35,7 +35,7 @@ const ViewBus = () => {
             });
             setBuses(response.data.message);
         } catch (error) {
-            console.error(error);
+            // console.error(error);
             Alert.alert('Error', 'Failed to fetch buses');
         }
     };
