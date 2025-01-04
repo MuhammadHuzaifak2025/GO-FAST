@@ -17,6 +17,7 @@ import { getToken } from "../../../utils/expo-store";
 import { v4 as uuidv4 } from "uuid";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "../../../constants/Colors";
+import Crypto from "expo-crypto";
 // import { process } from "../../../constants";
 
 const ChatScreen = () => {
@@ -143,24 +144,41 @@ const ChatScreen = () => {
 
   const handleSend = useCallback(
     (newMessages = []) => {
+      if (!newMessages || newMessages.length === 0) return;
+
       const message = newMessages[0];
 
-      if (!socketRef.current) {
-        console.warn("Socket not initialized");
-        return;
+      // Generate a unique ID for the message (if needed)
+      const uniqueId = uuidv4();
+
+      try {
+        // Emit the message to the server
+        if (socketRef.current) {
+          socketRef.current.emit("send-chat-message", {
+            request_id: item.request_id,
+            receiver: item?.user_id,
+            message: message.text,
+            timestamp: new Date().toISOString(),
+            senderId,
+            senderName,
+            online: isOnline,
+          });
+        } else {
+          // console.warn("Socket reference is not available.");
+        }
+
+        // Append the message to the chat
+        setMessages((prevMessages) =>
+          GiftedChat.append(prevMessages, [
+            {
+              ...message,
+              _id: uniqueId, // Ensure the message has a unique ID
+            },
+          ])
+        );
+      } catch (error) {
+        // console.error("Error sending the message:", error);
       }
-
-      socketRef.current.emit("send-chat-message", {
-        request_id: item.request_id,
-        reciever: item?.user_id,
-        message: message.text,
-        timestamp: new Date().toISOString(),
-        senderId,
-        senderName,
-        online: isOnline,
-      });
-
-      setMessages((prevMessages) => GiftedChat.append(prevMessages, newMessages));
     },
     [senderId, senderName, item.request_id, isOnline]
   );
